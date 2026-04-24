@@ -8,6 +8,7 @@ settings.py — EduPal ADHD Learning System
 """
 
 from pathlib import Path
+import dj_database_url
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,8 +24,10 @@ SECRET_KEY = os.environ.get(
     'SECRET_KEY',
     'django-insecure-change-me-before-production'
 )
-DEBUG          = os.environ.get('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS  = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# اجعلي DEBUG تعتمد على البيئة، إذا لم يجد متغيراً سحابياً سيعتبرها True (للتطوير)
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+# السماح برابط Render ورابط جهازك المحلي
+ALLOWED_HOSTS = ['edupal-platform.onrender.com', 'localhost', '127.0.0.1', '.onrender.com']
 
 # ── التطبيقات ────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -44,6 +47,7 @@ INSTALLED_APPS = [
 # ── Middleware ───────────────────────────────────────────────
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -75,15 +79,25 @@ TEMPLATES = [{
 WSGI_APPLICATION = 'adhd_learning_system.wsgi.application'
 
 # ── قاعدة البيانات ───────────────────────────────────────────
-DATABASES = {'default': {
-    'ENGINE':   'django.db.backends.postgresql',
-    'NAME':     os.environ.get('DB_NAME',     'ADHD_Learning_System'),
-    'USER':     os.environ.get('DB_USER',     'postgres'),
-    'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-    'HOST':     os.environ.get('DB_HOST',     'localhost'),
-    'PORT':     os.environ.get('DB_PORT',     '5432'),
-    'OPTIONS':  {'connect_timeout': 10},
-}}
+DATABASES = {
+    'default': dj_database_url.config(
+        # هذا السطر يقرأ قاعدة البيانات السحابية من Render تلقائياً
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
+
+# في حال كنتِ تعملين محلياً ولم يجد السيرفر قاعدة بيانات سحابية، سيعود لاستخدام الإعدادات اليدوية:
+if not DATABASES['default']:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ADHD_Learning_System',
+        'USER': 'postgres',
+        'PASSWORD': 'your_password_here', # ضعي كلمة مرورك المحلية هنا
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
 
 # ── كلمات المرور ─────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
@@ -143,6 +157,7 @@ API_ENCRYPTION_KEY = os.environ.get('API_ENCRYPTION_KEY', '')  # مطلوب لت
 ALLOWED_HOSTS = ['gigantic-dice-unheated.ngrok-free.dev', 
     '127.0.0.1', 
     'localhost']
+ALLOWED_HOSTS = ['*']
 # ── البريد الإلكتروني ────────────────────────────────────────
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp.gmail.com'
