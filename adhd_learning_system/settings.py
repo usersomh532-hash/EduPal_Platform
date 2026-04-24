@@ -24,10 +24,8 @@ SECRET_KEY = os.environ.get(
     'SECRET_KEY',
     'django-insecure-change-me-before-production'
 )
-# اجعلي DEBUG تعتمد على البيئة، إذا لم يجد متغيراً سحابياً سيعتبرها True (للتطوير)
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
-# السماح برابط Render ورابط جهازك المحلي
-ALLOWED_HOSTS = ['edupal-platform.onrender.com', 'localhost', '127.0.0.1', '.onrender.com']
+DEBUG          = os.environ.get('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS  = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # ── التطبيقات ────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -79,19 +77,15 @@ TEMPLATES = [{
 WSGI_APPLICATION = 'adhd_learning_system.wsgi.application'
 
 # ── قاعدة البيانات ───────────────────────────────────────────
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'), # سيبحث عن الرابط السحابي أولاً
-        conn_max_age=600,
-    )
-}
-
-# إذا كنتِ على جهازك (لا يوجد رابط سحابي)، استخدمي SQLite لتجنب مشاكل كلمة المرور
-if not os.environ.get('DATABASE_URL'):
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+DATABASES = {'default': {
+    'ENGINE':   'django.db.backends.postgresql',
+    'NAME':     os.environ.get('DB_NAME',     'ADHD_Learning_System'),
+    'USER':     os.environ.get('DB_USER',     'postgres'),
+    'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+    'HOST':     os.environ.get('DB_HOST',     'localhost'),
+    'PORT':     os.environ.get('DB_PORT',     '5432'),
+    'OPTIONS':  {'connect_timeout': 10},
+}}
 
 # ── كلمات المرور ─────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
