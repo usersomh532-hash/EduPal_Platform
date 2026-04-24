@@ -1,0 +1,75 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}المديريات{% endblock %}
+{% block page_title %}قائمة المديريات{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">
+  {% for d in directorates %}
+  <div class="ap-card" style="margin:0;">
+    <div style="padding:1.1rem 1.25rem;">
+      <div style="font-size:.82rem;font-weight:800;color:var(--ink);margin-bottom:.65rem;display:flex;align-items:center;gap:.4rem;">
+        <i class="fas fa-map-marker-alt" style="color:var(--blue);"></i>
+        {{ d.short }}
+      </div>
+      <div style="display:flex;gap:.6rem;margin-bottom:.85rem;">
+        <div style="flex:1;background:var(--blue-lt);border-radius:.55rem;padding:.5rem .75rem;text-align:center;">
+          <div style="font-size:1.3rem;font-weight:900;color:var(--blue);">{{ d.teachers }}</div>
+          <div style="font-size:.7rem;color:var(--muted);">معلم</div>
+        </div>
+        <div style="flex:1;background:var(--green-lt);border-radius:.55rem;padding:.5rem .75rem;text-align:center;">
+          <div style="font-size:1.3rem;font-weight:900;color:var(--green);">{{ d.students }}</div>
+          <div style="font-size:.7rem;color:var(--muted);">طالب</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="ap-btn ap-btn-preview ap-btn-sm" style="flex:1;justify-content:center;" onclick="showDirectorateTeachers('{{ d.name }}')">
+          <i class="fas fa-chalkboard-teacher"></i> عرض المعلمين
+        </button>
+        <a href="{% url 'admin_portal:teachers_list' %}?directorate={{ d.name|urlencode }}" class="ap-btn ap-btn-ghost ap-btn-sm" title="قائمة كاملة">
+          <i class="fas fa-external-link-alt"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div style="grid-column:1/-1;"><div class="ap-empty"><i class="fas fa-map"></i>لا توجد مديريات</div></div>
+  {% endfor %}
+</div>
+
+<script>
+    // حل مشكلة الرابط: استخدام متغير نصي محاط بعلامات اقتباس لتجنب أخطاء VS Code
+    // ملاحظة: تأكد من وجود مسار (URL) في Django يدعم جلب معلمين حسب المديرية
+    var DIR_TEACHERS_URL = "{% url 'admin_portal:teachers_list' %}"; 
+
+    function showDirectorateTeachers(dirName) {
+        var overlay = document.getElementById('studentPreviewOverlay');
+        var body    = document.getElementById('studentPreviewBody');
+        
+        if(!overlay || !body) return;
+
+        body.innerHTML = '<div class="sp-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br>جارٍ تحميل معلمي مديرية ' + dirName.split(' ').pop() + '...</div>';
+        overlay.classList.add('open');
+
+        // بناء رابط البحث للمديرية
+        var url = DIR_TEACHERS_URL + "?directorate=" + encodeURIComponent(dirName);
+
+        fetch(url, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
+            .then(function(r) { return r.text(); }) // هنا نتوقع استلام جزء HTML أو JSON
+            .then(function(html) {
+                // بما أننا نريد عرض قائمة، يمكننا وضع النتيجة مباشرة في الـ body
+                // أو معالجتها كـ JSON حسب ما يرجعه السيرفر لديك
+                body.innerHTML = html; 
+            })
+            .catch(function(err) {
+                console.error(err);
+                body.innerHTML = '<div class="sp-error">خطأ في الاتصال بالسيرفر</div>';
+            });
+    }
+
+    function closeStudentPreview(e) {
+        if (!e || e.target.id === 'studentPreviewOverlay' || e.target.closest('.sp-close')) {
+            document.getElementById('studentPreviewOverlay').classList.remove('open');
+        }
+    }
+</script>
+{% endblock %}

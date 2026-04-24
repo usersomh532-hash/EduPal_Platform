@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ subject.subjectname }} — دروس المادة{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root{
+  --sky:#3b82f6;--sky-dk:#1d4ed8;--sky-lt:#eff6ff;--sky-bd:#bfdbfe;--sky-xlt:#f0f7ff;
+  --mint:#10b981;--mint-lt:#ecfdf5;--mint-bd:#6ee7b7;
+  --amber:#f59e0b;--amber-lt:#fffbeb;--amber-bd:#fde68a;
+  --rose:#ef4444;--rose-lt:#fef2f2;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f0f5fb;--card:#fff;
+  --r:14px;--sh:0 2px 8px rgba(30,64,175,.07),0 6px 24px rgba(30,64,175,.05);
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',sans-serif;}
+.sd-wrap{max-width:980px;margin:0 auto;padding:1.75rem 1.25rem 5rem;}
+
+/* ── Header ── */
+.sd-header{
+  background:linear-gradient(135deg,var(--sky-dk),var(--sky));
+  border-radius:1.25rem;padding:1.75rem 2rem;color:#fff;
+  margin-bottom:2rem;box-shadow:0 6px 24px rgba(29,78,216,.22);
+  display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;
+}
+.sd-header-emoji{font-size:2.8rem;flex-shrink:0;}
+.sd-header-info{flex:1;}
+.sd-header h1{font-size:clamp(1.2rem,2.5vw,1.7rem);font-weight:900;margin:0 0 .4rem;}
+.sd-header-meta{display:flex;gap:1rem;flex-wrap:wrap;font-size:.83rem;opacity:.9;}
+.sd-header-meta span{display:flex;align-items:center;gap:.35rem;}
+.back-link{
+  display:inline-flex;align-items:center;gap:.5rem;
+  color:rgba(255,255,255,.8);font-size:.85rem;font-weight:600;
+  text-decoration:none;margin-bottom:1rem;transition:color .18s;
+  background:rgba(255,255,255,.12);border-radius:8px;
+  padding:.35rem .85rem;border:1px solid rgba(255,255,255,.2);
+}
+.back-link:hover{color:#fff;background:rgba(255,255,255,.2);}
+
+/* ── عنوان قسم ── */
+.sec-head{
+  font-size:.95rem;font-weight:800;color:var(--ink);
+  display:flex;align-items:center;gap:.6rem;
+  margin-bottom:1.1rem;padding-right:.75rem;
+  border-right:4px solid var(--sky);
+}
+.sec-head i{color:var(--sky);}
+.sec-head .badge{
+  background:var(--sky-lt);border:1px solid var(--sky-bd);
+  border-radius:2rem;padding:.1rem .65rem;font-size:.75rem;
+  color:var(--sky-dk);font-weight:700;
+}
+
+/* ══ شبكة الدروس ══ */
+.lessons-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:1.1rem;
+  margin-bottom:2rem;
+}
+
+/* ── كارد الدرس ── */
+.lesson-card{
+  background:var(--card);border-radius:var(--r);
+  border:1.5px solid var(--border);box-shadow:var(--sh);
+  overflow:hidden;text-decoration:none;color:inherit;
+  transition:transform .22s,box-shadow .22s,border-color .22s;
+  display:flex;flex-direction:column;
+}
+.lesson-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 8px 28px rgba(30,64,175,.12);
+  border-color:var(--sky-bd);text-decoration:none;color:inherit;
+}
+.lesson-card-thumb{
+  height:90px;background:linear-gradient(135deg,var(--sky-lt),#dbeafe);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.2rem;position:relative;overflow:hidden;
+}
+.lesson-card-thumb img.thumb-img{
+  width:100%;height:100%;object-fit:cover;
+  position:absolute;inset:0;
+  transition:transform .3s;
+}
+.lesson-card:hover .thumb-img{transform:scale(1.05);}
+.lesson-card-thumb .thumb-fallback{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;
+  opacity:.6;
+}
+.lesson-card-thumb .thumb-fallback i{font-size:2rem;color:var(--sky-dk);}
+.lesson-status{
+  position:absolute;top:8px;left:8px;
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:800;
+}
+.lesson-status.done{background:var(--mint);color:#fff;}
+.lesson-status.todo{background:rgba(255,255,255,.9);color:var(--sky-dk);border:1.5px solid var(--sky-bd);}
+.lesson-card-body{padding:.9rem 1rem;flex:1;display:flex;flex-direction:column;gap:.5rem;}
+.lesson-card-title{font-size:.9rem;font-weight:800;color:var(--ink);line-height:1.4;}
+.lesson-card-meta{font-size:.73rem;color:var(--muted);display:flex;align-items:center;gap:.4rem;}
+.lesson-card-foot{
+  padding:.6rem 1rem;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--sky-xlt);
+}
+.lesson-card-foot .lc-test{
+  font-size:.73rem;font-weight:700;color:var(--amber);
+  display:flex;align-items:center;gap:.3rem;
+}
+.lesson-card-foot .lc-test.no-test{color:var(--muted);}
+.lesson-start-btn{
+  display:inline-flex;align-items:center;gap:.35rem;
+  background:var(--sky-dk);color:#fff;
+  font-size:.75rem;font-weight:700;font-family:'Tajawal',sans-serif;
+  padding:.3rem .8rem;border-radius:7px;border:none;cursor:pointer;
+  text-decoration:none;transition:opacity .18s;
+}
+.lesson-start-btn:hover{opacity:.85;color:#fff;}
+
+/* ── لا دروس ── */
+.no-lessons{
+  grid-column:1/-1;text-align:center;
+  background:var(--card);border-radius:var(--r);
+  border:2px dashed var(--border);padding:3rem 2rem;
+  color:var(--muted);
+}
+.no-lessons i{font-size:2.5rem;opacity:.2;display:block;margin-bottom:.75rem;}
+
+/* ══ كارد الاختبارات العامة ══ */
+.exams-card{
+  background:var(--card);border-radius:var(--r);
+  border:1.5px solid var(--amber-bd);box-shadow:var(--sh);
+  overflow:hidden;margin-bottom:1rem;
+}
+.exams-card-head{
+  background:var(--amber-lt);border-bottom:1.5px solid var(--amber-bd);
+  padding:.85rem 1.25rem;display:flex;align-items:center;gap:.6rem;
+  font-size:.93rem;font-weight:800;color:#92400e;
+}
+.exams-card-head i{color:var(--amber);}
+.exam-row{
+  display:flex;align-items:center;gap:.85rem;
+  padding:.85rem 1.25rem;border-bottom:1px solid var(--border);
+  text-decoration:none;color:var(--ink);
+  transition:background .15s;
+}
+.exam-row:last-child{border-bottom:none;}
+.exam-row:hover{background:var(--amber-lt);}
+.exam-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--amber-lt);border:1.5px solid var(--amber-bd);
+  display:flex;align-items:center;justify-content:center;
+  color:#b45309;font-size:1rem;flex-shrink:0;
+}
+.exam-info{flex:1;min-width:0;}
+.exam-title{font-size:.9rem;font-weight:800;color:var(--ink);}
+.exam-meta{font-size:.73rem;color:var(--muted);margin-top:.15rem;}
+.exam-btn{
+  display:inline-flex;align-items:center;gap:.35rem;
+  background:#b45309;color:#fff;
+  font-size:.78rem;font-weight:700;font-family:'Tajawal',sans-serif;
+  padding:.4rem .9rem;border-radius:8px;border:none;
+  text-decoration:none;transition:opacity .18s;white-space:nowrap;
+}
+.exam-btn:hover{opacity:.85;color:#fff;}
+.exam-btn.disabled{
+  background:var(--border);color:var(--muted);
+  pointer-events:none;cursor:default;
+}
+.no-exams{
+  padding:1.5rem;text-align:center;
+  color:var(--muted);font-size:.85rem;
+}
+.no-exams i{display:block;font-size:1.5rem;opacity:.2;margin-bottom:.4rem;}
+
+@media(max-width:600px){
+  .lessons-grid{grid-template-columns:1fr 1fr;}
+  .sd-header{flex-direction:column;}
+}
+@media(max-width:400px){
+  .lessons-grid{grid-template-columns:1fr;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sd-wrap" dir="rtl">
+
+  <!-- رابط العودة -->
+  <a href="{% url 'student:student_home' %}" class="back-link" style="display:inline-flex;margin-bottom:1rem;color:var(--muted);background:transparent;border:none;padding:0;">
+    <i class="fas fa-chevron-right"></i>
+    العودة للمكتبة
+  </a>
+
+  <!-- Header المادة -->
+  <div class="sd-header">
+    <div class="sd-header-emoji" id="subj-emoji">📖</div>
+    <div class="sd-header-info">
+      <h1>{{ subject.subjectname }}</h1>
+      <div class="sd-header-meta">
+        <span><i class="fas fa-layer-group"></i> {{ lessons|length }} درس</span>
+        <span><i class="fas fa-clipboard-list"></i> {{ subject_tests|length }} اختبار</span>
+        {% if subject.teacherid %}
+        <span><i class="fas fa-chalkboard-teacher"></i> {{ subject.teacherid.userid.fullname|default:"—" }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ الدروس ══ -->
+  <div class="sec-head">
+    <i class="fas fa-book-open"></i>
+    الدروس
+    <span class="badge">{{ lessons|length }}</span>
+  </div>
+
+  <div class="lessons-grid">
+    {% for lesson in lessons %}
+    <a href="{% url 'student:view_lesson_student' lesson.pk %}" class="lesson-card" data-lesson-id="{{ lesson.pk }}">
+      <div class="lesson-card-thumb">
+        <div class="thumb-fallback">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        <div class="lesson-status {% if lesson.pk in watched_ids %}done{% else %}todo{% endif %}">
+          {% if lesson.pk in watched_ids %}
+            <i class="fas fa-check"></i>
+          {% else %}
+            <i class="fas fa-play" style="font-size:.6rem;"></i>
+          {% endif %}
+        </div>
+      </div>
+      <div class="lesson-card-body">
+        <div class="lesson-card-title">{{ lesson.lessontitle }}</div>
+        <div class="lesson-card-meta">
+          <i class="fas fa-calendar-alt"></i>
+          {{ lesson.createdat|date:"d M Y" }}
+        </div>
+      </div>
+      <div class="lesson-card-foot">
+        <span class="lesson-start-btn">
+          <i class="fas fa-play"></i>
+          {% if lesson.pk in watched_ids %}متابعة{% else %}ابدأ{% endif %}
+        </span>
+      </div>
+    </a>
+    {% empty %}
+    <div class="no-lessons">
+      <i class="fas fa-book"></i>
+      لا توجد دروس منشورة في هذه المادة بعد.
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ══ الاختبارات العامة ══ -->
+  <div class="sec-head">
+    <i class="fas fa-clipboard-list"></i>
+    الاختبارات العامة
+    <span class="badge">{{ subject_tests|length }}</span>
+  </div>
+
+  <div class="exams-card">
+    <div class="exams-card-head">
+      <i class="fas fa-file-signature"></i>
+      اختبارات المادة (نصفي / نهائي)
+    </div>
+    {% for test in subject_tests %}
+    <a href="{% url 'student:take_test' test.testid %}" class="exam-row">
+      <div class="exam-icon"><i class="fas fa-file-alt"></i></div>
+      <div class="exam-info">
+        <div class="exam-title">{{ test.testtitle }}</div>
+        <div class="exam-meta">
+          <i class="fas fa-list-ol"></i>
+          {{ test.totalquestions }} سؤال
+          {% if test.durationtaken %}
+            &nbsp;·&nbsp;
+            <i class="fas fa-clock"></i>
+            {{ test.durationtaken }} دقيقة
+          {% endif %}
+        </div>
+      </div>
+      <span class="exam-btn">
+        <i class="fas fa-pen"></i> ابدأ الاختبار
+      </span>
+    </a>
+    {% empty %}
+    <div class="no-exams">
+      <i class="fas fa-clipboard"></i>
+      لا توجد اختبارات عامة للمادة حالياً.
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<div id="lesson-thumbs-data" style="display:none;">{{ lesson_thumb_json }}</div>
+
+<script>
+/* صور الدروس من JSON */
+(function(){
+  var thumbs = {};
+  try{ thumbs = JSON.parse(document.getElementById('lesson-thumbs-data').textContent.trim()||'{}'); }catch(e){ thumbs={}; }
+  document.querySelectorAll('.lesson-card[data-lesson-id]').forEach(function(card){
+    var url = thumbs[card.dataset.lessonId];
+    if(!url) return;
+    var thumb = card.querySelector('.lesson-card-thumb');
+    if(!thumb) return;
+    var img = document.createElement('img');
+    img.className = 'thumb-img';
+    img.alt = '';
+    img.src = url;
+    img.onerror = function(){ this.remove(); };
+    thumb.insertBefore(img, thumb.firstChild);
+  });
+})();
+
+/* إيموجي المادة */
+(function(){
+  var name = "{{ subject.subjectname|lower }}";
+  var MAP = [
+    {keys:['علوم','science','فيزياء','كيمياء','أحياء','احياء'],emoji:'🔬'},
+    {keys:['رياضيات','math','حساب'],emoji:'📐'},
+    {keys:['عربي','العربية','arabic'],emoji:'📝'},
+    {keys:['انجليزي','إنجليزي','english'],emoji:'🌍'},
+    {keys:['تاريخ','history'],emoji:'📜'},
+    {keys:['جغرافيا','geography'],emoji:'🗺️'},
+    {keys:['حاسوب','computer','تكنولوجيا'],emoji:'💻'},
+    {keys:['اسلامية','إسلامية','دين'],emoji:'🕌'},
+    {keys:['بدنية','sport'],emoji:'⚽'},
+    {keys:['فنية','فنون','art'],emoji:'🎨'},
+    {keys:['اجتماعية','social'],emoji:'🌐'},
+  ];
+  var emoji = '📖';
+  for(var i=0;i<MAP.length;i++){
+    for(var j=0;j<MAP[i].keys.length;j++){
+      if(name.includes(MAP[i].keys[j])){ emoji=MAP[i].emoji; break; }
+    }
+    if(emoji!=='📖') break;
+  }
+  var el = document.getElementById('subj-emoji');
+  if(el) el.textContent = emoji;
+})();
+</script>
+{% endblock %}

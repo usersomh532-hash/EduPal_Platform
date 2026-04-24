@@ -1,0 +1,927 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}إدارة الصفوف – العام الدراسي {{ current_year }}{% endblock %}
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+:root{
+    --blue:#2563eb;--blue-dk:#1e3a8a;--blue-md:#3b82f6;--blue-lt:#eff6ff;--blue-bd:#bfdbfe;
+    --add-bg:#0369a1;--add-hover:#075985;--move-bg:#475569;--move-hover:#334155;
+    --del-bg:#64748b;--del-hover:#dc2626;--toast-ok:#1d4ed8;--toast-err:#475569;
+    --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f3f6fb;--card:#ffffff;
+    --r:14px;--sh:0 2px 12px rgba(29,78,216,.08);
+}
+*{box-sizing:border-box;}
+body{background:var(--bg);font-family:'Cairo',sans-serif;color:var(--ink);direction:rtl;}
+.cm-wrap{max-width:1280px;margin:0 auto;padding:1.75rem 1.25rem 5rem;}
+.cm-header{background:linear-gradient(120deg,#1e3a5f,#1d4ed8);border-radius:1.25rem;padding:1.5rem 2rem;color:#fff;margin-bottom:2rem;display:flex;align-items:center;gap:1rem;box-shadow:0 6px 24px rgba(29,78,216,.22);}
+.cm-header h1{font-size:1.6rem;font-weight:900;margin:0;}
+.cm-header p{font-size:.9rem;opacity:.85;margin:.2rem 0 0;}
+.academic-year-badge{display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:50px;padding:.35rem 1rem;font-size:.88rem;font-weight:700;color:#fff;margin-top:.5rem;backdrop-filter:blur(4px);letter-spacing:.02em;}
+.academic-year-badge i{font-size:.85rem;opacity:.9;}
+.cm-card{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh);overflow:hidden;margin-bottom:1.5rem;}
+.cm-card-head{background:var(--blue-lt);padding:.9rem 1.4rem;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:1rem;font-weight:800;color:var(--blue-dk);}
+.cm-card-head i{color:var(--blue);margin-left:.5rem;}
+.cm-btn{padding:.5rem 1.1rem;border-radius:8px;border:none;font-size:.88rem;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;transition:background .2s,transform .15s,box-shadow .15s;display:inline-flex;align-items:center;gap:.4rem;}
+.cm-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.12);}
+.cm-btn-primary{background:var(--blue);color:#fff;}
+.cm-btn-primary:hover{background:var(--blue-dk);}
+.cm-btn-mint{background:var(--add-bg);color:#fff;}
+.cm-btn-mint:hover{background:var(--add-hover);}
+.cm-btn-danger{background:var(--del-bg);color:#fff;}
+.cm-btn-danger:hover{background:var(--del-hover);}
+.cm-btn-ghost{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);}
+.cm-btn-ghost:hover{background:#e8edf5;color:var(--ink);}
+.cm-btn-amber{background:var(--move-bg);color:#fff;}
+.cm-btn-amber:hover{background:var(--move-hover);}
+.cm-btn-preview{background:#e0f2fe;color:#0369a1;border:1.5px solid #bae6fd;}
+.cm-btn-preview:hover{background:#0369a1;color:#fff;border-color:#0369a1;}
+.cm-input,.cm-select{width:100%;padding:.55rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;font-family:'Cairo',sans-serif;color:var(--ink);background:var(--bg);transition:border-color .2s;}
+.cm-input:focus,.cm-select:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+.filter-bar{display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;padding:1rem 1.4rem;background:#f8faff;border-bottom:1.5px solid var(--border);}
+.filter-bar label{font-size:.8rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem;}
+.cm-table{width:100%;border-collapse:collapse;}
+.cm-table th{background:var(--blue-lt);padding:.7rem 1rem;font-size:.82rem;font-weight:800;color:var(--blue-dk);text-align:right;border-bottom:1.5px solid var(--border);white-space:nowrap;}
+.cm-table td{padding:.75rem 1rem;font-size:.88rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.cm-table tr:last-child td{border-bottom:none;}
+.cm-table tbody tr:hover td{background:#f8faff;}
+/* ✅ إخفاء الصفوف المفلترة */
+.cm-table tbody tr.hidden-row{display:none;}
+.badge-blue{background:var(--blue-lt);color:var(--blue-dk);padding:3px 10px;border-radius:100px;font-size:.75rem;font-weight:700;}
+.subject-row{display:flex;align-items:center;gap:.75rem;padding:.7rem .5rem;border-bottom:1px solid var(--border);}
+.subject-row:last-child{border-bottom:none;}
+.subject-icon{width:34px;height:34px;border-radius:8px;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;font-size:.95rem;color:var(--blue);flex-shrink:0;}
+.subject-info{flex:1;}
+.subject-name{font-size:.92rem;font-weight:700;}
+.subject-class{font-size:.78rem;color:var(--muted);margin-top:.1rem;}
+.empty-cell{text-align:center;padding:2.5rem;color:var(--muted);font-size:.9rem;}
+.empty-cell i{font-size:2rem;display:block;margin-bottom:.5rem;opacity:.3;}
+.cm-grid{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;}
+@media(max-width:900px){.cm-grid{grid-template-columns:1fr;}}
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:50px;padding:.7rem 1.75rem;font-size:.9rem;font-weight:700;z-index:9999;display:none;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+#toast.success{background:var(--toast-ok);}
+#toast.error{background:var(--toast-err);}
+#toast.show{display:block;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.optional-badge{font-size:.75rem;font-weight:400;color:var(--muted);background:#f1f5f9;border-radius:4px;padding:1px 6px;margin-right:.35rem;}
+.required-star{color:#dc2626;margin-right:.2rem;}
+
+/* ── قائمة checkboxes الطلاب من المديرية ── */
+.bulk-list{max-height:240px;overflow-y:auto;border:1.5px solid var(--border);border-radius:8px;background:#fff;}
+.bulk-item{display:flex;align-items:center;gap:.6rem;padding:.55rem .85rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;font-size:.85rem;}
+.bulk-item:last-child{border-bottom:none;}
+.bulk-item:hover{background:var(--blue-lt);}
+.bulk-item input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--blue);flex-shrink:0;}
+.bulk-item-info{flex:1;}
+.bulk-item-name{font-weight:700;color:var(--ink);}
+.bulk-item-meta{font-size:.75rem;color:var(--muted);margin-top:1px;}
+.bulk-select-all-row{display:flex;align-items:center;gap:.6rem;padding:.55rem .85rem;background:var(--blue-lt);border-bottom:1.5px solid var(--blue-bd);font-size:.85rem;font-weight:700;color:var(--blue-dk);cursor:pointer;border-radius:8px 8px 0 0;}
+.bulk-select-all-row input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--blue);flex-shrink:0;}
+
+/* ── نافذة معاينة الطالب ── */
+.student-preview-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9500;display:none;align-items:center;justify-content:center;padding:1rem;}
+.student-preview-overlay.open{display:flex;}
+.student-preview-modal{background:#fff;border-radius:20px;width:100%;max-width:480px;direction:rtl;font-family:'Cairo',sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.22);animation:previewIn .2s ease;overflow:hidden;max-height:90vh;display:flex;flex-direction:column;}
+@keyframes previewIn{from{opacity:0;transform:scale(.96) translateY(12px);}to{opacity:1;transform:none;}}
+.sp-head{background:linear-gradient(120deg,#1e3a5f,#1d4ed8);padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;color:#fff;flex-shrink:0;}
+.sp-head-title{font-size:1rem;font-weight:800;}
+.sp-close{background:rgba(255,255,255,.18);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;font-size:.95rem;}
+.sp-close:hover{background:rgba(255,255,255,.32);}
+.sp-body{padding:1.5rem;overflow-y:auto;}
+.sp-body::-webkit-scrollbar{width:4px;}
+.sp-body::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:4px;}
+.sp-avatar-row{display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;}
+.sp-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--blue-bd);}
+.sp-name{font-size:1.1rem;font-weight:900;color:var(--ink);}
+.sp-class{font-size:.82rem;color:var(--muted);margin-top:.2rem;}
+.sp-bio{font-size:.84rem;color:var(--muted);font-style:italic;margin-top:.3rem;}
+.sp-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.2rem;}
+.sp-stat{background:var(--blue-lt);border-radius:10px;padding:.65rem .5rem;text-align:center;}
+.sp-stat-num{font-size:1.3rem;font-weight:900;color:var(--blue);line-height:1;}
+.sp-stat-lbl{font-size:.72rem;color:var(--muted);margin-top:.2rem;}
+.sp-section-title{font-size:.8rem;font-weight:800;color:var(--blue-dk);background:var(--blue-lt);padding:.3rem .6rem;border-radius:6px;margin:.9rem 0 .4rem;}
+.sp-info-table{width:100%;font-size:.85rem;border-collapse:collapse;}
+.sp-info-table tr{border-bottom:1px solid var(--border);}
+.sp-info-table tr:last-child{border-bottom:none;}
+.sp-info-table td{padding:.38rem .25rem;vertical-align:top;}
+.sp-info-table td:first-child{color:var(--muted);font-weight:700;width:42%;white-space:nowrap;}
+.sp-info-table td:last-child{color:var(--ink);font-weight:600;word-break:break-word;}
+.sp-loading{text-align:center;padding:2rem;color:var(--muted);}
+.sp-error{text-align:center;padding:2rem;color:#dc2626;font-size:.9rem;}
+
+/* ✅ شريط البحث الجديد */
+.student-search-bar{
+    display:flex;gap:.6rem;align-items:flex-end;flex-wrap:wrap;
+    padding:.85rem 1.4rem;background:#f0f6ff;
+    border-bottom:1.5px solid var(--border);
+}
+.student-search-bar label{font-size:.8rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem;}
+.search-input{
+    padding:.5rem .85rem;border:1.5px solid var(--border);border-radius:8px;
+    font-size:.88rem;font-family:'Cairo',sans-serif;color:var(--ink);
+    background:#fff;transition:border-color .2s;
+}
+.search-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+.no-results-row{display:none;text-align:center;padding:2rem;color:var(--muted);font-size:.9rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cm-wrap" dir="rtl">
+
+    <!-- ══ الهيدر ══ -->
+    <div class="cm-header">
+        <i class="fas fa-chalkboard fa-2x opacity-75"></i>
+        <div>
+            <h1>إدارة الصفوف</h1>
+            <p>أضف طلاباً وأنشئ صفوفاً وأدر المواد</p>
+            <div class="academic-year-badge">
+                <i class="fas fa-calendar-alt"></i>
+                العام الدراسي {{ current_year }}
+            </div>
+        </div>
+        <div class="d-flex gap-2 ms-auto">
+            <button class="cm-btn cm-btn-primary" onclick="openModal('createClassModal')">
+                <i class="fas fa-plus"></i> صف جديد
+            </button>
+            <button class="cm-btn cm-btn-mint" onclick="openModal('createSubjectModal')">
+                <i class="fas fa-book-medical"></i> مادة جديدة
+            </button>
+        </div>
+    </div>
+
+    <div class="cm-grid">
+
+        <!-- ══ الطلاب ══ -->
+        <div>
+            <div class="cm-card">
+                <div class="cm-card-head">
+                    <span><i class="fas fa-users"></i> الطلاب في صفوفي</span>
+                    <span class="badge-blue">{{ students|length }} طالب</span>
+                </div>
+
+                <!-- ✅ شريط البحث الجديد — اسم الطالب + الصف + المديرية -->
+                <div class="student-search-bar">
+                    <div style="flex:2;min-width:160px;">
+                        <label>بحث باسم الطالب</label>
+                        <input type="text" id="searchName" class="search-input" style="width:100%;"
+                               placeholder="الاسم الثلاثي..." oninput="filterStudents()">
+                    </div>
+                    <div style="flex:1;min-width:130px;">
+                        <label>الصف</label>
+                        <select id="searchClass" class="search-input" style="width:100%;" onchange="filterStudents()">
+                            <option value="">كل الصفوف</option>
+                            {% for cls in classes %}
+                            <option value="{{ cls.classname }}">{{ cls.classname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="flex:1;min-width:160px;">
+                        <label>المديرية</label>
+                        <select id="searchDir" class="search-input" style="width:100%;" onchange="filterStudents()">
+                            <option value="">كل المديريات</option>
+                            {% for dir in all_directorates %}
+                            <option value="{{ dir }}">{{ dir|slice:"13:" }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="align-self:flex-end;">
+                        <button class="cm-btn cm-btn-ghost" onclick="resetStudentSearch()">
+                            <i class="fas fa-undo"></i> إعادة ضبط
+                        </button>
+                    </div>
+                </div>
+
+                <!-- جدول الطلاب -->
+                <div style="overflow-x:auto;">
+                    <table class="cm-table">
+                        <thead>
+                            <tr>
+                                <th>الطالب</th>
+                                {# ✅ تغيير: "رقم الهوية" → "الاسم الثلاثي" #}
+                                <th>الاسم الثلاثي</th>
+                                <th>الصف</th>
+                                {# ✅ تغيير: "ولي الأمر" → "اسم المدرسة" #}
+                                <th>اسم المدرسة</th>
+                                <th>الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            {% for student in students %}
+                            <tr id="srow-{{ student.studentid }}"
+                                data-name="{{ student.userid.fullname|lower }}"
+                                data-class="{{ student.classid.classname }}"
+                                data-dir="{{ student.directorate|default:'' }}">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        {% if student.userid.avatar %}
+                                        <img src="{{ student.userid.avatar.url }}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="">
+                                        {% else %}
+                                        <img src="https://ui-avatars.com/api/?name={{ student.userid.fullname|urlencode }}&background=eff4ff&color=1d4ed8&bold=true&size=32" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;" alt="">
+                                        {% endif %}
+                                        <span style="font-weight:700;">{{ student.userid.username }}</span>
+                                    </div>
+                                </td>
+                                {# ✅ تغيير: عرض أول 3 أجزاء من الاسم الكامل بدلاً من رقم الهوية #}
+                                <td style="color:var(--ink);font-size:.88rem;font-weight:600;">
+                                    {% with name_parts=student.userid.fullname.split %}
+                                        {{ name_parts.0 }}{% if name_parts.1 %} {{ name_parts.1 }}{% endif %}{% if name_parts.2 %} {{ name_parts.2 }}{% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td><span class="badge-blue">{{ student.classid.classname }}</span></td>
+                                {# ✅ تغيير: عرض اسم المدرسة بدلاً من ولي الأمر #}
+                                <td style="color:var(--muted);font-size:.85rem;">
+                                    {{ student.school_name|default:"—" }}
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        <button class="cm-btn cm-btn-preview" style="padding:.3rem .65rem;font-size:.78rem;"
+                                                data-studentid="{{ student.studentid }}"
+                                                onclick="previewStudent(this.dataset.studentid)">
+                                            <i class="fas fa-eye"></i> معاينة
+                                        </button>
+                                        <button class="cm-btn cm-btn-amber" style="padding:.3rem .65rem;font-size:.78rem;"
+                                                data-studentid="{{ student.studentid }}"
+                                                data-classname="{{ student.classid.classname }}"
+                                                onclick="openMoveStudent(this.dataset.studentid, this.dataset.classname)">
+                                            <i class="fas fa-exchange-alt"></i> نقل
+                                        </button>
+                                        <button class="cm-btn cm-btn-danger" style="padding:.3rem .65rem;font-size:.78rem;"
+                                                data-studentid="{{ student.studentid }}"
+                                                data-name="{{ student.userid.fullname }}"
+                                                onclick="removeStudent(this.dataset.studentid, this.dataset.name)">
+                                            <i class="fas fa-times"></i> إزالة
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="empty-cell">
+                                <i class="fas fa-user-graduate"></i>
+                                لا يوجد طلاب في صفوفك بعد
+                            </td></tr>
+                            {% endfor %}
+                            <!-- صف "لا توجد نتائج" يظهر عند الفلترة -->
+                            <tr id="noResultsRow" class="no-results-row">
+                                <td colspan="5" class="empty-cell">
+                                    <i class="fas fa-search"></i>
+                                    لا توجد نتائج مطابقة للبحث
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ══ إضافة طالب من المديرية ══ -->
+                <div style="padding:1rem 1.4rem;border-top:1.5px solid var(--border);background:#f8faff;">
+                    <div style="font-size:.9rem;font-weight:800;color:var(--blue-dk);margin-bottom:.9rem;">
+                        <i class="fas fa-user-plus me-1"></i> إضافة طالب من المديرية
+                    </div>
+
+                    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem;">
+                        <div style="flex:1;min-width:160px;">
+                            <label style="font-size:.8rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem;">
+                                <i class="fas fa-map-marker-alt me-1" style="color:var(--blue);"></i>
+                                المديرية التعليمية
+                            </label>
+                            <select id="bulkDirectorate" class="cm-select" onchange="loadStudentsByDirectorate()">
+                                <option value="">— اختر المديرية —</option>
+                                {% for dir in all_directorates %}
+                                <option value="{{ dir }}">{{ dir }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="flex:1;min-width:160px;">
+                            <label style="font-size:.8rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem;">
+                                <i class="fas fa-door-open me-1" style="color:var(--blue);"></i>
+                                الصف المستهدف
+                            </label>
+                            <select id="bulkTargetClass" class="cm-select">
+                                <option value="">— اختر الصف —</option>
+                                {% for cls in classes %}
+                                <option value="{{ cls.classid }}">{{ cls.classname }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="bulk-loading" style="display:none;text-align:center;padding:.75rem;color:var(--muted);font-size:.85rem;">
+                        <i class="fas fa-spinner fa-spin me-1"></i> جارٍ تحميل الطلاب...
+                    </div>
+                    <div id="bulk-empty" style="display:none;text-align:center;padding:.75rem;color:var(--muted);font-size:.85rem;background:#f8faff;border-radius:8px;border:1px dashed var(--border);">
+                        <i class="fas fa-info-circle me-1"></i> لا يوجد طلاب مسجلون في هذه المديرية.
+                    </div>
+
+                    <div id="bulk-students-wrap" style="display:none;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem;">
+                            <span style="font-size:.8rem;font-weight:700;color:var(--muted);" id="bulk-count-label"></span>
+                            <span id="bulk-selected-count" style="font-size:.8rem;font-weight:700;color:var(--blue);"></span>
+                        </div>
+                        <div class="bulk-list">
+                            <div class="bulk-select-all-row" onclick="toggleSelectAll()">
+                                <input type="checkbox" id="bulk-check-all">
+                                <span>اختيار الكل</span>
+                            </div>
+                            <div id="bulk-items-container"></div>
+                        </div>
+                        <button class="cm-btn cm-btn-mint mt-2" style="width:100%;" onclick="addBulkStudents()" id="btn-add-bulk">
+                            <i class="fas fa-user-plus"></i> إضافة المحددين للصف
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ الصفوف والمواد ══ -->
+        <div>
+            <div class="cm-card">
+                <div class="cm-card-head">
+                    <span><i class="fas fa-door-open"></i> الصفوف</span>
+                    <span class="badge-blue">{{ classes|length }}</span>
+                </div>
+                <div style="padding:.75rem 1rem;">
+                    {% for cls in classes %}
+                    <div class="subject-row" id="classrow-{{ cls.classid }}">
+                        <div class="subject-icon"><i class="fas fa-door-open"></i></div>
+                        <div class="subject-info">
+                            <div class="subject-name">{{ cls.classname }}</div>
+                            <div class="subject-class">{{ cls.student_set.count }} طالب</div>
+                        </div>
+                        <button class="cm-btn cm-btn-danger" style="padding:.3rem .65rem;font-size:.78rem;"
+                                data-classid="{{ cls.classid }}" data-classname="{{ cls.classname }}"
+                                onclick="deleteClass(this.dataset.classid, this.dataset.classname)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    {% empty %}
+                    <div class="empty-cell"><i class="fas fa-door-open"></i>لا توجد صفوف بعد</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="cm-card">
+                <div class="cm-card-head">
+                    <span><i class="fas fa-book"></i> المواد</span>
+                    <span class="badge-blue">{{ subjects|length }}</span>
+                </div>
+                <div style="padding:.75rem 1rem;" id="subjectsList">
+                    {% for subj in subjects %}
+                    <div class="subject-row" id="subjrow-{{ subj.subjectid }}">
+                        <div class="subject-icon"><i class="fas fa-book-open"></i></div>
+                        <div class="subject-info">
+                            <div class="subject-name">{{ subj.subjectname }}</div>
+                            <div class="subject-class"><i class="fas fa-door-open me-1"></i>{{ subj.classid.classname|default:"غير مرتبطة" }}</div>
+                        </div>
+                        <div class="d-flex gap-1 align-items-center">
+                            <select class="cm-select" style="width:100px;padding:.3rem .45rem;font-size:.8rem;"
+                                    data-subjectid="{{ subj.subjectid }}" onchange="assignSubject(this.dataset.subjectid, this.value)">
+                                <option value="">ربط بصف</option>
+                                {% for cls in classes %}
+                                <option value="{{ cls.classid }}" {% if subj.classid and subj.classid.classid == cls.classid %}selected{% endif %}>{{ cls.classname }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="cm-btn cm-btn-danger" style="padding:.3rem .65rem;font-size:.78rem;"
+                                    data-subjectid="{{ subj.subjectid }}" data-name="{{ subj.subjectname }}"
+                                    onclick="deleteSubject(this.dataset.subjectid, this.dataset.name)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-cell"><i class="fas fa-book"></i>لا توجد مواد بعد</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ المقررات ══ -->
+        <div class="cm-card">
+            <div class="cm-card-head"><span><i class="fas fa-file-pdf"></i> رفع المقررات</span></div>
+            <div style="padding:1rem 1.2rem;">
+                <p style="font-size:.82rem;color:var(--muted);margin-bottom:.9rem;">ارفع مقرر PDF لكل مادة. الحجم الأقصى 50MB.</p>
+                <label class="fw-bold d-block mb-1" style="font-size:.85rem;">المادة</label>
+                <select id="curriculumSubject" class="cm-select mb-3">
+                    <option value="">— اختر المادة —</option>
+                    {% for subj in subjects %}
+                    <option value="{{ subj.subjectid }}" data-name="{{ subj.subjectname }}">{{ subj.subjectname }}{% if subj.classid %} ({{ subj.classid.classname }}){% endif %}</option>
+                    {% endfor %}
+                </select>
+                <label class="fw-bold d-block mb-1" style="font-size:.85rem;">ملف PDF</label>
+                <input type="file" id="curriculumFile" accept=".pdf" class="cm-input mb-2" style="padding:.4rem .7rem;cursor:pointer;">
+                <div id="curriculumInfo" style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem;min-height:1.2rem;"></div>
+                <button class="cm-btn cm-btn-mint w-100" onclick="uploadCurriculum()"><i class="fas fa-upload"></i> رفع المقرر</button>
+                <div id="uploadProgress" style="display:none;margin-top:.6rem;">
+                    <div style="background:#e2e8f0;border-radius:8px;height:6px;overflow:hidden;">
+                        <div id="uploadBar" style="height:100%;background:var(--blue);width:0%;transition:width .3s;border-radius:8px;"></div>
+                    </div>
+                    <div id="uploadStatus" style="font-size:.78rem;color:var(--muted);margin-top:.35rem;text-align:center;"></div>
+                </div>
+                {% if uploaded_curricula %}
+                <hr style="margin:1rem 0;border-color:var(--border);">
+                <div style="font-size:.83rem;font-weight:700;margin-bottom:.6rem;color:var(--ink);">المقررات المرفوعة</div>
+                {% for cur in uploaded_curricula %}
+                <div style="display:flex;align-items:center;gap:.5rem;padding:.4rem .2rem;border-bottom:1px solid var(--border);">
+                    <i class="fas fa-file-pdf" style="color:#e53e3e;font-size:.95rem;flex-shrink:0;"></i>
+                    <span style="flex:1;font-size:.82rem;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cur.subject_name }}</span>
+                    <a href="{{ cur.url }}" target="_blank" rel="noopener noreferrer" class="cm-btn cm-btn-ghost" style="padding:.2rem .55rem;font-size:.75rem;"><i class="fas fa-external-link-alt"></i></a>
+                    <button class="cm-btn cm-btn-danger" style="padding:.2rem .55rem;font-size:.75rem;"
+                            data-subjectid="{{ cur.subject_id }}" data-name="{{ cur.subject_name }}"
+                            onclick="deleteCurriculum(this.dataset.subjectid, this.dataset.name, this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ══ Modal: صف جديد ══ -->
+<div class="modal fade" id="createClassModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-door-open me-2" style="color:var(--blue);"></i>إنشاء صف جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div style="background:var(--blue-lt);border:1px solid var(--blue-bd);border-radius:8px;padding:.6rem 1rem;margin-bottom:1.2rem;font-size:.83rem;color:var(--blue-dk);display:flex;align-items:center;gap:.5rem;">
+                    <i class="fas fa-calendar-alt"></i> سيُضاف للعام الدراسي <strong>{{ current_year }}</strong>
+                </div>
+                <label class="fw-bold mb-2 d-block">الصف الدراسي <span class="required-star">*</span></label>
+                <select id="newClassGrade" class="cm-select mb-3">
+                    <option value="">— اختر الصف —</option>
+                    <option value="الثاني">الصف الثاني</option>
+                    <option value="الثالث">الصف الثالث</option>
+                    <option value="الرابع">الصف الرابع</option>
+                    <option value="الخامس">الصف الخامس</option>
+                    <option value="السادس">الصف السادس</option>
+                    <option value="السابع">الصف السابع</option>
+                    <option value="الثامن">الصف الثامن</option>
+                    <option value="التاسع">الصف التاسع</option>
+                    <option value="العاشر">الصف العاشر</option>
+                    <option value="الحادي عشر العلمي">الصف الحادي عشر العلمي</option>
+                    <option value="الحادي عشر الأدبي">الصف الحادي عشر الأدبي</option>
+                    <option value="الحادي عشر الصناعي">الصف الحادي عشر الصناعي</option>
+                    <option value="الحادي عشر التجاري">الصف الحادي عشر التجاري</option>
+                    <option value="الحادي عشر الزراعي">الصف الحادي عشر الزراعي</option>
+                </select>
+                <label class="fw-bold mb-2 d-block">الشعبة <span class="optional-badge">اختياري</span></label>
+                <select id="newClassSection" class="cm-select mb-3">
+                    <option value="">— بدون شعبة —</option>
+                    <option value="أ">أ</option><option value="ب">ب</option>
+                    <option value="ج">ج</option><option value="د">د</option>
+                </select>
+                <div id="classNamePreview" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.55rem 1rem;font-size:.9rem;color:#166534;margin-top:.25rem;">
+                    <i class="fas fa-check-circle me-1"></i> اسم الصف: <strong id="classNamePreviewText"></strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cm-btn cm-btn-ghost" data-bs-dismiss="modal">إلغاء</button>
+                <button class="cm-btn cm-btn-primary" onclick="createClass()"><i class="fas fa-plus"></i> إنشاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Modal: مادة جديدة ══ -->
+<div class="modal fade" id="createSubjectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-book-medical me-2" style="color:var(--blue);"></i>إضافة مادة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <label class="fw-bold mb-2 d-block">اسم المادة <span class="required-star">*</span></label>
+                <select id="newSubjectName" class="cm-select mb-3">
+                    <option value="">— اختر المادة —</option>
+                    {% for subj_name in teacher_subjects %}<option value="{{ subj_name }}">{{ subj_name }}</option>{% endfor %}
+                </select>
+                <label class="fw-bold mb-2 d-block mt-1">ربط بصف <span class="required-star">*</span></label>
+                <select id="newSubjectClass" class="cm-select">
+                    <option value="">— اختر الصف —</option>
+                    {% for cls in classes %}<option value="{{ cls.classid }}">{{ cls.classname }}</option>{% endfor %}
+                </select>
+                {% if not classes %}
+                <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:.6rem 1rem;margin-top:.75rem;font-size:.83rem;color:#92400e;display:flex;align-items:center;gap:.5rem;">
+                    <i class="fas fa-exclamation-triangle"></i> لا توجد صفوف — أنشئ صفاً أولاً.
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button class="cm-btn cm-btn-ghost" data-bs-dismiss="modal">إلغاء</button>
+                <button class="cm-btn cm-btn-primary" onclick="createSubject()"><i class="fas fa-plus"></i> إضافة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Modal: نقل طالب ══ -->
+<div class="modal fade" id="moveStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;">
+            <div class="modal-header"><h5 class="modal-title fw-bold">نقل الطالب لصف آخر</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body p-4">
+                <p class="mb-3">الصف الحالي: <strong id="moveCurrentClass">—</strong></p>
+                <label class="fw-bold mb-2 d-block">الصف الجديد</label>
+                <select id="moveClassSelect" class="cm-select">
+                    <option value="">— اختر صفاً —</option>
+                    {% for cls in classes %}<option value="{{ cls.classid }}">{{ cls.classname }}</option>{% endfor %}
+                </select>
+                <input type="hidden" id="moveStudentId">
+            </div>
+            <div class="modal-footer">
+                <button class="cm-btn cm-btn-ghost" data-bs-dismiss="modal">إلغاء</button>
+                <button class="cm-btn cm-btn-amber" onclick="moveStudent()"><i class="fas fa-exchange-alt"></i> نقل</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Modal: تأكيد ══ -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+    <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;" dir="rtl">
+      <div class="modal-header border-0 pb-1" id="confirmModalHeader" style="border-radius:16px 16px 0 0;">
+        <h5 class="modal-title fw-bold" id="confirmModalTitle">تأكيد</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 py-3"><p class="mb-0" id="confirmModalBody"></p></div>
+      <div class="modal-footer border-0 pt-0 px-4 pb-3">
+        <button type="button" class="btn btn-secondary btn-sm fw-bold" data-bs-dismiss="modal" style="font-family:'Cairo',sans-serif;">إلغاء</button>
+        <button type="button" class="btn btn-sm fw-bold" id="btnConfirmAction" style="font-family:'Cairo',sans-serif;">تأكيد</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══ نافذة معاينة الطالب (منبثقة) ══ -->
+<div class="student-preview-overlay" id="studentPreviewOverlay" onclick="closeStudentPreview(event)">
+    <div class="student-preview-modal" id="studentPreviewModal">
+        <div class="sp-head">
+            <span class="sp-head-title"><i class="fas fa-user-circle me-2"></i>ملف الطالب</span>
+            <button class="sp-close" onclick="closeStudentPreview()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="sp-body" id="studentPreviewBody">
+            <div class="sp-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br><span style="font-size:.85rem;color:var(--muted);margin-top:.5rem;display:block;">جارٍ التحميل...</span></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<div id="cm-data"
+     data-subjects="{{ teacher_subjects_json|escapejs }}"
+     data-grades="{{ grades_json|escapejs }}"
+     data-sections="{{ sections_json|escapejs }}"
+     data-upload-url="{% url 'learning:upload_curriculum' %}"
+     data-delete-curriculum-url="{% url 'learning:delete_curriculum' %}"
+     data-preview-url="{% url 'learning:student_profile_preview' student_id=0 %}"
+     style="display:none;"></div>
+
+<script>
+var _cmData     = document.getElementById('cm-data');
+var UPLOAD_URL  = _cmData.dataset.uploadUrl || '';
+var DEL_CUR_URL = _cmData.dataset.deleteCurriculumUrl || '';
+var PREVIEW_URL = _cmData.dataset.previewUrl || '';
+var ALLOWED_SECTIONS = (function(){
+    try{ var p=JSON.parse(_cmData.dataset.sections||'[]'); return Array.isArray(p)?p:['أ','ب','ج','د']; }
+    catch(e){ return ['أ','ب','ج','د']; }
+})();
+
+var pendingAction = null;
+var API_URL    = "{% url 'learning:classroom_api' %}";
+var CSRF_TOKEN = "{{ csrf_token }}";
+
+function toast(msg,type){
+    var t=document.getElementById('toast');
+    t.textContent=msg; t.className='show '+(type||'');
+    setTimeout(function(){t.className='';},3500);
+}
+function api(payload,onSuccess){
+    fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},body:JSON.stringify(payload)})
+    .then(function(r){return r.json();})
+    .then(function(d){if(d.ok)onSuccess(d);else toast(d.error||'حدث خطأ','error');})
+    .catch(function(){toast('تعذّر الاتصال','error');});
+}
+function openModal(id){new bootstrap.Modal(document.getElementById(id)).show();}
+function closeModal(id){var m=bootstrap.Modal.getInstance(document.getElementById(id));if(m)m.hide();}
+
+function showConfirmModal(title,body,type){
+    var colors={'خطر':{bg:'#fef2f2',titleColor:'#dc2626',btnClass:'btn-danger'},'تحذير':{bg:'#fffbeb',titleColor:'#b45309',btnClass:'btn-warning'},'تأكيد':{bg:'#eff6ff',titleColor:'#1d4ed8',btnClass:'btn-primary'}};
+    var c=colors[type]||colors['تأكيد'];
+    document.getElementById('confirmModalHeader').style.background=c.bg;
+    document.getElementById('confirmModalTitle').style.color=c.titleColor;
+    document.getElementById('confirmModalTitle').textContent=title;
+    document.getElementById('confirmModalBody').textContent=body;
+    var btn=document.getElementById('btnConfirmAction');
+    btn.className='btn btn-sm fw-bold '+c.btnClass;
+    btn.style.fontFamily="'Cairo',sans-serif";
+    var el=document.getElementById('confirmModal');
+    var m=bootstrap.Modal.getInstance(el)||new bootstrap.Modal(el);
+    m.show();
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+    document.getElementById('btnConfirmAction').onclick=function(){
+        if(pendingAction){pendingAction();pendingAction=null;}
+    };
+    function updatePreview(){
+        var g=document.getElementById('newClassGrade'),s=document.getElementById('newClassSection');
+        var p=document.getElementById('classNamePreview'),pt=document.getElementById('classNamePreviewText');
+        if(g&&g.value&&p&&pt){pt.textContent='الصف '+g.value+(s&&s.value?' '+s.value:'');p.style.display='block';}
+        else if(p)p.style.display='none';
+    }
+    var ge=document.getElementById('newClassGrade'),se=document.getElementById('newClassSection');
+    if(ge)ge.addEventListener('change',updatePreview);
+    if(se)se.addEventListener('change',updatePreview);
+    var cm=document.getElementById('createClassModal');
+    if(cm)cm.addEventListener('show.bs.modal',function(){
+        var g=document.getElementById('newClassGrade'),s=document.getElementById('newClassSection'),p=document.getElementById('classNamePreview');
+        if(g)g.value='';if(s)s.value='';if(p)p.style.display='none';
+    });
+    var sm=document.getElementById('createSubjectModal');
+    if(sm)sm.addEventListener('show.bs.modal',function(){var n=document.getElementById('newSubjectName');if(n)n.value='';});
+    var fi=document.getElementById('curriculumFile');
+    if(fi)fi.addEventListener('change',function(){
+        var info=document.getElementById('curriculumInfo');
+        if(!this.files[0]){info.textContent='';return;}
+        var mb=(this.files[0].size/1024/1024).toFixed(1);
+        if(this.files[0].size>50*1024*1024){info.textContent='⚠ '+mb+'MB يتجاوز 50MB';info.style.color='#dc2626';this.value='';return;}
+        info.textContent='✔ '+this.files[0].name+' ('+mb+' MB)';info.style.color='var(--muted)';
+    });
+});
+
+/* ✅ فلترة الطلاب — الاسم + الصف + المديرية */
+function filterStudents(){
+    var nameQ = (document.getElementById('searchName').value||'').trim().toLowerCase();
+    var classQ = (document.getElementById('searchClass').value||'').trim();
+    var dirQ  = (document.getElementById('searchDir').value||'').trim();
+
+    var rows = document.querySelectorAll('#studentsTableBody tr[id^="srow-"]');
+    var visibleCount = 0;
+
+    rows.forEach(function(row){
+        var name  = (row.dataset.name  || '').toLowerCase();
+        var cls   = (row.dataset.class || '');
+        var dir   = (row.dataset.dir   || '');
+
+        var matchName  = !nameQ  || name.includes(nameQ);
+        var matchClass = !classQ || cls === classQ;
+        var matchDir   = !dirQ   || dir === dirQ;
+
+        if(matchName && matchClass && matchDir){
+            row.classList.remove('hidden-row');
+            visibleCount++;
+        } else {
+            row.classList.add('hidden-row');
+        }
+    });
+
+    var noResults = document.getElementById('noResultsRow');
+    if(noResults){
+        noResults.style.display = visibleCount === 0 ? 'table-row' : 'none';
+    }
+}
+
+function resetStudentSearch(){
+    document.getElementById('searchName').value  = '';
+    document.getElementById('searchClass').value = '';
+    document.getElementById('searchDir').value   = '';
+    filterStudents();
+}
+
+/* ══ إنشاء صف ══ */
+function createClass(){
+    var grade=document.getElementById('newClassGrade').value.trim();
+    var section=document.getElementById('newClassSection').value.trim();
+    if(!grade){toast('اختر الصف الدراسي من القائمة','error');return;}
+    if(section&&ALLOWED_SECTIONS.indexOf(section)===-1){toast('الشعبة غير صحيحة','error');return;}
+    api({action:'create_class',grade_name:grade,section:section},function(d){
+        toast('تم إنشاء الصف: '+d.classname,'success');closeModal('createClassModal');location.reload();
+    });
+}
+function deleteClass(classId,name){
+    pendingAction=function(){api({action:'delete_class',classid:classId},function(){toast('تم حذف الصف','success');closeModal('confirmModal');location.reload();});};
+    showConfirmModal('حذف الصف','هل تريد حذف الصف "'+name+'"؟ سيُلغى ربط جميع الطلاب به.','خطر');
+}
+function removeStudent(studentId,name){
+    pendingAction=function(){api({action:'remove_student',studentid:studentId},function(){toast('تم إزالة '+name,'success');closeModal('confirmModal');var r=document.getElementById('srow-'+studentId);if(r)r.remove();});};
+    showConfirmModal('إزالة الطالب','هل تريد إزالة "'+name+'" من الصف؟','تحذير');
+}
+function openMoveStudent(studentId,currentClass){
+    document.getElementById('moveStudentId').value=studentId;
+    document.getElementById('moveCurrentClass').textContent=currentClass;
+    openModal('moveStudentModal');
+}
+function moveStudent(){
+    var sid=document.getElementById('moveStudentId').value;
+    var cid=document.getElementById('moveClassSelect').value;
+    if(!cid){toast('اختر صفاً','error');return;}
+    pendingAction=function(){api({action:'move_student',studentid:sid,new_classid:cid},function(d){toast('تم نقل '+d.student_name+' إلى '+d.new_class,'success');closeModal('confirmModal');closeModal('moveStudentModal');location.reload();});};
+    showConfirmModal('نقل الطالب','هل تريد نقل الطالب إلى الصف المحدد؟','تأكيد');
+}
+
+/* ══ تحميل طلاب المديرية ══ */
+function loadStudentsByDirectorate(){
+    var dir=document.getElementById('bulkDirectorate').value;
+    var wrap=document.getElementById('bulk-students-wrap');
+    var loading=document.getElementById('bulk-loading');
+    var empty=document.getElementById('bulk-empty');
+    var container=document.getElementById('bulk-items-container');
+    wrap.style.display='none'; empty.style.display='none'; loading.style.display='none';
+    if(!dir)return;
+    loading.style.display='block';
+    fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},
+        body:JSON.stringify({action:'get_students_by_directorate',directorate:dir})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+        loading.style.display='none';
+        if(!d.ok){toast(d.error||'خطأ','error');return;}
+        if(!d.students||!d.students.length){empty.style.display='block';return;}
+        container.innerHTML='';
+        document.getElementById('bulk-check-all').checked=false;
+        d.students.forEach(function(s){
+            var item=document.createElement('div');
+            item.className='bulk-item';
+            item.dataset.studentid=s.studentid;
+            item.innerHTML=
+                '<input type="checkbox" class="bulk-cb" value="'+s.studentid+'">'+
+                '<div class="bulk-item-info">'+
+                    '<div class="bulk-item-name">'+escHtml(s.fullname)+'</div>'+
+                    '<div class="bulk-item-meta">هوية: '+escHtml(s.identity)+' &nbsp;|&nbsp; '+escHtml(s.class_name)+'</div>'+
+                '</div>';
+            item.onclick=function(e){
+                if(e.target.tagName!=='INPUT'){var cb=this.querySelector('.bulk-cb');cb.checked=!cb.checked;}
+                updateBulkCount();
+            };
+            item.querySelector('.bulk-cb').addEventListener('change',updateBulkCount);
+            container.appendChild(item);
+        });
+        document.getElementById('bulk-count-label').textContent=d.count+' طالب متاح';
+        updateBulkCount();
+        wrap.style.display='block';
+    })
+    .catch(function(){loading.style.display='none';toast('تعذّر الاتصال','error');});
+}
+function toggleSelectAll(){
+    var master=document.getElementById('bulk-check-all');
+    document.querySelectorAll('.bulk-cb').forEach(function(cb){cb.checked=master.checked;});
+    updateBulkCount();
+}
+function updateBulkCount(){
+    var checked=document.querySelectorAll('.bulk-cb:checked').length;
+    var total=document.querySelectorAll('.bulk-cb').length;
+    var el=document.getElementById('bulk-selected-count');
+    if(el)el.textContent=checked>0?'محدد: '+checked:'';
+    var master=document.getElementById('bulk-check-all');
+    if(master)master.checked=total>0&&checked===total;
+}
+function addBulkStudents(){
+    var classId=document.getElementById('bulkTargetClass').value;
+    if(!classId){toast('اختر الصف المستهدف أولاً','error');return;}
+    var checked=document.querySelectorAll('.bulk-cb:checked');
+    if(!checked.length){toast('حدد طالباً واحداً على الأقل','error');return;}
+    var ids=Array.from(checked).map(function(cb){return parseInt(cb.value);});
+    var btn=document.getElementById('btn-add-bulk');
+    btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جارٍ الإضافة...';
+    fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},
+        body:JSON.stringify({action:'add_students_bulk',student_ids:ids,classid:classId})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+        btn.disabled=false; btn.innerHTML='<i class="fas fa-user-plus"></i> إضافة المحددين للصف';
+        if(d.ok){toast(d.message,'success');location.reload();}
+        else{toast(d.error||'خطأ','error');}
+    })
+    .catch(function(){btn.disabled=false;btn.innerHTML='<i class="fas fa-user-plus"></i> إضافة المحددين للصف';toast('تعذّر الاتصال','error');});
+}
+
+/* ══ معاينة الطالب (نافذة منبثقة) ══ */
+function previewStudent(studentId){
+    var overlay=document.getElementById('studentPreviewOverlay');
+    var body=document.getElementById('studentPreviewBody');
+    body.innerHTML='<div class="sp-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br><span style="font-size:.85rem;color:var(--muted);margin-top:.5rem;display:block;">جارٍ التحميل...</span></div>';
+    overlay.classList.add('open');
+    var url=PREVIEW_URL.replace('/0/','/'+studentId+'/');
+    fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json();})
+    .then(function(d){
+        if(!d.ok){body.innerHTML='<div class="sp-error"><i class="fas fa-exclamation-circle me-2"></i>'+(d.error||'خطأ')+'</div>';return;}
+        var s=d.student;
+        body.innerHTML=
+            '<div class="sp-avatar-row">'+
+                '<img src="'+escHtml(s.avatar_url)+'" class="sp-avatar" alt="صورة الطالب" onerror="this.src=\'https://ui-avatars.com/api/?name=ST&background=eff4ff&color=1d4ed8&size=72\'">'+
+                '<div>'+
+                    '<div class="sp-name">'+escHtml(s.fullname)+'</div>'+
+                    '<div class="sp-class"><i class="fas fa-door-open me-1" style="color:var(--blue);"></i>'+escHtml(s.class_name)+'</div>'+
+                    (s.bio?'<div class="sp-bio">'+escHtml(s.bio)+'</div>':'')+
+                '</div>'+
+            '</div>'+
+            '<div class="sp-stats">'+
+                '<div class="sp-stat"><div class="sp-stat-num">'+s.lessons_watched+'</div><div class="sp-stat-lbl">درس شاهده</div></div>'+
+                '<div class="sp-stat"><div class="sp-stat-num">'+s.tests_taken+'</div><div class="sp-stat-lbl">اختبار أجراه</div></div>'+
+                '<div class="sp-stat"><div class="sp-stat-num">'+(s.avg_score||0)+'</div><div class="sp-stat-lbl">متوسط الدرجات</div></div>'+
+            '</div>'+
+            '<div class="sp-section-title"><i class="fas fa-id-card me-1"></i> بيانات الطالب</div>'+
+            '<table class="sp-info-table">'+
+                '<tr><td>الاسم الكامل</td><td>'+escHtml(s.fullname)+'</td></tr>'+
+                '<tr><td>رقم الهوية</td><td>'+escHtml(s.identity)+'</td></tr>'+
+                '<tr><td>اسم المستخدم</td><td>'+escHtml(s.username)+'</td></tr>'+
+                '<tr><td>البريد الإلكتروني</td><td>'+escHtml(s.email)+'</td></tr>'+
+                '<tr><td>العمر</td><td>'+escHtml(String(s.age))+'</td></tr>'+
+                '<tr><td>الصف الدراسي</td><td>'+escHtml(s.class_name)+'</td></tr>'+
+                (s.directorate?'<tr><td>المديرية</td><td>'+escHtml(s.directorate)+'</td></tr>':'')+
+                (s.address?'<tr><td>منطقة السكن</td><td>'+escHtml(s.address)+'</td></tr>':'')+
+                /* ✅ إضافة اسم المدرسة في النافذة المنبثقة */
+                (s.school_name?'<tr><td>اسم المدرسة</td><td>'+escHtml(s.school_name)+'</td></tr>':'')+
+            '</table>'+
+            '<div class="sp-section-title" style="margin-top:.85rem;"><i class="fas fa-user-tie me-1"></i> ولي الأمر</div>'+
+            '<table class="sp-info-table">'+
+                '<tr><td>الاسم</td><td>'+escHtml(s.parent_name)+'</td></tr>'+
+                (s.parent_username&&s.parent_username!=='—'?'<tr><td>اسم المستخدم</td><td>'+escHtml(s.parent_username)+'</td></tr>':'')+
+                (s.parent_email&&s.parent_email!=='—'?'<tr><td>البريد الإلكتروني</td><td>'+escHtml(s.parent_email)+'</td></tr>':'')+
+            '</table>';
+    })
+    .catch(function(){body.innerHTML='<div class="sp-error"><i class="fas fa-exclamation-circle me-2"></i>خطأ في الاتصال</div>';});
+}
+function closeStudentPreview(e){
+    if(e&&e.target!==document.getElementById('studentPreviewOverlay'))return;
+    document.getElementById('studentPreviewOverlay').classList.remove('open');
+}
+
+/* ══ حذف المقرر ══ */
+function deleteCurriculum(subjectId,name,btn){
+    pendingAction=function(){
+        fetch(DEL_CUR_URL,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},body:JSON.stringify({subject_id:subjectId})})
+        .then(function(r){return r.json();})
+        .then(function(d){
+            closeModal('confirmModal');
+            if(d.ok){toast('تم حذف مقرر '+escHtml(name),'success');var row=btn.closest('div[style]');if(row)row.remove();}
+            else{toast(d.error||'خطأ','error');}
+        }).catch(function(){toast('تعذّر الاتصال','error');});
+    };
+    showConfirmModal('حذف المقرر','هل تريد حذف مقرر "'+name+'"؟ لا يمكن التراجع.','خطر');
+}
+
+/* ══ المادة ══ */
+function createSubject(){
+    var sel=document.getElementById('newSubjectName'),name=sel?sel.value.trim():'';
+    var classId=document.getElementById('newSubjectClass').value;
+    if(!name){toast('اختر المادة من القائمة','error');if(sel)sel.focus();return;}
+    if(!classId){toast('يجب ربط المادة بصف','error');document.getElementById('newSubjectClass').focus();return;}
+    api({action:'create_subject',name:name,classid:classId},function(d){
+        toast('تم إضافة المادة: '+d.subjectname+' في '+d.classname,'success');closeModal('createSubjectModal');location.reload();
+    });
+}
+function deleteSubject(subjectId,name){
+    pendingAction=function(){api({action:'delete_subject',subjectid:subjectId},function(){toast('تم حذف المادة "'+name+'"','success');closeModal('confirmModal');var r=document.getElementById('subjrow-'+subjectId);if(r)r.remove();});};
+    showConfirmModal('حذف المادة','هل تريد حذف المادة "'+name+'"؟','خطر');
+}
+function assignSubject(subjectId,classId){
+    if(!classId)return;
+    api({action:'assign_subject',subjectid:subjectId,classid:classId},function(d){
+        toast('تم ربط المادة بـ '+d.classname,'success');
+        var r=document.getElementById('subjrow-'+subjectId);
+        if(r){var c=r.querySelector('.subject-class');if(c)c.innerHTML='<i class="fas fa-door-open me-1"></i>'+d.classname;}
+    });
+}
+
+/* ══ رفع المقرر ══ */
+function uploadCurriculum(){
+    var subjectId=document.getElementById('curriculumSubject').value;
+    var file=document.getElementById('curriculumFile').files[0];
+    var prog=document.getElementById('uploadProgress'),bar=document.getElementById('uploadBar'),status=document.getElementById('uploadStatus');
+    if(!subjectId){toast('اختر المادة أولاً','error');return;}
+    if(!file){toast('اختر ملف PDF','error');return;}
+    if(!file.name.toLowerCase().endsWith('.pdf')){toast('يُسمح بملفات PDF فقط','error');return;}
+    if(file.size>50*1024*1024){toast('الملف يتجاوز 50MB','error');return;}
+    var fd=new FormData();fd.append('subject_id',subjectId);fd.append('curriculum_pdf',file);
+    prog.style.display='block';bar.style.width='5%';status.textContent='جاري الرفع...';
+    var xhr=new XMLHttpRequest();xhr.open('POST',UPLOAD_URL);xhr.setRequestHeader('X-CSRFToken',CSRF_TOKEN);
+    xhr.upload.onprogress=function(e){if(e.lengthComputable){var pct=Math.round(e.loaded/e.total*100);bar.style.width=pct+'%';status.textContent=pct+'%';}};
+    xhr.onload=function(){
+        try{var d=JSON.parse(xhr.responseText);
+            if(d.ok){bar.style.width='100%';bar.style.background='#16a34a';status.textContent='تم رفع مقرر '+d.subject+' بنجاح';toast('تم رفع مقرر: '+d.subject,'success');setTimeout(function(){window.open(d.url,'_blank','noopener,noreferrer');location.reload();},1200);}
+            else{bar.style.width='0%';status.textContent='⚠ '+d.error;toast(d.error||'خطأ في الرفع','error');}
+        }catch(err){status.textContent='⚠ خطأ في الاستجابة';toast('خطأ في الاستجابة','error');}
+    };
+    xhr.onerror=function(){toast('تعذّر الاتصال','error');prog.style.display='none';};
+    xhr.send(fd);
+}
+
+document.addEventListener('keydown',function(e){
+    if(e.key!=='Enter')return;
+    if(document.getElementById('createClassModal').classList.contains('show'))createClass();
+    if(document.getElementById('createSubjectModal').classList.contains('show'))createSubject();
+});
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+{% endblock %}

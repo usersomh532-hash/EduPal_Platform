@@ -1,0 +1,8 @@
+venv310/
+venv/
+__pycache__/
+*.pyc
+.env
+db.sqlite3
+.vscode/
+static/media/

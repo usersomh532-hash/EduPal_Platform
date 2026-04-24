@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3><i class="fas fa-robot"></i> تفعيل قوة الذكاء الاصطناعي</h3>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted text-center">للحصول على تجربة توليد محتوى غير محدودة ومجانية، يرجى ربط حسابك بمفتاح Gemini الخاص بك.</p>
+                    
+                    <div class="steps-section my-4">
+                        <h5><i class="fas fa-list-ol text-primary"></i> خطوات الحصول على المفتاح:</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">1. انتقل إلى موقع <a href="https://aistudio.google.com/app/apikey" target="_blank" class="fw-bold">Google AI Studio</a>.</li>
+                            <li class="list-group-item">2. قم بتسجيل الدخول بحساب Gmail الخاص بك.</li>
+                            <li class="list-group-item">3. اضغط على زر <b>"Create API key"</b> ثم انسخ الكود الناتج.</li>
+                        </ul>
+                    </div>
+
+                    <form method="POST" action="{% url 'learning:activate_ai' %}" class="mt-4">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="api_key" class="form-label fw-bold">أدخل مفتاح (API Key) هنا:</label>
+                            <input type="password" name="api_key" id="api_key" class="form-control form-control-lg" placeholder="AIzaSy..." required>
+                            <div class="form-text text-danger">ملاحظة: سيتم استخدام هذا المفتاح لتوليد دروسك الخاصة فقط.</div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle"></i> حفظ وتفعيل الحساب
+                            </button>
+                            <a href="{% url 'learning:teacher_dashboard' %}" class="btn btn-light">تخطي الآن (استخدام المفتاح العام)</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

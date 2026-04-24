@@ -1,0 +1,787 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+
+
+{% block title %}ملفي الشخصي — {{ request.user.fullname }}{% endblock %}
+
+
+
+{% block extra_css %}
+
+<style>
+
+/* ══ متغيرات متوافقة مع base.html ══════════════════════════════ */
+
+:root {
+
+    --blue:      #5a91e6;
+
+    --blue-dk:   #3a61a0;
+
+    --blue-lt:   #eef4fd;
+
+    --teal:      #0d9488;
+
+    --teal-lt:   #f0fdfa;
+
+    --ink:       #1e293b;
+
+    --muted:     #64748b;
+
+    --border:    #e2e8f0;
+
+    --bg:        #f4f7fe;
+
+    --white:     #ffffff;
+
+    --r:         1rem;
+
+    --sh:        0 2px 12px rgba(90,145,230,0.10);
+
+}
+
+
+
+/* ══ Layout ═══════════════════════════════════════════════════ */
+
+.profile-wrap   { max-width: 900px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+
+
+/* ══ Hero Card ════════════════════════════════════════════════ */
+
+.hero-card {
+
+    background: linear-gradient(135deg, #1e3a5f 0%, var(--blue) 100%);
+
+    border-radius: 1.5rem;
+
+    padding: 2.5rem 2rem;
+
+    color: #fff;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 2rem;
+
+    box-shadow: 0 8px 32px rgba(90,145,230,0.25);
+
+    margin-bottom: 2rem;
+
+    position: relative;
+
+    overflow: hidden;
+
+}
+
+.hero-card::before {
+
+    content: '';
+
+    position: absolute;
+
+    inset: 0;
+
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+
+}
+
+
+
+/* Avatar */
+
+.avatar-wrap    { position: relative; flex-shrink: 0; }
+
+.avatar-img {
+
+    width: 110px; height: 110px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    border: 4px solid rgba(255,255,255,0.4);
+
+    background: rgba(255,255,255,0.15);
+
+    display: flex; align-items: center; justify-content: center;
+
+    font-size: 2.8rem; color: #fff;
+
+}
+
+.avatar-edit {
+
+    position: absolute; bottom: 4px; left: 4px;
+
+    width: 30px; height: 30px;
+
+    background: var(--white); border-radius: 50%;
+
+    display: flex; align-items: center; justify-content: center;
+
+    cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+
+    transition: transform .2s;
+
+}
+
+.avatar-edit:hover { transform: scale(1.15); }
+
+.avatar-edit i   { color: var(--blue); font-size: .85rem; }
+
+.avatar-remove {
+
+    position: absolute; top: 4px; left: 4px;
+
+    width: 28px; height: 28px; background: #ef4444;
+
+    border: none; border-radius: 50%;
+
+    display: flex; align-items: center; justify-content: center;
+
+    cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+
+    transition: transform .2s, background .2s;
+
+}
+
+.avatar-remove:hover { transform: scale(1.15); background: #dc2626; }
+
+.avatar-remove i { color: #fff; font-size: .75rem; }
+
+
+
+.hero-name  { font-size: 1.7rem; font-weight: 800; margin-bottom: .25rem; font-family: 'Cairo', sans-serif; }
+
+.hero-role  { font-size: .95rem; opacity: .8; font-family: 'Tajawal', sans-serif; margin-bottom: .5rem; }
+
+.hero-class {
+
+    display: inline-flex; align-items: center; gap: .4rem;
+
+    background: rgba(255,255,255,0.15);
+
+    border: 1px solid rgba(255,255,255,0.25);
+
+    border-radius: 2rem; padding: .25rem .85rem;
+
+    font-size: .85rem; font-family: 'Tajawal', sans-serif;
+
+}
+
+
+
+/* ══ Stats Row ════════════════════════════════════════════════ */
+
+.stats-row  { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 2rem; }
+
+.stat-card  {
+
+    background: var(--white);
+
+    border-radius: var(--r);
+
+    padding: 1.25rem 1rem;
+
+    text-align: center;
+
+    border: 1.5px solid var(--border);
+
+    box-shadow: var(--sh);
+
+    transition: transform .2s, box-shadow .2s;
+
+}
+
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(90,145,230,0.15); }
+
+.stat-num  { font-size: 2rem; font-weight: 800; color: var(--blue); font-family: 'Cairo', sans-serif; line-height: 1; }
+
+.stat-lbl  { font-size: .82rem; color: var(--muted); margin-top: .35rem; font-family: 'Tajawal', sans-serif; }
+
+
+
+/* ══ Form Card ════════════════════════════════════════════════ */
+
+.form-card  {
+
+    background: var(--white);
+
+    border-radius: 1.25rem;
+
+    border: 1.5px solid var(--border);
+
+    box-shadow: var(--sh);
+
+    overflow: hidden;
+
+}
+
+.form-head  {
+
+    background: #f8fafc;
+
+    border-bottom: 1.5px solid var(--border);
+
+    padding: 1.1rem 1.75rem;
+
+    display: flex; align-items: center; gap: .75rem;
+
+    font-family: 'Cairo', sans-serif;
+
+    font-size: 1.05rem; font-weight: 700; color: var(--ink);
+
+}
+
+.form-head i { color: var(--blue); }
+
+.form-body  { padding: 1.75rem; }
+
+
+
+.field-lbl  {
+
+    display: block; font-size: .88rem; font-weight: 700;
+
+    color: var(--ink); margin-bottom: .5rem;
+
+    font-family: 'Cairo', sans-serif;
+
+}
+
+.field-hint { font-size: .78rem; color: var(--muted); margin-top: .3rem; }
+
+
+
+/* ── Save button ── */
+
+.btn-save {
+
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dk) 100%);
+
+    color: #fff; border: none; border-radius: .75rem;
+
+    padding: .75rem 2.5rem; font-size: 1rem; font-weight: 700;
+
+    font-family: 'Cairo', sans-serif;
+
+    cursor: pointer; transition: transform .15s, box-shadow .15s;
+
+    box-shadow: 0 4px 12px rgba(90,145,230,0.3);
+
+}
+
+.btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(90,145,230,0.4); }
+
+.btn-save:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+
+
+@media (max-width: 600px) {
+
+    .hero-card  { flex-direction: column; text-align: center; }
+
+    .stats-row  { grid-template-columns: repeat(3,1fr); gap: .6rem; }
+
+    .stat-num   { font-size: 1.5rem; }
+
+}
+
+</style>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="profile-wrap" dir="rtl">
+
+
+
+    <!-- ══ Hero ══════════════════════════════════════════════ -->
+
+    <div class="hero-card">
+
+        <div class="avatar-wrap">
+
+            {% if request.user.avatar %}
+
+                <img src="{{ request.user.avatar.url }}" class="avatar-img" alt="صورة الملف الشخصي">
+
+            {% else %}
+
+                <div class="avatar-img">
+
+                    <i class="fas fa-user-graduate"></i>
+
+                </div>
+
+            {% endif %}
+
+            <label for="avatarInput" class="avatar-edit" title="تغيير الصورة">
+
+                <i class="fas fa-camera"></i>
+
+            </label>
+
+            {% if request.user.avatar %}
+
+            <button type="button" class="avatar-remove" title="إزالة الصورة" onclick="confirmRemoveAvatar()">
+
+                <i class="fas fa-times"></i>
+
+            </button>
+
+            {% endif %}
+
+        </div>
+
+        <div>
+
+            <div class="hero-name">{{ request.user.fullname }}</div>
+
+            <div class="hero-role"><i class="fas fa-graduation-cap me-1"></i> طالب</div>
+
+            {% if student.classid %}
+
+            <div class="hero-class">
+
+                <i class="fas fa-door-open"></i>
+
+                {{ student.classid.classname }}
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ══ Stats ══════════════════════════════════════════════ -->
+
+    <div class="stats-row">
+
+        <div class="stat-card">
+
+            <div class="stat-num">{{ lessons_watched }}</div>
+
+            <div class="stat-lbl">درس شاهدته</div>
+
+        </div>
+
+        <div class="stat-card">
+
+            <div class="stat-num">{{ avg_score }}</div>
+
+            <div class="stat-lbl">متوسط درجاتك</div>
+
+        </div>
+
+        <div class="stat-card">
+
+            <div class="stat-num">{{ reports_count }}</div>
+
+            <div class="stat-lbl">تقرير أداء</div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ══ Form ═══════════════════════════════════════════════ -->
+
+    <div class="form-card">
+
+        <div class="form-head">
+
+            <i class="fas fa-user-edit"></i>
+
+            تعديل الملف الشخصي
+
+        </div>
+
+        <div class="form-body">
+
+            <form method="POST" enctype="multipart/form-data" id="profileForm" novalidate>
+
+                {% csrf_token %}
+
+                <input type="file" id="avatarInput" name="avatar"
+
+                       accept=".jpg,.jpeg,.png,.webp" class="d-none">
+
+                <input type="hidden" name="remove_avatar" id="removeAvatarInput" value="">
+
+                <div class="mb-4">
+
+                    <label class="field-lbl" for="bioField">
+
+                        <i class="fas fa-pencil-alt me-1"></i> نبذة عني
+
+                    </label>
+
+                    <textarea id="bioField" name="bio" rows="4"
+
+                              maxlength="300" placeholder="أخبرنا شيئاً عن نفسك..."
+
+                              class="form-control">{{ request.user.bio|default:'' }}</textarea>
+
+                    <div class="field-hint"><span id="bioCount">{{ request.user.bio|default:''|length }}</span> / 300 حرف</div>
+
+                </div>
+
+
+
+                <!-- معلومات للقراءة فقط -->
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-sm-6">
+
+                        <label class="field-lbl"><i class="fas fa-envelope me-1"></i> البريد الإلكتروني</label>
+
+                        <input type="text" class="form-control" value="{{ request.user.email }}" readonly>
+
+                    </div>
+
+                    <div class="col-sm-6">
+
+                        <label class="field-lbl"><i class="fas fa-user me-1"></i> اسم المستخدم</label>
+
+                        <input type="text" class="form-control" value="{{ request.user.username }}" readonly>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ══ المديرية والعنوان ══ -->
+
+                {% if student %}
+
+                <div class="row g-3 mb-4">
+
+                    {% if student.directorate %}
+
+                    <div class="col-sm-6">
+
+                        <label class="field-lbl">
+
+                            <i class="fas fa-building me-1"></i> المديرية التعليمية
+
+                        </label>
+
+                        <input type="text" class="form-control" value="{{ student.directorate }}" readonly>
+
+                    </div>
+
+                    {% endif %}
+
+                <div class="col-sm-6">
+                    <label class="field-lbl" for="addressField">
+                        <i class="fas fa-map-marker-alt me-1"></i> مكان السكن / المنطقة
+                    </label>
+                    <input type="text"
+                        id="addressField"
+                        name="address"
+                        class="form-control"
+                        value="{{ student.address|default:'' }}" >
+                </div>
+
+                <!-- ✅ حقل اسم المدرسة -->
+                <div class="col-sm-6">
+                    <label class="field-lbl">
+                        <i class="fas fa-school me-1"></i> اسم المدرسة
+                    </label>
+                    <input type="text" class="form-control" name="school_name"
+                        value="{{ student.school_name|default:'' }}" >
+                </div>
+
+                </div>
+
+                {% endif %}
+
+
+
+                <div class="d-flex justify-content-end">
+
+                    <button type="submit" class="btn-save" id="saveBtn">
+
+                        <i class="fas fa-save ms-2"></i> حفظ التغييرات
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+</div>
+
+
+
+<!-- ══ Modal: تأكيد إزالة الصورة ══ -->
+
+<div class="modal fade" id="removeAvatarModal" tabindex="-1" aria-labelledby="removeAvatarModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+
+        <div class="modal-content" dir="rtl" style="border-radius: 16px; font-family: 'Cairo', sans-serif; overflow: hidden;">
+
+            <div class="modal-header border-0 pb-1"
+
+                 style="background: #fef2f2; border-radius: 16px 16px 0 0;">
+
+                <h5 class="modal-title fw-bold" id="removeAvatarModalLabel"
+
+                    style="color: #dc2626; font-family: 'Cairo', sans-serif;">
+
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+
+                    إزالة صورة الملف الشخصي
+
+                </h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+
+            </div>
+
+            <div class="modal-body px-4 py-3">
+
+                <p class="mb-0" style="font-size: .97rem; color: #374151; line-height: 1.8;">
+
+                    هل أنت متأكد من إزالة صورة ملفك الشخصي؟
+
+                    <br>
+
+                    <span style="font-size: .85rem; color: #6b7280;">
+
+                        <i class="fas fa-info-circle me-1"></i>
+
+                        ستُحذف الصورة نهائياً ولا يمكن التراجع عن هذا الإجراء.
+
+                    </span>
+
+                </p>
+
+            </div>
+
+            <div class="modal-footer border-0 pt-0 px-4 pb-3 gap-2">
+
+                <button type="button" class="btn btn-secondary btn-sm fw-bold"
+
+                        data-bs-dismiss="modal"
+
+                        style="font-family: 'Cairo', sans-serif; padding: .45rem 1.2rem;">
+
+                    <i class="fas fa-times me-1"></i> إلغاء
+
+                </button>
+
+                <button type="button" class="btn btn-danger btn-sm fw-bold"
+
+                        id="btnConfirmRemoveAvatar"
+
+                        style="font-family: 'Cairo', sans-serif; padding: .45rem 1.2rem;">
+
+                    <i class="fas fa-trash-alt me-1"></i> نعم، إزالة الصورة
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+<script>
+
+// عداد البيو
+
+document.getElementById('bioField').addEventListener('input', function() {
+
+    document.getElementById('bioCount').textContent = this.value.length;
+
+});
+
+
+
+// معاينة الصورة قبل الرفع
+
+document.getElementById('avatarInput').addEventListener('change', function() {
+
+    if (!this.files[0]) return;
+
+    var file = this.files[0];
+
+    if (file.size > 2 * 1024 * 1024) {
+
+        alert('حجم الصورة يتجاوز 2MB — اختر صورة أصغر.');
+
+        this.value = '';
+
+        return;
+
+    }
+
+    var reader = new FileReader();
+
+    reader.onload = function(e) {
+
+        var existing = document.querySelector('.avatar-img');
+
+        if (existing.tagName === 'IMG') {
+
+            existing.src = e.target.result;
+
+        } else {
+
+            var img = document.createElement('img');
+
+            img.src = e.target.result;
+
+            img.className = 'avatar-img';
+
+            img.alt = 'معاينة';
+
+            existing.replaceWith(img);
+
+        }
+
+    };
+
+    reader.readAsDataURL(file);
+
+});
+
+
+
+// spinner عند الحفظ
+
+document.getElementById('profileForm').addEventListener('submit', function() {
+
+    var btn = document.getElementById('saveBtn');
+
+    btn.disabled = true;
+
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm ms-2"></span> جاري الحفظ...';
+
+});
+
+
+
+// استعادة الزر عند Back
+
+window.addEventListener('pageshow', function(e) {
+
+    if (e.persisted) {
+
+        var btn = document.getElementById('saveBtn');
+
+        btn.disabled = false;
+
+        btn.innerHTML = '<i class="fas fa-save ms-2"></i> حفظ التغييرات';
+
+    }
+
+});
+
+
+
+/* ── تأكيد إزالة الصورة عبر Modal ── */
+
+function confirmRemoveAvatar() {
+
+    function openModal() {
+
+        var modalEl = document.getElementById('removeAvatarModal');
+
+        var modal   = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+
+        modal.show();
+
+    }
+
+    if (typeof bootstrap !== 'undefined') {
+
+        openModal();
+
+    } else {
+
+        window.addEventListener('load', openModal, { once: true });
+
+    }
+
+}
+
+
+
+function _initRemoveAvatarBtn() {
+
+    var btn = document.getElementById('btnConfirmRemoveAvatar');
+
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+
+        var modalEl = document.getElementById('removeAvatarModal');
+
+        var modal   = bootstrap.Modal.getInstance(modalEl);
+
+        if (modal) modal.hide();
+
+        document.getElementById('removeAvatarInput').value = '1';
+
+        var el = document.querySelector('.avatar-img');
+
+        if (el && el.tagName === 'IMG') {
+
+            var div = document.createElement('div');
+
+            div.className = 'avatar-img';
+
+            div.innerHTML = '<i class="fas fa-user-graduate"></i>';
+
+            el.replaceWith(div);
+
+        }
+
+        var rb = document.querySelector('.avatar-remove');
+
+        if (rb) rb.style.display = 'none';
+
+        document.getElementById('profileForm').submit();
+
+    });
+
+}
+
+window.addEventListener('load', _initRemoveAvatarBtn);
+
+</script>
+
+{% endblock %}

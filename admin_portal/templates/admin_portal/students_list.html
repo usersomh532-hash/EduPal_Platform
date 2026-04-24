@@ -1,0 +1,89 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}الطلاب{% endblock %}
+{% block page_title %}قائمة الطلاب{% endblock %}
+{% block topbar_actions %}<span style="font-size:.8rem;color:var(--muted);">النتائج: <strong>{{ total }}</strong></span>{% endblock %}
+
+{% block content %}
+<div class="ap-card" style="margin-bottom:1rem;">
+  <div class="ap-card-b">
+    <form method="GET" class="ap-search">
+      <input class="ap-input ap-input-flex" type="text" name="q" value="{{ search }}" placeholder="بحث عن اسم أو رقم هوية...">
+      <select class="ap-input" name="directorate">
+        <option value="">كل المديريات</option>
+        {% for d in directorates %}<option value="{{ d }}" {% if selected_dir == d %}selected{% endif %}>{{ d|slice:"19:" }}</option>{% endfor %}
+      </select>
+      <select class="ap-input" name="class_id">
+        <option value="">كل الصفوف</option>
+        {% for c in classes %}<option value="{{ c.classid }}" {% if selected_cls == c.classid|stringformat:"s" %}selected{% endif %}>{{ c.classname }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="ap-btn ap-btn-primary"><i class="fas fa-search"></i> بحث</button>
+      {% if search or selected_dir or selected_cls %}<a href="{% url 'admin_portal:students_list' %}" class="ap-btn ap-btn-ghost"><i class="fas fa-times"></i></a>{% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="ap-card">
+  <div style="overflow-x:auto;">
+    <table class="ap-tbl">
+      <thead><tr><th>الاسم</th><th>رقم الهوية</th><th>الصف</th><th>المديرية</th><th>العمر</th><th>الحالة</th><th>معاينة</th></tr></thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td><strong>{{ s.userid.fullname|default:"—" }}</strong></td>
+          <td style="color:var(--muted);">{{ s.userid.identitynumber|default:"—" }}</td>
+          <td>{% if s.classid %}<span class="ap-badge bg-blue">{{ s.classid.classname }}</span>{% else %}<span class="ap-badge bg-gray">غير محدد</span>{% endif %}</td>
+          <td style="font-size:.78rem;color:var(--muted);">{% if s.classid and s.classid.teacherid %}{{ s.classid.teacherid.directorate|default:"—" }}{% else %}—{% endif %}</td>
+          <td>{{ s.age }}</td>
+          <td>{% if s.userid.is_active %}<span class="ap-badge bg-green">نشط</span>{% else %}<span class="ap-badge bg-red">معطّل</span>{% endif %}</td>
+          <td><button class="ap-btn ap-btn-preview ap-btn-sm" onclick="previewStudent('{{ s.studentid }}')"><i class="fas fa-eye"></i> معاينة</button></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7"><div class="ap-empty"><i class="fas fa-search"></i>لا توجد نتائج</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+    // وضع الرابط في متغير نصي محاط بعلامات اقتباس لحل خطأ VS Code
+    var STUDENT_PREVIEW_URL = "{% url 'admin_portal:student_preview' 0 %}";
+
+    function previewStudent(studentId) {
+        var overlay = document.getElementById('studentPreviewOverlay');
+        var body    = document.getElementById('studentPreviewBody');
+        
+        if(!overlay || !body) return;
+
+        body.innerHTML = '<div class="sp-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br>جارٍ التحميل...</div>';
+        overlay.classList.add('open');
+
+        // استبدال المعرف المؤقت بالمعرف الحقيقي للطالب
+        var url = STUDENT_PREVIEW_URL.replace('0', studentId);
+
+        fetch(url, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(function(data) {
+                if(data.ok) {
+                    // تعبئة بيانات المعاينة هنا
+                    body.innerHTML = '<h4>' + data.student.fullname + '</h4><p>الصف: ' + data.student.classname + '</p>';
+                } else {
+                    body.innerHTML = '<div class="sp-error">' + (data.error || 'خطأ في جلب البيانات') + '</div>';
+                }
+            })
+            .catch(function(error) {
+                console.error('Fetch error:', error);
+                body.innerHTML = '<div class="sp-error">خطأ في الاتصال بالسيرفر</div>';
+            });
+    }
+
+    function closeStudentPreview(e) {
+        if (!e || e.target.id === 'studentPreviewOverlay' || e.target.closest('.sp-close')) {
+            document.getElementById('studentPreviewOverlay').classList.remove('open');
+        }
+    }
+</script>
+{% endblock %}

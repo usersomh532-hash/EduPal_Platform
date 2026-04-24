@@ -1,0 +1,383 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب  | EduPal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f0f4f8; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* تنسيق النافبار المعتمد */
+        .navbar-brand span { letter-spacing: 1px; }
+        .navbar-brand div { transition: transform 0.3s ease; }
+        .navbar-brand:hover div { transform: rotate(15deg); }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .main-wrapper {
+            background: #ffffff;
+            display: flex;
+            /* التعديل: row-reverse لجعل الصورة يساراً والفورم يميناً في نظام RTL */
+            flex-direction: row-reverse; 
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        /* قسم الصورة (الحجم الأصلي مع التدرج) */
+        .signup-image-section {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .signup-image-section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+            transition: transform 0.5s ease;
+        }
+
+        .signup-image-section img:hover { transform: scale(1.02); }
+
+        .signup-container {
+            padding: 40px;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        @media (max-width: 768px) {
+            .signup-image-section { display: none; }
+            .main-wrapper { max-width: 500px; }
+        }
+
+        /* الأزرار والحقول */
+        .btn-primary { background-color: #5a91e6; border: none; padding: 12px; border-radius: 10px; font-weight: bold; transition: all 0.3s ease; }
+        .btn-primary:hover { background-color: #4a7bc7; transform: translateY(-2px); }
+        
+        .form-control, .django-field input, .django-field select { 
+            display: block; width: 100%; border-radius: 10px; padding: 12px; 
+            border: 1px solid #dce4ec; transition: all 0.3s ease; 
+        }
+        
+        .form-label { font-weight: 600; color: #4a5568; font-size: 0.9rem; }
+        .brand-logo { text-align: center; margin-bottom: 25px; }
+        .brand-logo h2 { color: #2d3748; font-weight: 700; }
+        
+        /* قوة كلمة المرور */
+        .strength-meter { height: 4px; background-color: #eee; margin-top: 8px; border-radius: 2px; overflow: hidden; }
+        .strength-meter-fill { height: 100%; width: 0%; transition: all 0.3s ease; }
+        
+        /* الفوتر المعتمد */
+        footer a:hover { color: #5a91e6 !important; }
+        .social-links a { font-size: 1.1rem; transition: color 0.3s; }
+
+        /* ── عبارة تعريفية ── */
+        .intro-banner {
+            background: linear-gradient(135deg, #5a91e6 0%, #4a7bc7 100%);
+            color: #fff;
+            padding: 22px 0 18px;
+            text-align: center;
+        }
+        .intro-banner h3 { font-size: 1.35rem; font-weight: 700; margin-bottom: 6px; }
+        .intro-banner p  { font-size: .92rem; opacity: .88; margin: 0; }
+        .intro-features  { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; margin-top: 14px; }
+        .intro-features span { font-size: .82rem; opacity: .9; display: flex; align-items: center; gap: 6px; }
+
+        /* ── محدد الدور ── */
+        .role-selector { display: flex; gap: 10px; justify-content: center; margin-bottom: 22px; }
+        .role-btn {
+            flex: 1; max-width: 120px;
+            border: 2px solid #dce4ec; border-radius: 12px;
+            padding: 12px 8px 10px; background: #f8fafc;
+            cursor: pointer; text-align: center;
+            transition: all .22s ease; position: relative;
+        }
+        .role-btn i { font-size: 1.4rem; display: block; margin-bottom: 6px; color: #94a3b8; transition: color .22s; }
+        .role-btn span { font-size: .82rem; font-weight: 600; color: #64748b; transition: color .22s; }
+        .role-btn.active {
+            border-color: #5a91e6;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+        .role-btn.active i  { color: #5a91e6; }
+        .role-btn.active span { color: #1d4ed8; }
+        .role-btn.active::after {
+            content: '\2714';
+            position: absolute; top: -8px; right: -8px;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: #5a91e6; color: #fff;
+            font-size: .7rem; display: flex; align-items: center; justify-content: center;
+        }
+        .role-hint { text-align: center; font-size: .78rem; color: #94a3b8; margin-bottom: 18px; min-height: 18px; }
+        #role-error { display: none; color: #dc2626; font-size: .78rem; text-align: center; margin-bottom: 12px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm" style="background: linear-gradient(135deg, #5a91e6 0%, #4a7bc7 100%);">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'accounts:home' %}">
+                <div class="bg-white text-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="fas fa-book-reader"></i>
+                </div>
+                <span class="ms-2">EduPal <span class="fw-light">Platform</span></span>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link text-white fw-bold" href="{% url 'accounts:login' %}">تسجيل الدخول</a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm" href="{% url 'accounts:signup' %}">انضم إلينا الآن</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══ عبارة تعريفية ══ -->
+    <div class="intro-banner">
+        <div class="container">
+            <h3>منصة EduPal للتعليم الذكي</h3>
+            <p>بيئة تعليمية متكاملة تربط المعلم بطلابه وأولياء أمورهم بدعم الذكاء الاصطناعي</p>
+            <div class="intro-features">
+                <span><i class="fas fa-robot"></i> دروس مدعومة بـ AI</span>
+                <span><i class="fas fa-chart-line"></i> تتبع الأداء لحظياً</span>
+                <span><i class="fas fa-users"></i> تواصل المعلم والأسرة</span>
+                <span><i class="fas fa-brain"></i> مصمم لطلاب تشتت الانتباه وصعوبات التعلم</span>
+            </div>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <div class="main-wrapper">
+            <div class="signup-image-section">
+                <img src="{% static 'images/signup_img.png' %}" alt="EduPal Learning">
+                <div class="mt-4 d-none d-lg-block text-center">
+                    <h4 class="fw-bold" style="color: #4a5568;">تعلم بذكاء، لا بعناء</h4>
+                    <p class="text-muted small px-3">انضم لآلاف الطلاب في رحلة تعليمية مدعومة بالذكاء الاصطناعي.</p>
+                </div>
+            </div>
+
+            <div class="signup-container">
+                <div class="brand-logo">
+                    <h2>إنشاء حساب </h2>
+                    <p class="text-muted small">ابدأ رحلتك التعليمية مع EduPal اليوم</p>
+                </div>
+
+                <form method="POST" action="{% url 'accounts:signup' %}" enctype="multipart/form-data" novalidate id="signupForm">
+                    {% csrf_token %}
+                    <!-- ✅ hidden input للدور — يُحدَّث بـ JS عند اختيار الدور -->
+                    <input type="hidden" name="userrole" id="selected-role" value="">
+
+                    <!-- ══ محدد الدور ══ -->
+                    <p class="text-center fw-bold mb-3" style="color:#4a5568;font-size:.9rem;">
+                        <i class="fas fa-user-tag text-primary me-1"></i> اختر دورك أولاً
+                    </p>
+                    <div class="role-selector">
+                        <div class="role-btn" data-role="Teacher" onclick="selectRole(this)">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <span>معلم</span>
+                        </div>
+                        <div class="role-btn" data-role="Student" onclick="selectRole(this)">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>طالب</span>
+                        </div>
+                        <div class="role-btn" data-role="Parent" onclick="selectRole(this)">
+                            <i class="fas fa-users"></i>
+                            <span>ولي أمر</span>
+                        </div>
+                    </div>
+                    <div class="role-hint" id="role-hint">اختر دورك لتخصيص تجربتك</div>
+                    <div id="role-error">! يرجى اختيار دورك قبل المتابعة</div>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger p-2 small">
+                            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                    {% if field.name != 'userrole' %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label text-start d-block">{{ field.label }}</label>
+                            <div class="django-field">
+                                {{ field }}
+                            </div>
+                            {% if field.name == 'password' %}
+                                <div class="strength-meter">
+                                    <div id="meter-fill" class="strength-meter-fill"></div>
+                                </div>
+                                <small id="password-feedback" class="text-muted" style="font-size: 0.7rem;"></small>
+                            {% endif %}
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <span class="text-danger d-block mt-1 fw-bold" style="font-size: 0.75rem;">! {{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary w-100 mb-3 shadow-sm mt-2" id="submitBtn">
+                        إنشاء حساب 
+                    </button>
+                    
+                    <div class="text-center">
+                        <span class="text-muted small">هل لديك حساب بالفعل؟</span>
+                        <a href="{% url 'accounts:login' %}" class="small text-decoration-none fw-bold">تسجيل الدخول</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-top mt-5 py-5">
+        <div class="container">
+            <div class="row gy-4 text-start">
+                <div class="col-lg-4">
+                    <h5 class="fw-bold text-primary mb-3"><i class="fas fa-book-reader"></i> EduPal Platform</h5>
+                    <p class="text-muted small">منصة تعليمية ذكية تدعم المعلم والطالب وولي الأمر باستخدام أحدث تقنيات الذكاء الاصطناعي وربط البيانات اللحظي عبر PostgreSQL.</p>
+                    <div class="social-links">
+                        <a href="#" class="text-secondary me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-secondary me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-secondary me-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-secondary"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-6">
+                    <h6 class="fw-bold mb-3">المنصة</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="#" class="text-decoration-none text-muted">عن EduPal</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted">المميزات</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted">الأسعار</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-6">
+                    <h6 class="fw-bold mb-3">الدعم</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="#" class="text-decoration-none text-muted">مركز المساعدة</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted">سياسة الخصوصية</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted">شروط الاستخدام</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h6 class="fw-bold mb-3">اشترك في نشرتنا</h6>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control border-end-0" placeholder="بريدك الإلكتروني">
+                        <button class="btn btn-primary px-4" type="button">اشتراك</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4 opacity-25">
+            <div class="text-center text-muted small">
+                &copy; 2026 EduPal Platform. جميع الحقوق محفوظة. مدعوم بواسطة PostgreSQL
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const ROLE_HINTS = {
+            'Teacher': 'ستتمكن من إنشاء دروس ذكية وإدارة صفوفك',
+            'Student': 'ستتعلم بطريقة مخصصة تناسب أسلوبك',
+            'Parent':  'ستتابع تقدم أبنائك وتتواصل مع معلميهم',
+        };
+
+        function selectRole(btn) {
+            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const role = btn.dataset.role;
+            document.getElementById('selected-role').value = role;
+            document.getElementById('role-hint').textContent  = ROLE_HINTS[role] || '';
+            document.getElementById('role-hint').style.color  = '#5a91e6';
+            document.getElementById('role-error').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // تنسيق الحقول تلقائياً
+            document.querySelectorAll('input:not([type=hidden]), select').forEach(el => {
+                el.classList.add('form-control');
+            });
+
+            const passwordInput = document.querySelector('input[name="password"]');
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function() {
+                    checkPasswordStrength(this.value);
+                });
+            }
+
+            // إذا كان الدور محدداً مسبقاً (عند إعادة عرض الفورم بأخطاء)
+            const savedRole = document.getElementById('selected-role').value;
+            if (savedRole) {
+                const btn = document.querySelector(`.role-btn[data-role="${savedRole}"]`);
+                if (btn) selectRole(btn);
+            }
+        });
+
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            let fill = document.getElementById('meter-fill');
+            let feedback = document.getElementById('password-feedback');
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password) || /[a-z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            
+            const colors = ['#ff4d4d', '#ffa64d', '#ffff4d', '#4dff4d'];
+            const texts = ['ضعيفة جداً', 'ضعيفة', 'متوسطة', 'قوية جداً'];
+            
+            if (password.length === 0) {
+                fill.style.width = '0%';
+                feedback.innerText = '';
+            } else {
+                fill.style.width = (strength * 25) + '%';
+                fill.style.background = colors[strength-1] || colors[0];
+                feedback.innerText = texts[strength-1] || texts[0];
+            }
+        }
+
+        document.getElementById('signupForm').onsubmit = function(e) {
+            const role = document.getElementById('selected-role').value;
+            if (!role) {
+                e.preventDefault();
+                document.getElementById('role-error').style.display = 'block';
+                document.querySelector('.role-selector').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+            let btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> جاري المعالجة...';
+        };
+    </script>
+</body>
+</html>

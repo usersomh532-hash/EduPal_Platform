@@ -1,0 +1,186 @@
+{% comment %}notifications_panel.html — Offcanvas الإشعارات{% endcomment %}
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="notifOffcanvas"
+     aria-labelledby="notifOffcanvasLabel"
+     style="width:380px;font-family:'Cairo',sans-serif;">
+
+  <div class="offcanvas-header border-bottom"
+       style="background:linear-gradient(120deg,#1e3a5f,#1d4ed8);color:#fff;">
+    <h5 class="offcanvas-title fw-bold" id="notifOffcanvasLabel">
+      <i class="fas fa-bell me-2"></i>الإشعارات
+      <span id="notifBadgePanel" class="badge rounded-pill ms-2"
+            style="background:#ef4444;font-size:.72rem;display:none;"></span>
+    </h5>
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-sm btn-light fw-bold"
+              style="border-radius:8px;font-family:'Cairo',sans-serif;font-size:.78rem;"
+              onclick="markAllNotifRead()">
+        تحديد الكل كمقروء
+      </button>
+      <button type="button" class="btn-close btn-close-white"
+              data-bs-dismiss="offcanvas"></button>
+    </div>
+  </div>
+
+  <div class="offcanvas-body p-0">
+    <div id="notifList" style="overflow-y:auto;height:100%;"></div>
+  </div>
+
+</div>
+
+<style>
+.notif-item{
+  display:flex;gap:.75rem;align-items:flex-start;
+  padding:.9rem 1rem;border-bottom:1px solid #e2e8f0;
+  cursor:pointer;transition:background .15s;
+}
+.notif-item:hover{background:#f8faff;}
+.notif-item.unread{background:#eff4ff;border-right:3px solid #1d4ed8;}
+
+.notif-icon{
+  width:40px;height:40px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+}
+.icon-parent_grade    {background:#dbeafe;color:#1d4ed8;}
+.icon-parent_note     {background:#e0e7ff;color:#4338ca;}
+.icon-parent_attention{background:#fef3c7;color:#d97706;}
+.icon-parent_lesson   {background:#dbeafe;color:#1e40af;}
+.icon-parent_test     {background:#ede9fe;color:#6d28d9;}
+.icon-lesson_view    {background:#dbeafe;color:#1d4ed8;}
+.icon-test_attempt   {background:#e0e7ff;color:#4338ca;}
+.icon-lesson_publish {background:#dbeafe;color:#1e40af;}
+.icon-test_publish   {background:#bfdbfe;color:#1d4ed8;}
+.icon-grade_update   {background:#d1fae5;color:#059669;}
+.icon-schedule_update{background:#fef3c7;color:#d97706;}
+.icon-teacher_note   {background:#e0e7ff;color:#4338ca;}
+
+.notif-content{flex:1;min-width:0;}
+.notif-title{font-size:.87rem;font-weight:700;color:#1e293b;margin-bottom:.2rem;}
+.notif-body {font-size:.8rem;color:#475569;line-height:1.6;white-space:pre-line;}
+.notif-time {font-size:.7rem;color:#94a3b8;margin-top:.3rem;display:flex;align-items:center;gap:.3rem;}
+.notif-empty{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;height:220px;color:#94a3b8;gap:.5rem;
+}
+.notif-empty i{font-size:2.5rem;opacity:.2;}
+.notif-empty p{font-size:.85rem;font-weight:600;}
+.notif-item.attention-alert{background:#fffbeb;border-right:3px solid #d97706;}
+.notif-item.attention-alert.unread{background:#fef3c7;}
+</style>
+
+<div id="js-notif-data"
+     data-list-url="{% url 'accounts:notifications_list' %}"
+     data-unread-url="{% url 'accounts:notifications_unread' %}"
+     data-mark-all-url="{% url 'accounts:notifications_mark_read' %}"
+     data-mark-one-url="{% url 'accounts:notifications_mark_one' notif_id=0 %}"
+     data-csrf="{{ csrf_token }}"
+     style="display:none;"></div>
+
+<script>
+(function(){
+  var nd          = document.getElementById('js-notif-data').dataset;
+  var LIST_URL    = nd.listUrl;
+  var UNREAD_URL  = nd.unreadUrl;
+  var MARK_ALL    = nd.markAllUrl;
+  var MARK_ONE    = nd.markOneUrl.replace('/0/', '/');
+  var CSRF        = nd.csrf;
+
+  var ICONS = {
+    'schedule_update':   {cls:'icon-schedule_update', icon:'fa-calendar-check'},
+    'lesson_view':       {cls:'icon-lesson_view',     icon:'fa-eye'},
+    'test_attempt':      {cls:'icon-test_attempt',    icon:'fa-pencil-alt'},
+    'lesson_publish':    {cls:'icon-lesson_publish',  icon:'fa-book-open'},
+    'test_publish':      {cls:'icon-test_publish',    icon:'fa-file-alt'},
+    'grade_update':      {cls:'icon-grade_update',    icon:'fa-chart-bar'},
+    'parent_grade':      {cls:'icon-parent_grade',    icon:'fa-chart-bar'},
+    'parent_note':       {cls:'icon-parent_note',     icon:'fa-comment-dots'},
+    'parent_attention':  {cls:'icon-parent_attention',icon:'fa-exclamation-triangle'},
+    'parent_lesson':     {cls:'icon-parent_lesson',   icon:'fa-book-open'},
+    'parent_test':       {cls:'icon-parent_test',     icon:'fa-file-alt'},
+    'teacher_note':      {cls:'icon-teacher_note',    icon:'fa-comment-dots'},
+  };
+
+  var _allNotifs = [];
+
+  function escH(s){
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function updateBadges(count){
+    var panel = document.getElementById('notifBadgePanel');
+    if(panel){ panel.textContent = count; panel.style.display = count>0?'inline':'none'; }
+    document.querySelectorAll('.notif-unread-badge').forEach(function(b){
+      b.textContent = count;
+      b.style.display = count>0?'inline':'none';
+    });
+  }
+
+  function loadNotifications(){
+    fetch(LIST_URL,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      _allNotifs = d.notifications || [];
+      renderList(_allNotifs);
+      updateBadges(d.unread);
+    }).catch(function(){});
+  }
+
+  function renderList(list){
+    var c = document.getElementById('notifList');
+    if(!list||!list.length){
+      c.innerHTML='<div class="notif-empty"><i class="fas fa-bell-slash"></i><p>لا توجد إشعارات</p></div>';
+      return;
+    }
+    c.innerHTML = list.map(function(n){
+      var ic = ICONS[n.type] || {cls:'icon-lesson_view', icon:'fa-bell'};
+      var isAttention = n.type === 'parent_attention';
+      var extraClass  = isAttention ? 'attention-alert' : '';
+      return '<div class="notif-item '+(n.is_read?'':'unread')+' '+extraClass+'" '+
+             'id="notif-'+n.id+'" onclick="markOneNotif('+n.id+',this)">'+
+               '<div class="notif-icon '+ic.cls+'"><i class="fas '+ic.icon+'"></i></div>'+
+               '<div class="notif-content">'+
+                 '<div class="notif-title">'+escH(n.title)+'</div>'+
+                 '<div class="notif-body">'+escH(n.body)+'</div>'+
+                 '<div class="notif-time"><i class="fas fa-clock"></i>'+escH(n.created_at)+'</div>'+
+               '</div>'+
+             '</div>';
+    }).join('');
+  }
+
+  window.markAllNotifRead = function(){
+    fetch(MARK_ALL,{method:'POST',headers:{'X-CSRFToken':CSRF,'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json();})
+    .then(function(){
+      document.querySelectorAll('#notifList .notif-item.unread').forEach(function(el){
+        el.classList.remove('unread');
+      });
+      updateBadges(0);
+    });
+  };
+
+  window.markOneNotif = function(notifId, el){
+    if(!el.classList.contains('unread')) return;
+    fetch(MARK_ONE+notifId+'/',{method:'POST',headers:{'X-CSRFToken':CSRF,'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json();})
+    .then(function(){
+      el.classList.remove('unread');
+      updateBadges(document.querySelectorAll('#notifList .notif-item.unread').length);
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var el = document.getElementById('notifOffcanvas');
+    if(el) el.addEventListener('show.bs.offcanvas', loadNotifications);
+  });
+
+  (function poll(){
+    fetch(UNREAD_URL,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json();})
+    .then(function(d){updateBadges(d.count);})
+    .catch(function(){});
+    setTimeout(poll,30000);
+  })();
+})();
+</script>

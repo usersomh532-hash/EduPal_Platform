@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    html, body { direction: rtl; }
+</style>
+
+<div class="container-lg mt-5 pb-5" dir="rtl" lang="ar">
+
+    <!-- ═══════════════ Hero ═══════════════ -->
+    <div class="hero-bar mb-5">
+        <div class="d-flex align-items-center gap-4">
+            <div class="hero-icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div>
+                <h1 class="hero-title mb-1">لوحة متابعة: {{ child.fullname }}</h1>
+                <p class="hero-sub mb-0">نظام EduPal — متابعة ذكية للأداء والتقدم الدراسي لطفلك.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ Main Row ═══════════════ -->
+    <div class="row g-4">
+
+        <!-- ══ العمود الرئيسي ══ -->
+        <div class="col-lg-8 d-flex flex-column gap-4">
+
+            <!-- مؤشرات التركيز -->
+            <div class="panel">
+                <div class="panel-head">
+                    <i class="fas fa-chart-line panel-icon"></i>
+                    <span>مؤشرات التركيز والتقدم</span>
+                </div>
+                <div class="panel-body">
+                    <canvas id="progressChart" height="140"></canvas>
+                </div>
+            </div>
+
+            <!-- تقارير المواد -->
+            <div class="panel">
+                <div class="panel-head">
+                    <i class="fas fa-book-open panel-icon"></i>
+                    <span>تقارير المواد الدراسية</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table parent-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-start ps-4">المادة</th>
+                                <th class="text-start">نسبة الإنجاز</th>
+                                <th class="text-start">آخر تقييم</th>
+                                <th class="text-center">الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in subject_reports %}
+                            <tr>
+                                <td class="fw-bold ps-4 text-start subject-name">{{ report.subject_name }}</td>
+                                <td class="text-start">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="progress flex-grow-1 progress-track">
+                                            <div class="progress-bar progress-fill" role="progressbar"
+                                                 data-width="{{ report.completion }}"></div>
+                                        </div>
+                                        <span class="progress-pct">{{ report.completion }}%</span>
+                                    </div>
+                                </td>
+                                <td class="text-start">
+                                    <span class="grade-badge">{{ report.grade }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="status-pill stable">
+                                        <i class="fas fa-check-circle"></i> مستقر
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="fas fa-book fa-2x d-block mb-2 opacity-25"></i>
+                                    لا توجد تقارير متاحة حالياً.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ══ العمود الجانبي ══ -->
+        <div class="col-lg-4 d-flex flex-column gap-4">
+
+            <!-- ملاحظات المعلمين -->
+            <div class="panel">
+                <div class="panel-head">
+                    <i class="fas fa-comment-dots panel-icon"></i>
+                    <span>ملاحظات المعلمين</span>
+                </div>
+                <div class="panel-body">
+                    {% for note in teacher_notes %}
+                    <div class="note-card">
+                        <div class="note-meta">
+                            <span class="note-teacher">{{ note.teacher_name }}</span>
+                            <span class="note-date">{{ note.date }}</span>
+                        </div>
+                        <p class="note-text mb-0">{{ note.text }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-center text-muted py-3 mb-0" style="font-size:0.95rem;">
+                        لا توجد ملاحظات جديدة حالياً.
+                    </p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- نصيحة EduPal -->
+            <div class="tip-card">
+                <div class="tip-head">
+                    <div class="tip-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <span class="tip-title">نصيحة EduPal الذكية</span>
+                </div>
+                <p class="tip-text mb-0">
+                    لاحظنا تحسناً في تركيز {{ child.fullname }} خلال الفترة الصباحية.
+                    ننصح بجدولة المهام الصعبة في هذا التوقيت للحصول على أفضل النتائج.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700&display=swap');
+
+:root {
+    --blue:      #1d4ed8;
+    --blue-lt:   #eff4ff;
+    --blue-bd:   #bfdbfe;
+    --teal:      #0f766e;
+    --teal-lt:   #f0fdfa;
+    --slate:     #475569;
+    --slate-lt:  #f1f5f9;
+    --ink:       #1e293b;
+    --muted:     #64748b;
+    --border:    #e2e8f0;
+    --bg:        #f3f6fb;
+    --white:     #ffffff;
+    --r:         1rem;
+    --sh:        0 2px 8px rgba(0,0,0,0.06), 0 6px 24px rgba(0,0,0,0.04);
+}
+
+body {
+    background: var(--bg);
+    font-family: 'Cairo', 'Tajawal', sans-serif;
+    color: var(--ink); direction: rtl;
+}
+
+/* ── Hero ── */
+.hero-bar {
+    background: linear-gradient(120deg, #1e3a5f 0%, #1d4ed8 100%);
+    border-radius: var(--r);
+    padding: 2.25rem 2.5rem;
+    box-shadow: 0 6px 32px rgba(29,78,216,0.22);
+}
+.hero-icon {
+    width: 72px; height: 72px;
+    background: rgba(255,255,255,0.18);
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1.6rem; flex-shrink: 0;
+}
+.hero-title { font-size: 1.9rem; font-weight: 800; color: #fff; font-family: 'Cairo', sans-serif; line-height: 1.2; }
+.hero-sub   { font-size: 1.05rem; color: rgba(255,255,255,0.82); font-family: 'Tajawal', sans-serif; line-height: 1.8; }
+
+/* ── Panel ── */
+.panel {
+    background: var(--white); border-radius: var(--r);
+    border: 1.5px solid var(--border); box-shadow: var(--sh); overflow: hidden;
+}
+.panel-head {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 1.1rem 1.75rem;
+    background: var(--slate-lt);
+    border-bottom: 1.5px solid var(--border);
+    font-family: 'Cairo', sans-serif;
+    font-size: 1.05rem; font-weight: 700; color: var(--ink);
+}
+.panel-icon { color: var(--blue); font-size: 1rem; }
+.panel-body { padding: 1.75rem; }
+
+/* ── Chart ── */
+#progressChart { max-height: 220px; }
+
+/* ── Table ── */
+.parent-table { font-family: 'Tajawal', sans-serif; }
+.parent-table thead th {
+    background: var(--slate-lt);
+    font-size: 0.92rem; font-weight: 700; color: var(--muted);
+    font-family: 'Cairo', sans-serif;
+    padding: 1rem 1.25rem;
+    border: none !important; white-space: nowrap;
+}
+.parent-table td {
+    padding: 1rem 1.25rem;
+    border: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    font-size: 0.97rem; color: var(--ink);
+    vertical-align: middle;
+}
+.parent-table tbody tr:last-child td { border-bottom: none !important; }
+.parent-table tbody tr:hover td { background: #fafbff; }
+
+.progress-track {
+    height: 8px; border-radius: 8px; background: #e2e8f0; overflow: hidden;
+}
+.progress-fill {
+    height: 100%; border-radius: 8px;
+    background: var(--blue); transition: width 0.6s ease;
+}
+.progress-pct { font-size: 0.85rem; font-weight: 700; color: var(--blue); white-space: nowrap; min-width: 36px; }
+
+.grade-badge {
+    background: var(--blue-lt); color: var(--blue);
+    border: 1px solid var(--blue-bd);
+    border-radius: 6px; padding: 0.28rem 0.7rem;
+    font-size: 0.88rem; font-weight: 700;
+    font-family: 'Cairo', sans-serif; white-space: nowrap;
+}
+.status-pill {
+    border-radius: 2rem; padding: 0.35rem 0.9rem;
+    font-size: 0.85rem; font-weight: 600;
+    font-family: 'Cairo', sans-serif;
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.status-pill.stable { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+/* ── Notes ── */
+.note-card {
+    border-right: 4px solid var(--blue);
+    background: var(--slate-lt);
+    border-radius: 0.65rem;
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.9rem;
+}
+.note-card:last-child { margin-bottom: 0; }
+.note-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.5rem;
+}
+.note-teacher { font-family: 'Cairo', sans-serif; font-size: 0.92rem; font-weight: 700; color: var(--ink); }
+.note-date    { font-family: 'Tajawal', sans-serif; font-size: 0.78rem; color: var(--muted); }
+.note-text    { font-family: 'Tajawal', sans-serif; font-size: 0.93rem; color: var(--slate); line-height: 1.7; }
+
+/* ── Tip Card ── */
+.tip-card {
+    background: var(--white);
+    border: 1.5px solid var(--blue-bd);
+    border-radius: var(--r);
+    padding: 1.5rem 1.75rem;
+    box-shadow: var(--sh);
+}
+.tip-head {
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.9rem;
+}
+.tip-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--blue-lt); color: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+}
+.tip-title { font-family: 'Cairo', sans-serif; font-size: 0.97rem; font-weight: 700; color: var(--ink); }
+.tip-text  { font-family: 'Tajawal', sans-serif; font-size: 0.95rem; color: var(--muted); line-height: 1.8; }
+
+/* ── RTL fixes ── */
+[dir="rtl"] .text-start { text-align: right !important; }
+[dir="rtl"] .text-end   { text-align: left  !important; }
+[dir="rtl"] .me-2 { margin-left: .5rem !important; margin-right: 0 !important; }
+[dir="rtl"] .ms-4 { margin-right: 1.5rem !important; margin-left: 0 !important; }
+[dir="rtl"] .ps-4 { padding-right: 1.5rem !important; padding-left: 0 !important; }
+
+.table-responsive { overflow-y: hidden; }
+</style>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    function applyProgressBars() {
+        document.querySelectorAll('.progress-fill').forEach(function(bar) {
+            var w = bar.getAttribute('data-width');
+            if (w) bar.style.width = w + '%';
+        });
+    }
+
+    function initChart() {
+        var canvas = document.getElementById('progressChart');
+        if (!canvas) return;
+        if (window._progressChart instanceof Chart) {
+            window._progressChart.destroy();
+        }
+        var ctx = canvas.getContext('2d');
+        window._progressChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
+                datasets: [{
+                    label: 'مستوى التفاعل',
+                    data: [65, 78, 72, 90],
+                    borderColor: '#1d4ed8',
+                    backgroundColor: 'rgba(29,78,216,0.07)',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#1d4ed8',
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { rtl: true, bodyFont: { family: 'Cairo' }, titleFont: { family: 'Cairo' } }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { color: '#e2e8f0' },
+                         ticks: { font: { family: 'Cairo', size: 12 }, color: '#64748b' } },
+                    x: { grid: { display: false },
+                         ticks: { font: { family: 'Cairo', size: 12 }, color: '#64748b' } }
+                }
+            }
+        });
+    }
+
+    function loadChartJS(callback) {
+        if (typeof Chart !== 'undefined') { callback(); return; }
+        var script    = document.createElement('script');
+        script.src    = 'https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js';
+        script.async  = true;
+        script.onload = callback;
+        script.onerror = function() {
+            var canvas = document.getElementById('progressChart');
+            if (canvas) {
+                canvas.style.display = 'none';
+                var msg = document.createElement('p');
+                msg.style.cssText = 'text-align:center;color:#64748b;padding:2rem;font-family:Cairo,sans-serif;font-size:0.9rem;';
+                msg.textContent   = 'تعذّر تحميل الرسم البياني. تحقق من اتصال الإنترنت.';
+                canvas.parentNode.insertBefore(msg, canvas);
+            }
+        };
+        document.head.appendChild(script);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            applyProgressBars();
+            loadChartJS(initChart);
+        });
+    } else {
+        applyProgressBars();
+        loadChartJS(initChart);
+    }
+})();
+</script>
+{% endblock %}

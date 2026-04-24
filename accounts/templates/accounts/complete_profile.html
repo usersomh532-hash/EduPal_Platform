@@ -1,0 +1,774 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}إكمال البيانات الأساسية — EduPal{% endblock %}
+
+{% block content %}
+<div dir="rtl" class="cp-wrapper">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="cp-card">
+
+                    <!-- ═══ رأس البطاقة ═══ -->
+                    <div class="cp-header">
+                        <div class="cp-icon">
+                            {% if role == 'Student' %}<i class="fas fa-user-graduate"></i>
+                            {% elif role == 'Teacher' %}<i class="fas fa-chalkboard-teacher"></i>
+                            {% elif role == 'Parent' %}<i class="fas fa-users-cog"></i>
+                            {% else %}<i class="fas fa-user"></i>{% endif %}
+                        </div>
+                        <h3 class="cp-title">
+                            إكمال ملف
+                            {% if role == 'Student' %}الطالب
+                            {% elif role == 'Teacher' %}المعلم
+                            {% elif role == 'Parent' %}ولي الأمر
+                            {% else %}{{ role }}{% endif %}
+                        </h3>
+                        <p class="cp-sub">يرجى تزويدنا بالمعلومات التالية للوصول للوحة التحكم</p>
+                    </div>
+
+                    <!-- ═══ جسم البطاقة ═══ -->
+                    <div class="cp-body">
+                        <form method="POST" novalidate>
+                            {% csrf_token %}
+
+                            {% if form.non_field_errors %}
+                            <div class="cp-alert-error">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.non_field_errors }}
+                            </div>
+                            {% endif %}
+
+                            {% for field in form %}
+                            <div class="cp-field-wrap {% if field.errors %}has-error{% endif %}">
+
+                                <!-- ── تسمية الحقل ── -->
+                                <label class="cp-label" for="{{ field.id_for_label }}">
+                                    {% if field.name == 'student_identity' %}
+                                        <i class="fas fa-id-card"></i>
+                                    {% elif field.name == 'age' %}
+                                        <i class="fas fa-calendar-day"></i>
+                                    {% elif field.name == 'specialization' %}
+                                        <i class="fas fa-graduation-cap"></i>
+                                    {% elif field.name == 'directorate' %}
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    {% elif field.name == 'address' %}
+                                        <i class="fas fa-map-pin"></i>
+                                    {% elif field.name == 'classid' %}
+                                        <i class="fas fa-school"></i>
+                                    {% elif field.name == 'assigned_classes' %}
+                                        <i class="fas fa-chalkboard"></i>
+                                    {% else %}
+                                        <i class="fas fa-edit"></i>
+                                    {% endif %}
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="cp-required">*</span>{% endif %}
+                                </label>
+
+                                <!-- ═══ حقل الصفوف: قائمة checkboxes ═══ -->
+                                {% if field.name == 'assigned_classes' %}
+                                <div class="grade-list">
+                                    {% for checkbox in field %}
+                                    <label class="grade-row" for="{{ checkbox.id_for_label }}">
+                                        <input type="checkbox"
+                                               id="{{ checkbox.id_for_label }}"
+                                               name="{{ field.html_name }}"
+                                               value="{{ checkbox.data.value }}"
+                                               class="grade-cb"
+                                               {% if checkbox.data.selected %}checked{% endif %}>
+                                        <span class="grade-check-icon"><i class="fas fa-check"></i></span>
+                                        <i class="fas fa-door-open grade-door"></i>
+                                        <span class="grade-name">{{ checkbox.choice_label }}</span>
+                                    </label>
+                                    {% empty %}
+                                    <div class="cp-empty-notice">
+                                        <i class="fas fa-info-circle"></i>
+                                        لا توجد صفوف مسجلة بعد — تواصل مع المشرف لإضافة الصفوف أولاً.
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- ═══ قائمة بحث: التخصص أو المديرية (معلم + طالب) ═══ -->
+                                {% elif field.name == 'specialization' or field.name == 'directorate' %}
+                                <div class="ssel-wrap" data-field="{{ field.name }}">
+                                    <div class="ssel-hidden">{{ field }}</div>
+                                    <div class="ssel-box" tabindex="0">
+                                        <span class="ssel-icon">
+                                            {% if field.name == 'specialization' %}
+                                            <i class="fas fa-graduation-cap"></i>
+                                            {% else %}
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            {% endif %}
+                                        </span>
+                                        <span class="ssel-value ssel-placeholder">
+                                            {% if field.name == 'specialization' %}— اختر التخصص الأكاديمي —
+                                            {% else %}— اختر المديرية التعليمية —{% endif %}
+                                        </span>
+                                        <span class="ssel-chevron"><i class="fas fa-chevron-down"></i></span>
+                                    </div>
+                                    <div class="ssel-dropdown">
+                                        <div class="ssel-search-box">
+                                            <i class="fas fa-search ssel-search-icon"></i>
+                                            <input type="text" class="ssel-search-input"
+                                                   placeholder="ابحث…" autocomplete="off">
+                                        </div>
+                                        <div class="ssel-options"></div>
+                                    </div>
+                                </div>
+
+                                <!-- ═══ حقل رقم هوية ولي الأمر ═══ -->
+                                {% elif field.name == 'student_identity' %}
+                                <div class="cp-input-box">
+                                    <span class="cp-input-icon"><i class="fas fa-id-card"></i></span>
+                                    {{ field }}
+                                </div>
+
+                                <!-- ═══ باقي الحقول (age, classid, address, وغيرها) ═══ -->
+                                {% else %}
+                                <div class="cp-input-box">
+                                    <span class="cp-input-icon">
+                                        {% if field.name == 'age' %}
+                                            <i class="fas fa-hashtag"></i>
+                                        {% elif field.name == 'classid' %}
+                                            <i class="fas fa-door-open"></i>
+                                        {% elif field.name == 'address' %}
+                                            <i class="fas fa-map-pin"></i>
+                                        {% else %}
+                                            <i class="fas fa-edit"></i>
+                                        {% endif %}
+                                    </span>
+                                    {{ field }}
+                                </div>
+                                {% endif %}
+
+                                <!-- ── نص المساعدة ── -->
+                                {% if field.help_text %}
+                                <div class="cp-help">
+                                    <i class="fas fa-info-circle"></i>
+                                    {{ field.help_text }}
+                                </div>
+                                {% endif %}
+
+                                <!-- ── رسائل الخطأ ── -->
+                                {% if field.errors %}
+                                {% for error in field.errors %}
+                                <div class="cp-error">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                                {% endif %}
+
+                            </div>
+                            {% endfor %}
+
+                            <hr class="cp-divider">
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn-save">
+                                    <i class="fas fa-check-double"></i>
+                                    حفظ والذهاب للرئيسية
+                                </button>
+                                <a href="{% url 'accounts:logout' %}" class="btn-cancel">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    إلغاء وإنهاء الجلسة
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+
+                    <div class="cp-footer">
+                        <i class="fas fa-shield-alt text-success"></i>
+                        بياناتك محمية ومشفرة
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700&display=swap');
+
+:root {
+    --blue:     #2563eb;
+    --blue-dk:  #1d4ed8;
+    --blue-lt:  #eff6ff;
+    --blue-bd:  #bfdbfe;
+    --green:    #16a34a;
+    --red:      #dc2626;
+    --ink:      #1e293b;
+    --muted:    #64748b;
+    --border:   #e2e8f0;
+    --bg:       #f8fafc;
+    --white:    #ffffff;
+    --r:        0.75rem;
+    --sh:       0 4px 24px rgba(0,0,0,0.07);
+    --sh-focus: 0 0 0 3px rgba(37,99,235,0.18);
+}
+
+body { direction: rtl; font-family: 'Cairo','Tajawal',sans-serif; }
+.cp-wrapper { background: var(--bg); min-height: 100vh; }
+
+.cp-card {
+    background: var(--white);
+    border-radius: 1.35rem;
+    box-shadow: var(--sh);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+}
+
+.cp-header {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    padding: 2.5rem 2rem;
+    text-align: center;
+}
+.cp-icon {
+    width: 76px; height: 76px;
+    background: rgba(255,255,255,0.18);
+    border: 2px solid rgba(255,255,255,0.28);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem; color: #fff;
+}
+.cp-title {
+    font-family: 'Cairo', sans-serif;
+    font-size: 1.55rem; font-weight: 800;
+    color: #fff; margin: 0 0 0.4rem;
+}
+.cp-sub {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.93rem;
+    color: rgba(255,255,255,0.82);
+    margin: 0;
+}
+
+.cp-body { padding: 2rem 2.25rem 1.5rem; }
+.cp-field-wrap { margin-bottom: 1.6rem; }
+
+.cp-label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.93rem; font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 0.55rem;
+    text-align: right;
+    direction: rtl;
+}
+.cp-label i { color: var(--blue); font-size: 0.92rem; flex-shrink: 0; }
+.cp-required { color: var(--red); font-size: 1rem; line-height: 1; }
+
+.cp-input-box {
+    display: flex;
+    align-items: stretch;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+    background: var(--bg);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    direction: rtl;
+}
+.cp-input-box:focus-within {
+    border-color: var(--blue);
+    background: var(--white);
+    box-shadow: var(--sh-focus);
+}
+.cp-input-icon {
+    padding: 0.75rem 0.9rem;
+    background: #f1f5f9;
+    color: var(--blue);
+    font-size: 0.95rem;
+    border-left: 1.5px solid var(--border);
+    display: flex; align-items: center; flex-shrink: 0;
+}
+.cp-input-box input,
+.cp-input-box select {
+    flex: 1;
+    border: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    padding: 0.75rem 1rem !important;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.97rem !important;
+    color: var(--ink) !important;
+    text-align: right;
+    direction: rtl;
+    box-shadow: none !important;
+    outline: none !important;
+    min-width: 0;
+}
+.cp-input-box input[inputmode="numeric"] {
+    direction: ltr;
+    text-align: center;
+    letter-spacing: 4px;
+    font-weight: 700;
+    font-size: 1.05rem !important;
+}
+.cp-input-box select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M6 8L0 0h12z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: left 0.9rem center !important;
+    padding-left: 2.2rem !important;
+}
+
+/* ════════ قائمة البحث المخصصة ════════ */
+.ssel-hidden { display: none; }
+.ssel-wrap { position: relative; direction: rtl; }
+
+.ssel-box {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: var(--bg);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    user-select: none;
+}
+.ssel-box:focus,
+.ssel-wrap.open .ssel-box {
+    border-color: var(--blue);
+    background: var(--white);
+    box-shadow: var(--sh-focus);
+    outline: none;
+}
+.ssel-icon {
+    padding: 0.75rem 0.9rem;
+    background: #f1f5f9;
+    color: var(--blue);
+    font-size: 0.95rem;
+    border-left: 1.5px solid var(--border);
+    display: flex; align-items: center; flex-shrink: 0;
+}
+.ssel-value {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.97rem;
+    color: var(--ink);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ssel-placeholder { color: var(--muted); }
+.ssel-chevron {
+    padding: 0.75rem 0.8rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+}
+.ssel-wrap.open .ssel-chevron { transform: rotate(180deg); }
+
+.ssel-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 3px);
+    right: 0; left: 0;
+    background: var(--white);
+    border: 1.5px solid var(--blue);
+    border-top: none;
+    border-radius: 0 0 var(--r) var(--r);
+    box-shadow: 0 10px 30px rgba(37,99,235,0.14);
+    z-index: 9999;
+    max-height: 260px;
+    overflow: hidden;
+    flex-direction: column;
+}
+.ssel-wrap.open .ssel-dropdown { display: flex; }
+
+.ssel-search-box {
+    padding: 0.55rem 0.8rem;
+    background: #f0f6ff;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    direction: rtl;
+}
+.ssel-search-icon { color: var(--muted); font-size: 0.82rem; flex-shrink: 0; }
+.ssel-search-input {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.9rem;
+    direction: rtl;
+    outline: none;
+    background: var(--white);
+    color: var(--ink);
+    transition: border-color 0.15s;
+}
+.ssel-search-input:focus { border-color: var(--blue); }
+
+.ssel-options { overflow-y: auto; flex: 1; }
+.ssel-opt {
+    padding: 0.6rem 1.1rem;
+    cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.91rem;
+    color: var(--ink);
+    text-align: right;
+    direction: rtl;
+    transition: background 0.12s;
+    border-bottom: 1px solid #f1f5f9;
+}
+.ssel-opt:last-child { border-bottom: none; }
+.ssel-opt:hover { background: var(--blue-lt); color: var(--blue-dk); }
+.ssel-opt.selected { background: var(--blue-lt); color: var(--blue-dk); font-weight: 700; }
+.ssel-opt.selected::before { content: '✓ '; color: var(--blue); }
+.ssel-opt.hidden { display: none; }
+.ssel-no-result {
+    padding: 1rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-family: 'Tajawal', sans-serif;
+}
+
+/* ════════ قائمة الصفوف ════════ */
+.grade-list {
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+    background: var(--white);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+.grade-list .cp-empty-notice { grid-column: 1 / -1; }
+.grade-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem 0.9rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    border-left: 1px solid #f1f5f9;
+    transition: background 0.13s;
+    direction: rtl;
+    user-select: none;
+}
+.grade-row:nth-child(odd) { border-left: none; }
+.grade-row:nth-last-child(-n+2) { border-bottom: none; }
+.grade-row:hover { background: var(--blue-lt); }
+.grade-cb { display: none; }
+.grade-check-icon {
+    width: 19px; height: 19px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.13s;
+    background: var(--white);
+    font-size: 0.68rem;
+    color: transparent;
+}
+.grade-row:has(.grade-cb:checked) .grade-check-icon {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+}
+.grade-door { color: var(--muted); font-size: 0.85rem; flex-shrink: 0; }
+.grade-row:has(.grade-cb:checked) .grade-door { color: var(--blue); }
+.grade-name { font-family: 'Cairo', sans-serif; font-size: 0.9rem; font-weight: 600; color: var(--ink); flex: 1; }
+.grade-row:has(.grade-cb:checked) .grade-name { color: var(--blue-dk); font-weight: 800; }
+
+/* ════════ مساعدة وأخطاء ════════ */
+.cp-help {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+    line-height: 1.6;
+    direction: rtl;
+}
+.cp-help i { flex-shrink: 0; margin-top: 0.15rem; color: #94a3b8; }
+
+.cp-error {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.85rem;
+    color: var(--red);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 0.45rem 0.75rem;
+    margin-top: 0.4rem;
+    animation: shakeX 0.35s;
+}
+.cp-error i { flex-shrink: 0; }
+
+.cp-alert-error {
+    background: #fef2f2;
+    border: 1.5px solid #fca5a5;
+    border-radius: var(--r);
+    padding: 0.85rem 1rem;
+    color: var(--red);
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.92rem;
+    margin-bottom: 1.5rem;
+    direction: rtl;
+    text-align: right;
+}
+
+.cp-empty-notice {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 1.25rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-family: 'Tajawal', sans-serif;
+    background: var(--bg);
+    border-radius: var(--r);
+    border: 1.5px dashed var(--border);
+}
+
+.has-error .cp-input-box,
+.has-error .ssel-box { border-color: #fca5a5; }
+
+.cp-divider { margin: 1.75rem 0 1.5rem; opacity: 0.2; }
+
+.btn-save {
+    width: 100%; padding: 0.9rem;
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: #fff; border: none; border-radius: var(--r);
+    font-family: 'Cairo', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.btn-save:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(22,163,74,0.3); }
+
+.btn-cancel {
+    display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    padding: 0.65rem;
+    color: var(--muted) !important;
+    text-decoration: none;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.92rem;
+    transition: color 0.15s;
+    border-radius: var(--r);
+}
+.btn-cancel:hover { color: var(--red) !important; background: #fef2f2; }
+
+.cp-footer {
+    background: var(--bg);
+    border-top: 1.5px solid var(--border);
+    padding: 0.85rem;
+    text-align: center;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.82rem;
+    color: var(--muted);
+    display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+}
+
+@keyframes shakeX {
+    from, to { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+
+@media (max-width: 480px) {
+    .cp-body { padding: 1.5rem 1.25rem; }
+    .grade-list { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ══════════════════════════════════════════════════════
+   قائمة البحث المخصصة — تعمل على select.searchable-select
+   الموجودة داخل .ssel-hidden
+══════════════════════════════════════════════════════ */
+(function () {
+
+    function initSsel(wrap) {
+        if (wrap.dataset.init) return;
+        wrap.dataset.init = '1';
+
+        var sel     = wrap.querySelector('.ssel-hidden select');
+        var box     = wrap.querySelector('.ssel-box');
+        var valEl   = wrap.querySelector('.ssel-value');
+        var dd      = wrap.querySelector('.ssel-dropdown');
+        var sinp    = wrap.querySelector('.ssel-search-input');
+        var optsCnt = wrap.querySelector('.ssel-options');
+
+        if (!sel || !box) return;
+
+        function buildOptions() {
+            optsCnt.innerHTML = '';
+            Array.from(sel.options).forEach(function (opt) {
+                if (!opt.value) return;
+                var item = document.createElement('div');
+                item.className = 'ssel-opt';
+                item.textContent = opt.text;
+                item.dataset.value = opt.value;
+                if (opt.value === sel.value) item.classList.add('selected');
+                item.addEventListener('click', function () {
+                    sel.value = opt.value;
+                    sel.dispatchEvent(new Event('change'));
+                    valEl.textContent = opt.text;
+                    valEl.classList.remove('ssel-placeholder');
+                    optsCnt.querySelectorAll('.ssel-opt').forEach(function (x) {
+                        x.classList.remove('selected');
+                    });
+                    item.classList.add('selected');
+                    closeDD();
+                });
+                optsCnt.appendChild(item);
+            });
+        }
+
+        function syncValue() {
+            if (sel.value) {
+                var curr = Array.from(sel.options).find(function (o) { return o.value === sel.value; });
+                if (curr) {
+                    valEl.textContent = curr.text;
+                    valEl.classList.remove('ssel-placeholder');
+                }
+            }
+        }
+
+        function openDD() {
+            document.querySelectorAll('.ssel-wrap.open').forEach(function (w) {
+                if (w !== wrap) w.classList.remove('open');
+            });
+            buildOptions();
+            wrap.classList.add('open');
+            sinp.value = '';
+            optsCnt.querySelectorAll('.ssel-opt').forEach(function (x) {
+                x.classList.remove('hidden');
+            });
+            var nr = optsCnt.querySelector('.ssel-no-result');
+            if (nr) nr.remove();
+            setTimeout(function () { sinp.focus(); }, 40);
+        }
+
+        function closeDD() { wrap.classList.remove('open'); }
+
+        box.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (wrap.classList.contains('open')) closeDD();
+            else openDD();
+        });
+
+        box.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDD(); }
+            if (e.key === 'Escape') closeDD();
+        });
+
+        sinp.addEventListener('input', function () {
+            var q = this.value.trim();
+            var anyVisible = false;
+            optsCnt.querySelectorAll('.ssel-opt').forEach(function (item) {
+                var match = !q || item.textContent.includes(q);
+                item.classList.toggle('hidden', !match);
+                if (match) anyVisible = true;
+            });
+            var nr = optsCnt.querySelector('.ssel-no-result');
+            if (!anyVisible) {
+                if (!nr) {
+                    nr = document.createElement('div');
+                    nr.className = 'ssel-no-result';
+                    nr.textContent = 'لا توجد نتائج';
+                    optsCnt.appendChild(nr);
+                }
+            } else if (nr) {
+                nr.remove();
+            }
+        });
+
+        dd.addEventListener('click', function (e) { e.stopPropagation(); });
+        document.addEventListener('click', function () { closeDD(); });
+
+        syncValue();
+    }
+
+    function initAll() {
+        document.querySelectorAll('.ssel-wrap').forEach(initSsel);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAll);
+    } else {
+        initAll();
+    }
+
+}());
+
+/* ══════════════════════════════════════════════════════
+   فلترة صفوف الطالب حسب العمر — Frontend
+══════════════════════════════════════════════════════ */
+(function () {
+
+    var GRADE_MIN_AGE = {
+        'الثاني':               7,
+        'الثالث':               8,
+        'الرابع':               9,
+        'الخامس':               10,
+        'السادس':               11,
+        'السابع':               12,
+        'الثامن':               13,
+        'التاسع':               14,
+        'العاشر':               15,
+        'الحادي عشر العلمي':    16,
+        'الحادي عشر الأدبي':    16,
+        'الحادي عشر الصناعي':   16,
+        'الحادي عشر التجاري':   16,
+    };
+
+    function filterGrades() {
+        var ageInput    = document.querySelector('input[name="age"]');
+        var classSelect = document.querySelector('select[name="classid"]');
+        if (!ageInput || !classSelect) return;
+
+        var age = parseInt(ageInput.value, 10);
+
+        Array.from(classSelect.options).forEach(function (opt) {
+            if (!opt.value) return;
+            var minAge = GRADE_MIN_AGE[opt.text.trim()];
+            if (minAge === undefined) return;
+
+            if (!isNaN(age) && age < minAge) {
+                opt.disabled = true;
+                opt.style.color = '#cbd5e1';
+                opt.title = 'يتطلب عمراً لا يقل عن ' + minAge + ' سنة';
+                if (classSelect.value === opt.value) classSelect.value = '';
+            } else {
+                opt.disabled = false;
+                opt.style.color = '';
+                opt.title = '';
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var ageInput = document.querySelector('input[name="age"]');
+        if (!ageInput) return;
+        filterGrades();
+        ageInput.addEventListener('input',  filterGrades);
+        ageInput.addEventListener('change', filterGrades);
+    });
+
+}());
+</script>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}أولياء الأمور{% endblock %}
+{% block page_title %}قائمة أولياء الأمور{% endblock %}
+{% block topbar_actions %}<span style="font-size:.8rem;color:var(--muted);">النتائج: <strong>{{ total }}</strong></span>{% endblock %}
+
+{% block content %}
+<div class="ap-card" style="margin-bottom:1rem;">
+  <div class="ap-card-b">
+    <form method="GET" class="ap-search">
+      <input class="ap-input ap-input-flex" type="text" name="q" value="{{ search }}" placeholder="بحث عن اسم ولي الأمر أو اسم الابن...">
+      <button type="submit" class="ap-btn ap-btn-primary"><i class="fas fa-search"></i> بحث</button>
+      {% if search %}<a href="{% url 'admin_portal:parents_list' %}" class="ap-btn ap-btn-ghost"><i class="fas fa-times"></i></a>{% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="ap-card">
+  <div style="overflow-x:auto;">
+    <table class="ap-tbl">
+      <thead><tr><th>اسم ولي الأمر</th><th>الجنس</th><th>اسم الابن/الابنة</th><th>صف الابن</th><th>الحالة</th><th>معاينة</th></tr></thead>
+      <tbody>
+        {% for p in parents %}
+        <tr>
+          <td><strong>{{ p.userid.fullname|default:"—" }}</strong></td>
+          <td>{{ p.get_gender_display|default:"—" }}</td>
+          <td>{% if p.childid %}{{ p.childid.userid.fullname|default:"—" }}{% else %}<span style="color:var(--muted);">غير مرتبط</span>{% endif %}</td>
+          <td>{% if p.childid and p.childid.classid %}<span class="ap-badge bg-blue">{{ p.childid.classid.classname }}</span>{% else %}—{% endif %}</td>
+          <td>{% if p.userid.is_active %}<span class="ap-badge bg-green">نشط</span>{% else %}<span class="ap-badge bg-red">معطّل</span>{% endif %}</td>
+          <td><button class="ap-btn ap-btn-preview ap-btn-sm" onclick="previewParent('{{ p.parentid }}')"><i class="fas fa-eye"></i> معاينة</button></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6"><div class="ap-empty"><i class="fas fa-search"></i>لا توجد نتائج</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+    // حل مشكلة "Property assignment expected": نضع الرابط داخل علامات اقتباس ليصبح نصاً
+    var PARENT_PREVIEW_URL = "{% url 'admin_portal:parent_preview' 0 %}";
+
+    function previewParent(parentId) {
+        var overlay = document.getElementById('studentPreviewOverlay');
+        var body    = document.getElementById('studentPreviewBody');
+        
+        if(!overlay || !body) return;
+
+        body.innerHTML = '<div class="sp-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br>جارٍ التحميل...</div>';
+        overlay.classList.add('open');
+
+        // استبدال الصفر بالمعرف الحقيقي لولي الأمر
+        var url = PARENT_PREVIEW_URL.replace('0', parentId);
+
+        fetch(url, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if(d.ok) {
+                    // هنا يتم بناء محتوى المعاينة (عدله حسب حاجتك)
+                    body.innerHTML = '<h4>' + d.parent.fullname + '</h4><p>رقم الهاتف: ' + (d.parent.phone || '—') + '</p>';
+                } else {
+                    body.innerHTML = '<div class="sp-error">' + (d.error || 'خطأ في جلب البيانات') + '</div>';
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                body.innerHTML = '<div class="sp-error">خطأ في الاتصال بالسيرفر</div>';
+            });
+    }
+
+    function closeStudentPreview(e) {
+        if (!e || e.target.id === 'studentPreviewOverlay' || e.target.closest('.sp-close')) {
+            document.getElementById('studentPreviewOverlay').classList.remove('open');
+        }
+    }
+</script>
+{% endblock %}

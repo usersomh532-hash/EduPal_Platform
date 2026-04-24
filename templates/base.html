@@ -1,0 +1,269 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduPal - المنصة التعليمية الذكية{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    <link rel="preload"
+          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap"
+          as="style"
+          onload="this.rel='stylesheet'">
+
+    <link rel="preload"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css"
+          as="style"
+          onload="this.rel='stylesheet'">
+
+    <link rel="preload"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          as="style"
+          onload="this.rel='stylesheet'">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+          media="print"
+          onload="this.media='all'">
+
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    </noscript>
+
+    <style>
+        :root {
+            --main-blue: #5a91e6;
+            --dark-blue: #4a7bc7;
+            --soft-bg:   #f4f7fe;
+            --admin-dark:#1e293b;
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--soft-bg);
+            color: #334155;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .app-container  { display: flex; flex: 1; }
+        .main-wrapper   { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .admin-bar {
+            background: var(--admin-dark); color: #fbbf24;
+            padding: 10px; font-size: 0.85rem; text-align: center;
+            border-bottom: 3px solid #fbbf24;
+            position: sticky; top: 0; z-index: 1050;
+        }
+        .admin-bar a {
+            color: #f8fafc; text-decoration: none;
+            margin: 0 10px; padding: 4px 10px;
+            border-radius: 5px; transition: 0.3s;
+        }
+        .admin-bar a:hover { background: rgba(255,255,255,0.1); color: #fbbf24; }
+        main { flex: 1; }
+        .card {
+            border: none; border-radius: 1.2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.3s;
+        }
+        .ai-image-card { overflow: hidden; position: relative; border-radius: 1.2rem; }
+        .ai-image-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important; }
+        .btn-primary {
+            background-color: var(--main-blue); border: none;
+            padding: 10px 25px; border-radius: 12px; font-weight: 600;
+        }
+        .btn-primary:hover { background-color: var(--dark-blue); transform: scale(1.02); }
+        input, textarea, select {
+            border-radius: 12px !important;
+            border: 1.5px solid #e2e8f0 !important;
+            padding: 12px !important; transition: 0.3s !important;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--main-blue) !important;
+            box-shadow: 0 0 0 4px rgba(90,145,230,0.15) !important;
+            outline: none !important;
+        }
+        .alert {
+            border: none; border-radius: 15px;
+            font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        audio { height: 40px; filter: sepia(10%) saturate(70%) grayscale(1) contrast(99%); }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    {% if user.is_staff %}
+    <div class="admin-bar shadow-sm d-none d-md-block">
+        <i class="fas fa-shield-alt text-warning me-2"></i>
+        <strong>Developer Mode:</strong>
+        <a href="{% url 'learning:teacher_dashboard' %}"><i class="fas fa-chalkboard-teacher text-warning"></i> المعلم</a>
+        <a href="{% url 'student:student_home' %}"><i class="fas fa-user-graduate text-info"></i> الطالب</a>
+        <a href="{% url 'parent:parent_portal' %}"><i class="fas fa-user-friends text-success"></i> ولي الأمر</a>
+        <a href="/admin/" target="_blank" class="bg-warning text-dark fw-bold rounded-pill ms-2 px-3">
+            قاعدة البيانات <i class="fas fa-database"></i>
+        </a>
+    </div>
+    {% endif %}
+
+    {% include "includes/_navbar.html" %}
+
+    <div class="app-container">
+        {% if user.is_authenticated %}
+            {% include "includes/_sidebar.html" %}
+        {% endif %}
+
+        <div class="main-wrapper">
+            <main class="container my-5">
+                {% if messages %}
+                <div class="messages-container animate__animated animate__fadeInDown">
+                    {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show text-center shadow-sm mb-4" role="alert">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+
+            {% include "includes/_footer.html" %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            document.querySelectorAll('.alert').forEach(function (alert) {
+                alert.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+                alert.style.opacity = "0";
+                alert.style.transform = "translateY(-10px)";
+                setTimeout(function () {
+                    try { new bootstrap.Alert(alert).close(); } catch(e) {}
+                }, 600);
+            });
+        }, 6000);
+    });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+    {% if user.is_authenticated %}
+    <script>
+    /* ══ Session Expiry Timer (3h) ══════════════════════════
+       يُنبّه المستخدم قبل 5 دقائق من انتهاء الجلسة
+       ويُسجّل الخروج تلقائياً عند الانتهاء.
+    ═══════════════════════════════════════════════════════ */
+    (function(){
+      var SESSION_MAX_MS = 3 * 60 * 60 * 1000;  // 3 ساعات بالـ ms
+      var WARN_BEFORE_MS = 5 * 60 * 1000;        // تحذير قبل 5 دقائق
+      var LOGOUT_URL     = "{% url 'accounts:logout' %}";
+      var SESSION_KEY    = 'edupal_sess_{{ user.pk }}';  // فريد لكل مستخدم
+
+      // ✅ الإصلاح: عند تغيير المستخدم → امسح القيم القديمة وابدأ من جديد
+      var CURRENT_USER_KEY = 'edupal_current_user';
+      var storedUser = sessionStorage.getItem(CURRENT_USER_KEY);
+      if (storedUser && storedUser !== '{{ user.pk }}') {
+          // مستخدم مختلف عن السابق → امسح كل sessionStorage القديم
+          sessionStorage.clear();
+      }
+      sessionStorage.setItem(CURRENT_USER_KEY, '{{ user.pk }}');
+      // سجّل وقت البدء — يُصفَّر فقط عند login جديد
+      var stored    = sessionStorage.getItem(SESSION_KEY);
+      var startTime = stored ? parseInt(stored, 10) : Date.now();
+      if (!stored) sessionStorage.setItem(SESSION_KEY, startTime);
+
+      var warnShown = false;
+
+      function checkSession(){
+        var elapsed   = Date.now() - startTime;
+        var remaining = SESSION_MAX_MS - elapsed;
+
+        if (remaining <= 0){
+          sessionStorage.removeItem(SESSION_KEY);
+          window.location.href = LOGOUT_URL;
+          return;
+        }
+        if (remaining <= WARN_BEFORE_MS && !warnShown){
+          warnShown = true;
+          showSessionWarning(Math.ceil(remaining / 60000));
+        }
+      }
+
+      function showSessionWarning(minsLeft){
+        if (document.getElementById('edupalSessToast')) return;
+        var t = document.createElement('div');
+        t.id = 'edupalSessToast';
+        t.setAttribute('dir','rtl');
+        t.style.cssText =
+          'position:fixed;bottom:24px;left:24px;z-index:9999;' +
+          'background:#1e3a5f;color:#fff;border-radius:14px;' +
+          'padding:14px 20px;box-shadow:0 4px 20px rgba(0,0,0,.35);' +
+          'font-family:Cairo,sans-serif;font-size:.9rem;max-width:300px;';
+        t.innerHTML =
+          '<div style="font-weight:700;margin-bottom:6px;">' +
+          '<i class="fas fa-clock" style="color:#fbbf24;margin-left:6px;"></i>' +
+          'تنبيه انتهاء الجلسة</div>' +
+          '<div>ستنتهي جلستك خلال <strong style="color:#fbbf24;">' +
+          minsLeft + ' دقائق</strong>.</div>' +
+          '<div style="margin-top:10px;display:flex;gap:8px;">' +
+          '<button onclick="sessionStorage.removeItem(\'' + SESSION_KEY + '\');location.reload();" ' +
+          'style="background:#1d4ed8;border:none;color:#fff;border-radius:8px;' +
+          'padding:5px 14px;font-family:Cairo,sans-serif;cursor:pointer;font-size:.82rem;">' +
+          'تجديد الجلسة</button>' +
+          '<button onclick="document.getElementById(\'edupalSessToast\').remove();" ' +
+          'style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;' +
+          'padding:5px 10px;font-family:Cairo,sans-serif;cursor:pointer;font-size:.82rem;">' +
+          'إغلاق</button></div>';
+        document.body.appendChild(t);
+        setTimeout(function(){ if(t.parentNode) t.remove(); }, 60000);
+      }
+
+      setInterval(checkSession, 30000);
+      checkSession();
+    })();
+    </script>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+    {% include "accounts/notifications_panel.html" %}
+    {% endif %}
+
+    {% if user.is_authenticated %}
+    <script>
+    /* badge المراسلات — polling كل 15 ثانية */
+    (function pollUnread() {
+        fetch("{% url 'accounts:messaging_unread' %}", {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            var badge = document.querySelector('.msg-unread-badge');
+            if (!badge) return;
+            if (d.count && d.count > 0) {
+                badge.textContent = d.count;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        })
+        .catch(function() {});
+        setTimeout(pollUnread, 15000);
+    })();
+    </script>
+    {% endif %}
+
+</body>
+</html>

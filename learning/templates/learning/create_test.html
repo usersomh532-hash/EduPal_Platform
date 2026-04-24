@@ -1,0 +1,879 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}إنشاء اختبار{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+:root{--blue:#1d4ed8;--blue-dk:#1e3a8a;--blue-lt:#eff4ff;--blue-bd:#bfdbfe;
+  --mint:#059669;--rose:#dc2626;--rose-lt:#fef2f2;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f3f6fb;--card:#fff;--r:14px;
+  --sh:0 2px 12px rgba(29,78,216,.08);}
+*{box-sizing:border-box;}
+body{background:var(--bg);font-family:'Cairo',sans-serif;color:var(--ink);direction:rtl;}
+.ct-wrap{max-width:940px;margin:0 auto;padding:1.75rem 1.25rem 5rem;}
+.ct-header{background:linear-gradient(120deg,#1e3a5f,#1d4ed8);border-radius:1.25rem;
+  padding:1.5rem 2rem;color:#fff;margin-bottom:2rem;display:flex;align-items:center;
+  gap:1rem;box-shadow:0 6px 24px rgba(29,78,216,.22);}
+.ct-header h1{font-size:1.5rem;font-weight:900;margin:0;}
+.ct-header p{font-size:.88rem;opacity:.85;margin:.2rem 0 0;}
+.ct-card{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:1.5rem;}
+.ct-card-head{background:var(--blue-lt);padding:.85rem 1.4rem;border-bottom:1.5px solid var(--border);
+  font-size:.95rem;font-weight:800;color:var(--blue-dk);}
+.ct-card-head i{color:var(--blue);margin-left:.5rem;}
+.ct-card-body{padding:1.25rem 1.4rem;}
+.ct-label{font-size:.85rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.4rem;}
+.req{color:var(--rose);margin-right:2px;}
+.ct-input,.ct-select{width:100%;padding:.6rem .9rem;border:1.5px solid var(--border);
+  border-radius:8px;font-size:.92rem;font-family:'Cairo',sans-serif;color:var(--ink);
+  background:var(--bg);transition:border-color .2s;}
+.ct-input:focus,.ct-select:focus{outline:none;border-color:var(--blue);background:#fff;}
+.ct-input.is-invalid,.ct-select.is-invalid{border-color:var(--rose);background:var(--rose-lt);}
+.ct-btn{padding:.65rem 1.4rem;border-radius:8px;border:none;font-size:.9rem;font-weight:700;
+  font-family:'Cairo',sans-serif;cursor:pointer;transition:opacity .2s,transform .15s;
+  display:inline-flex;align-items:center;gap:.4rem;}
+.ct-btn:hover{opacity:.88;transform:translateY(-1px);}
+.ct-btn-primary{background:var(--blue);color:#fff;}
+.ct-btn-mint{background:var(--mint);color:#fff;}
+.ct-btn-ghost{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);}
+.scope-toggle{display:flex;border:1.5px solid var(--blue-bd);border-radius:10px;overflow:hidden;max-width:360px;}
+.scope-btn{flex:1;padding:.55rem 1rem;border:none;background:transparent;
+  font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;
+  color:var(--muted);transition:all .2s;}
+.scope-btn.active{background:var(--blue);color:#fff;}
+.q-card{background:#f8faff;border:1.5px solid var(--blue-bd);border-radius:12px;
+  padding:1.1rem 1.25rem;margin-bottom:1rem;position:relative;}
+.q-num{font-size:.78rem;font-weight:800;color:var(--blue);margin-bottom:.6rem;}
+.q-options{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.75rem;}
+.q-correct label{font-size:.82rem;font-weight:700;color:var(--ink);margin-bottom:.25rem;display:block;}
+.q-correct select{padding:.4rem .6rem;border:1.5px solid var(--border);border-radius:6px;
+  font-family:'Cairo',sans-serif;font-size:.85rem;background:var(--bg);}
+.q-remove{position:absolute;top:.75rem;left:.75rem;background:var(--rose-lt);
+  color:var(--rose);border:none;border-radius:6px;padding:.25rem .5rem;
+  font-size:.8rem;cursor:pointer;}
+.q-remove:hover{opacity:.75;}
+.add-q-bar{text-align:center;padding:.75rem;border:2px dashed var(--blue-bd);
+  border-radius:12px;cursor:pointer;color:var(--blue);font-weight:700;
+  font-size:.9rem;transition:background .2s;}
+.add-q-bar:hover{background:var(--blue-lt);}
+.field-error{font-size:.78rem;color:var(--rose);margin-top:.3rem;display:none;}
+
+/* ── اختباراتي ── */
+.my-tests-wrap{max-width:940px;margin:.5rem auto 0;padding:0 1.25rem 4rem;}
+.my-tests-divider{border:none;border-top:2px dashed var(--blue-bd);margin:0 1.25rem 1.5rem;opacity:.6;}
+.my-tests-head{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.1rem;}
+.my-tests-title{font-size:1.05rem;font-weight:800;color:var(--ink);
+  display:flex;align-items:center;gap:.5rem;}
+.my-tests-title i{color:var(--blue);}
+.test-row{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:1rem 1.25rem;margin-bottom:.85rem;display:flex;align-items:center;gap:1rem;
+  box-shadow:var(--sh);transition:border-color .2s;}
+.test-row:hover{border-color:var(--blue-bd);}
+.test-row-icon{width:40px;height:40px;border-radius:10px;background:var(--blue-lt);
+  border:1.5px solid var(--blue-bd);display:flex;align-items:center;justify-content:center;
+  color:var(--blue);font-size:1rem;flex-shrink:0;}
+.test-row-info{flex:1;min-width:0;}
+.test-row-title{font-size:.95rem;font-weight:800;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.test-row-meta{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.3rem;}
+.test-chip{background:var(--blue-lt);border:1px solid var(--blue-bd);border-radius:2rem;
+  padding:.15rem .65rem;font-size:.75rem;color:var(--blue-dk);display:inline-flex;
+  align-items:center;gap:.3rem;}
+.test-row-actions{display:flex;gap:.5rem;flex-shrink:0;}
+.tact-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .85rem;
+  border-radius:7px;font-family:'Cairo',sans-serif;font-size:.8rem;font-weight:700;
+  border:none;cursor:pointer;text-decoration:none;transition:all .15s;}
+.tact-view{background:var(--blue-lt);color:var(--blue);border:1.5px solid var(--blue-bd);}
+.tact-view:hover{background:var(--blue);color:#fff;}
+.tact-del{background:var(--rose-lt);color:var(--rose);border:1.5px solid #fecaca;}
+.tact-del:hover{background:var(--rose);color:#fff;}
+.tests-empty{text-align:center;padding:2.5rem;color:var(--muted);font-size:.9rem;}
+.tests-empty i{font-size:2rem;opacity:.2;display:block;margin-bottom:.5rem;}
+
+/* delete modal */
+.del-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;
+  display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.del-overlay.open{display:flex;}
+.del-box{background:#fff;border-radius:16px;padding:2rem;max-width:380px;width:90%;
+  text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.del-icon{width:52px;height:52px;background:var(--rose-lt);border:2px solid #fecaca;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:var(--rose);font-size:1.2rem;margin:0 auto .9rem;}
+.del-box h3{font-family:'Cairo',sans-serif;font-size:1rem;font-weight:800;margin-bottom:.4rem;}
+.del-box p{font-size:.85rem;color:var(--muted);margin-bottom:1.25rem;}
+.del-btns{display:flex;gap:.6rem;justify-content:center;}
+.del-cancel{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;
+  padding:.55rem 1.2rem;border-radius:8px;font-family:'Cairo',sans-serif;
+  font-size:.88rem;font-weight:700;cursor:pointer;}
+.del-confirm{background:var(--rose);color:#fff;border:none;padding:.55rem 1.25rem;
+  border-radius:8px;font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;}
+.del-confirm:hover{opacity:.88;}
+
+.test-chip-scope[data-lesson="1"]{background:#dbeafe;color:#1e3a8a;border-color:#93c5fd;}
+.test-chip-scope[data-lesson="0"]{background:#eff4ff;color:var(--blue-dk);border-color:var(--blue-bd);}
+
+/* ── فلتر الاختبارات ── */
+.tests-filter-bar{
+  display:flex;gap:.65rem;flex-wrap:wrap;align-items:center;
+  margin-bottom:1.1rem;
+}
+.tf-select{
+  padding:.42rem .85rem;border:1.5px solid var(--blue-bd);border-radius:8px;
+  font-family:'Cairo',sans-serif;font-size:.83rem;color:var(--ink);
+  background:var(--blue-lt);cursor:pointer;
+}
+.tf-select:focus{outline:none;border-color:var(--blue);}
+.tf-reset{
+  padding:.42rem .85rem;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--card);font-family:'Cairo',sans-serif;font-size:.83rem;
+  color:var(--muted);cursor:pointer;
+}
+.tf-reset:hover{background:var(--blue-lt);color:var(--blue);border-color:var(--blue-bd);}
+.tests-empty-filter{
+  text-align:center;padding:1.5rem;color:var(--muted);
+  font-size:.88rem;border:1.5px dashed var(--blue-bd);
+  border-radius:var(--r);background:var(--blue-lt);
+}
+
+/* ── Modal معاينة الاختبار ── */
+.pv-overlay{
+  position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9998;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.pv-overlay.open{display:flex;}
+.pv-modal{
+  background:#fff;border-radius:1.25rem;width:100%;max-width:680px;
+  max-height:90vh;overflow-y:auto;
+  box-shadow:0 24px 64px rgba(29,78,216,.2);
+  direction:rtl;font-family:'Cairo',sans-serif;
+}
+.pv-head{
+  background:linear-gradient(120deg,#1e3a5f,var(--blue));
+  padding:1.25rem 1.5rem;border-radius:1.25rem 1.25rem 0 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.pv-head h3{color:#fff;font-size:1rem;font-weight:800;margin:0;}
+.pv-close{
+  background:rgba(255,255,255,.18);border:none;color:#fff;
+  width:32px;height:32px;border-radius:8px;cursor:pointer;
+  font-size:.95rem;display:flex;align-items:center;justify-content:center;
+}
+.pv-close:hover{background:rgba(255,255,255,.3);}
+.pv-meta{
+  display:flex;gap:.65rem;flex-wrap:wrap;
+  padding:.75rem 1.5rem;background:var(--blue-lt);
+  border-bottom:1.5px solid var(--blue-bd);
+}
+.pv-chip{
+  background:#fff;border:1px solid var(--blue-bd);border-radius:2rem;
+  padding:.18rem .65rem;font-size:.75rem;color:var(--blue-dk);font-weight:700;
+  display:inline-flex;align-items:center;gap:.3rem;
+}
+.pv-body{padding:1.25rem 1.5rem;}
+.pv-q-card{
+  background:var(--blue-lt);border:1.5px solid var(--blue-bd);
+  border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem;
+}
+.pv-q-num{
+  font-size:.75rem;font-weight:800;color:var(--blue);margin-bottom:.5rem;
+}
+.pv-q-text{font-size:.97rem;font-weight:700;color:var(--ink);margin-bottom:.85rem;line-height:1.65;}
+.pv-options{display:flex;flex-direction:column;gap:.5rem;}
+.pv-opt{
+  display:flex;align-items:center;gap:.65rem;
+  padding:.55rem .9rem;border-radius:8px;
+  border:1.5px solid var(--border);background:#fff;
+  font-size:.9rem;color:var(--ink);transition:all .15s;
+}
+.pv-opt.pv-correct{
+  border-color:#60a5fa;background:#dbeafe;color:#1e3a8a;font-weight:700;
+}
+.pv-opt-lbl{
+  width:26px;height:26px;border-radius:50%;background:var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.78rem;font-weight:800;color:var(--muted);flex-shrink:0;
+}
+.pv-opt.pv-correct .pv-opt-lbl{background:var(--blue);color:#fff;}
+.pv-q-pts{
+  font-size:.75rem;color:var(--muted);margin-top:.6rem;font-weight:600;
+}
+.pv-teacher-note{
+  background:#dbeafe;border:1.5px solid #93c5fd;border-radius:8px;
+  padding:.65rem 1rem;margin-bottom:1rem;font-size:.82rem;
+  color:#1e3a8a;font-weight:700;display:flex;align-items:center;gap:.4rem;
+}
+.pv-nav{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1rem 1.5rem;border-top:1.5px solid var(--border);
+  background:var(--blue-lt);border-radius:0 0 1.25rem 1.25rem;
+  gap:.65rem;
+}
+.pv-nav-btn{
+  padding:.5rem 1.25rem;border-radius:8px;border:none;
+  font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:.4rem;transition:opacity .15s;
+}
+.pv-btn-prev{background:var(--blue-lt);color:var(--blue);border:1.5px solid var(--blue-bd);}
+.pv-btn-prev:hover{background:var(--blue);color:#fff;}
+.pv-btn-next{background:var(--blue);color:#fff;}
+.pv-btn-next:hover{opacity:.88;}
+.pv-btn-submit{background:#1e3a8a;color:#fff;}
+.pv-btn-submit:hover{opacity:.88;}
+.pv-progress{font-size:.82rem;font-weight:700;color:var(--blue-dk);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ct-wrap" dir="rtl">
+  <div class="ct-header">
+    <i class="fas fa-file-signature fa-2x opacity-75"></i>
+    <div>
+      <h1>إنشاء اختبار جديد</h1>
+      <p>حدد المادة ونوع الاختبار ثم أضف الأسئلة</p>
+    </div>
+  </div>
+
+  <form method="POST" id="testForm" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="questions_json" id="questionsJson">
+    <input type="hidden" name="test_scope" id="testScopeInput" value="lesson">
+
+    <!-- ① معلومات الاختبار -->
+    <div class="ct-card">
+      <div class="ct-card-head"><i class="fas fa-info-circle"></i> معلومات الاختبار</div>
+      <div class="ct-card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="ct-label">عنوان الاختبار <span class="req">*</span></label>
+            <input type="text" name="test_title" id="testTitle" class="ct-input"
+                   placeholder="مثال: اختبار الفصل الأول" maxlength="100">
+            <div class="field-error" id="errTitle">يرجى إدخال عنوان الاختبار.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="ct-label">الصف الدراسي <span class="req">*</span></label>
+            <select name="class_id" id="classSelect" class="ct-select" onchange="loadSubjects()">
+              <option value="">— اختر الصف —</option>
+              {% for cls in my_classes %}
+              <option value="{{ cls.classid }}">{{ cls.classname }}</option>
+              {% endfor %}
+            </select>
+            <div class="field-error" id="errClass">يرجى اختيار الصف.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="ct-label">المادة الدراسية <span class="req">*</span></label>
+            <select name="subject_id" id="subjectSelect" class="ct-select" onchange="loadLessons()">
+              <option value="">— اختر المادة —</option>
+            </select>
+            <div class="field-error" id="errSubject">يرجى اختيار المادة.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="ct-label">مدة الاختبار (دقيقة)</label>
+            <input type="number" name="duration" class="ct-input" value="30" min="5" max="180">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② نوع الاختبار -->
+    <div class="ct-card">
+      <div class="ct-card-head"><i class="fas fa-layer-group"></i> نوع الاختبار</div>
+      <div class="ct-card-body">
+        <div class="scope-toggle mb-3">
+          <button type="button" class="scope-btn active" id="btnScopeLesson" onclick="setScope('lesson')">
+            <i class="fas fa-book-open me-1"></i> مرتبط بدرس
+          </button>
+          <button type="button" class="scope-btn" id="btnScopeSubject" onclick="setScope('subject')">
+            <i class="fas fa-layer-group me-1"></i> عام للمادة
+          </button>
+        </div>
+        <div id="lessonSelectWrap">
+          <label class="ct-label">اختر الدرس <span class="req">*</span></label>
+          <select name="specific_lesson_id" id="lessonSelect" class="ct-select">
+            <option value="">— اختر الدرس —</option>
+          </select>
+          <div class="field-error" id="errLesson">يرجى اختيار الدرس المرتبط.</div>
+        </div>
+        <div id="subjectScopeNote" style="display:none;"
+             class="alert alert-info py-2 px-3 small mb-0" style="border-radius:8px;">
+          <i class="fas fa-info-circle me-1"></i>
+          سيُربط هذا الاختبار بالمادة كاملة ويظهر لجميع طلاب الصف.
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ الأسئلة -->
+    <div class="ct-card">
+      <div class="ct-card-head">
+        <i class="fas fa-list-ol"></i> الأسئلة
+        <span id="qCount" style="margin-right:.75rem;font-size:.82rem;color:var(--muted);font-weight:600;">0 سؤال</span>
+      </div>
+      <div class="ct-card-body">
+        <div id="questionsList"></div>
+        <div class="add-q-bar mt-2" onclick="addQuestion()">
+          <i class="fas fa-plus-circle me-2"></i> إضافة سؤال
+        </div>
+        <div class="field-error" id="errQuestions" style="margin-top:.5rem;"></div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 justify-content-end">
+      <a href="{% url 'learning:teacher_dashboard' %}" class="ct-btn ct-btn-ghost">
+        <i class="fas fa-times"></i> إلغاء
+      </a>
+      <button type="button" class="ct-btn ct-btn-primary" onclick="requestPublish()">
+        <i class="fas fa-paper-plane"></i> نشر الاختبار
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Modal: تأكيد النشر -->
+<div class="modal fade" id="publishConfirmModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+    <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;" dir="rtl">
+      <div class="modal-header border-0 pb-1"
+           style="background:linear-gradient(120deg,#1e3a5f,#1d4ed8);border-radius:16px 16px 0 0;">
+        <h5 class="modal-title text-white fw-bold">
+          <i class="fas fa-paper-plane me-2"></i>تأكيد نشر الاختبار
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <p class="mb-1" style="font-size:.95rem;">هل أنت متأكد من نشر هذا الاختبار؟</p>
+        <p class="text-muted small mb-0">سيصل إشعار للطلاب المرتبطين بالمادة فور النشر.</p>
+      </div>
+      <div class="modal-footer border-0 pt-0 px-4 pb-3">
+        <button type="button" class="ct-btn ct-btn-ghost" data-bs-dismiss="modal">إلغاء</button>
+        <button type="button" class="ct-btn ct-btn-mint" onclick="submitTest()">
+          <i class="fas fa-check me-1"></i>تأكيد النشر
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: نجاح النشر -->
+<div class="modal fade" id="successModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:360px;">
+    <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;text-align:center;" dir="rtl">
+      <div class="modal-body px-4 py-4">
+        <div style="font-size:3rem;margin-bottom:.75rem;">✅</div>
+        <h5 class="fw-bold" id="successMsg">تم نشر الاختبار بنجاح!</h5>
+        <p class="text-muted small">جارٍ التوجيه للوحة التحكم…</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: تأكيد حذف سؤال -->
+<div class="modal fade" id="removeQModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:380px;">
+    <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;" dir="rtl">
+      <div class="modal-header border-0 pb-1"
+           style="background:var(--rose-lt);border-radius:16px 16px 0 0;">
+        <h5 class="modal-title fw-bold" style="color:var(--rose);">
+          <i class="fas fa-trash me-2"></i>حذف السؤال
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <p class="mb-0">هل تريد حذف هذا السؤال؟ لا يمكن التراجع عن هذه العملية.</p>
+      </div>
+      <div class="modal-footer border-0 pt-0 px-4 pb-3">
+        <button type="button" class="ct-btn ct-btn-ghost" data-bs-dismiss="modal">إلغاء</button>
+        <button type="button" class="ct-btn ct-btn-danger" id="btnConfirmRemoveQ">
+          <i class="fas fa-trash me-1"></i>حذف
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ قسم الاختبارات السابقة ══ -->
+<hr class="my-tests-divider">
+<div class="my-tests-wrap" dir="rtl">
+  <div class="my-tests-head">
+    <div class="my-tests-title">
+      <i class="fas fa-list-alt"></i>
+      الاختبارات السابقة
+      <span style="background:var(--blue-lt);border:1px solid var(--blue-bd);border-radius:2rem;
+            padding:.1rem .65rem;font-size:.78rem;color:var(--blue-dk);margin-right:.25rem;">
+        {{ my_tests|length }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ── شريط التصفية ── -->
+  <div class="tests-filter-bar">
+    <select class="tf-select" id="filterClass" onchange="filterTests()">
+      <option value="">كل الصفوف</option>
+      {% for cls in my_classes %}
+      <option value="{{ cls.classid }}">{{ cls.classname }}</option>
+      {% endfor %}
+    </select>
+    <select class="tf-select" id="filterSubject" onchange="filterTests()">
+      <option value="">كل المواد</option>
+      {% for subj in all_subjects %}
+      <option value="{{ subj.subjectid }}">{{ subj.subjectname }}</option>
+      {% endfor %}
+    </select>
+    <select class="tf-select" id="filterScope" onchange="filterTests()">
+      <option value="">كل الأنواع</option>
+      <option value="lesson">مرتبط بدرس</option>
+      <option value="subject">عام للمادة</option>
+    </select>
+    <button class="tf-reset" onclick="resetFilter()">
+      <i class="fas fa-undo"></i> إعادة
+    </button>
+  </div>
+
+  {% if my_tests %}
+  {% for t in my_tests %}
+  <div class="test-row" id="testrow-{{ t.testid }}"
+       data-class="{{ t.lessonid.subjectid.classid_id|default:'' }}"
+       data-subject="{{ t.lessonid.subjectid_id|default:'' }}"
+       data-scope="{% if t.lessonid %}lesson{% else %}subject{% endif %}">
+    <div class="test-row-icon"><i class="fas fa-file-alt"></i></div>
+    <div class="test-row-info">
+      <div class="test-row-title">{{ t.testtitle }}</div>
+      <div class="test-row-meta">
+        {% if t.lessonid.subjectid %}
+        <span class="test-chip"><i class="fas fa-book"></i> {{ t.lessonid.subjectid.subjectname }}</span>
+        {% endif %}
+        {% if t.lessonid.subjectid.classid %}
+        <span class="test-chip"><i class="fas fa-door-open"></i> {{ t.lessonid.subjectid.classid.classname }}</span>
+        {% endif %}
+        <span class="test-chip"><i class="fas fa-list-ol"></i> {{ t.question_set.count }} سؤال</span>
+        {% if t.durationtaken %}
+        <span class="test-chip"><i class="fas fa-clock"></i> {{ t.durationtaken }} دقيقة</span>
+        {% endif %}
+        <span class="test-chip test-chip-scope"
+              data-lesson="{% if t.lessonid %}1{% else %}0{% endif %}">
+          <i class="fas fa-{% if t.lessonid %}link{% else %}globe{% endif %}"></i>
+          {% if t.lessonid %}مرتبط بدرس{% else %}عام للمادة{% endif %}
+        </span>
+      </div>
+    </div>
+    <div class="test-row-actions">
+      <a href="{% url 'learning:teacher_test_detail' t.testid %}" class="tact-btn"
+         style="background:var(--blue-lt);color:var(--blue);border:1.5px solid var(--blue-bd);">
+        <i class="fas fa-edit"></i> تعديل
+      </a>
+      <button class="tact-btn tact-del"
+              data-testid="{{ t.testid }}"
+              data-title="{{ t.testtitle }}"
+              onclick="openDelModal(this.dataset.testid, this.dataset.title)">
+        <i class="fas fa-trash"></i> حذف
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% else %}
+  <div class="tests-empty">
+    <i class="fas fa-clipboard-list"></i>
+    لم تنشئ أي اختبار بعد.
+  </div>
+  {% endif %}
+</div>
+
+<!-- ══ Modal معاينة الاختبار ══ -->
+<div class="pv-overlay" id="pvOverlay">
+  <div class="pv-modal">
+    <div class="pv-head">
+      <h3 id="pvTitle"><i class="fas fa-eye" style="margin-left:.4rem;"></i>معاينة الاختبار</h3>
+      <button class="pv-close" onclick="closePreview()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="pv-meta" id="pvMeta"></div>
+    <div class="pv-body" id="pvBody">
+      <div class="pv-teacher-note">
+        <i class="fas fa-info-circle"></i>
+        هذه معاينة للمعلم فقط — لا يتم تسجيل أي إجابات.
+      </div>
+      <div id="pvQuestions"></div>
+    </div>
+    <div class="pv-nav">
+      <button class="pv-nav-btn pv-btn-prev" id="pvBtnPrev" onclick="pvPrev()">
+        <i class="fas fa-chevron-right"></i> السابق
+      </button>
+      <span class="pv-progress" id="pvProgress">سؤال 1 من 1</span>
+      <button class="pv-nav-btn pv-btn-next" id="pvBtnNext" onclick="pvNext()">
+        التالي <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="pv-nav-btn pv-btn-submit" id="pvBtnSubmit" onclick="pvSubmit()" style="display:none;">
+        <i class="fas fa-paper-plane"></i> إرسال (معاينة)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="del-overlay" id="delOverlay">
+  <div class="del-box">
+    <div class="del-icon"><i class="fas fa-trash"></i></div>
+    <h3>تأكيد حذف الاختبار</h3>
+    <p>هل تريد حذف الاختبار التالي نهائياً؟</p>
+    <div id="delTestName" style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:8px;
+         padding:.55rem 1rem;margin-bottom:1rem;font-weight:800;color:#dc2626;font-size:.92rem;">
+    </div>
+    <p style="font-size:.82rem;color:#94a3b8;margin-bottom:1.25rem;">
+      سيُحذف الاختبار مع جميع أسئلته ومحاولات الطلاب. <strong>لا يمكن التراجع.</strong>
+    </p>
+    <div class="del-btns">
+      <button class="del-cancel" onclick="closeDelModal()">
+        <i class="fas fa-times me-1"></i> إلغاء
+      </button>
+      <form id="delForm" method="POST" action="" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="del-confirm">
+          <i class="fas fa-trash me-1"></i> نعم، احذف نهائياً
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{# بيانات JSON مضمّنة في data attributes لتجنب أخطاء VS Code #}
+<div id="js-subjects-data"  style="display:none;">{{ subjects_json }}</div>
+<div id="js-lessons-data"   style="display:none;">{{ lessons_json }}</div>
+<div id="js-dashboard-url"  style="display:none;">{% url 'learning:teacher_dashboard' %}</div>
+
+<script>
+var classSubs      = JSON.parse(document.getElementById('js-subjects-data').textContent || '{}');
+var subjectLessons = JSON.parse(document.getElementById('js-lessons-data').textContent  || '{}');
+
+var currentScope = 'lesson';
+var pendingRemoveIdx = -1;
+
+function setScope(s){
+  currentScope = s;
+  document.getElementById('testScopeInput').value = s;
+  document.getElementById('btnScopeLesson').classList.toggle('active', s==='lesson');
+  document.getElementById('btnScopeSubject').classList.toggle('active', s==='subject');
+  document.getElementById('lessonSelectWrap').style.display = s==='lesson' ? '' : 'none';
+  document.getElementById('subjectScopeNote').style.display = s==='subject' ? '' : 'none';
+}
+
+function loadSubjects(){
+  var classId = document.getElementById('classSelect').value;
+  var sel = document.getElementById('subjectSelect');
+  sel.innerHTML = '<option value="">— اختر المادة —</option>';
+  document.getElementById('lessonSelect').innerHTML = '<option value="">— اختر الدرس —</option>';
+  if(!classId || !classSubs[classId]) return;
+  classSubs[classId].forEach(function(s){
+    var o = document.createElement('option');
+    o.value = s.id; o.textContent = s.name; sel.appendChild(o);
+  });
+}
+
+function loadLessons(){
+  var subjId = document.getElementById('subjectSelect').value;
+  var sel = document.getElementById('lessonSelect');
+  sel.innerHTML = '<option value="">— اختر الدرس —</option>';
+  if(!subjId || !subjectLessons[subjId]) return;
+  subjectLessons[subjId].forEach(function(l){
+    var o = document.createElement('option');
+    o.value = l.id; o.textContent = l.title; sel.appendChild(o);
+  });
+}
+
+var questions = [];
+var LABELS = ['أ','ب','ج','د'];
+
+function addQuestion(){
+  questions.push({text:'', options:['','','',''], correct:'أ', points:1});
+  renderQuestions();
+  setTimeout(function(){
+    var last = document.querySelector('#questionsList .q-card:last-child');
+    if(last) last.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 80);
+}
+
+function askRemoveQuestion(idx){
+  pendingRemoveIdx = idx;
+  new bootstrap.Modal(document.getElementById('removeQModal')).show();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('btnConfirmRemoveQ').onclick = function(){
+    bootstrap.Modal.getInstance(document.getElementById('removeQModal'))?.hide();
+    if(pendingRemoveIdx >= 0){ questions.splice(pendingRemoveIdx,1); renderQuestions(); pendingRemoveIdx=-1; }
+  };
+});
+
+function renderQuestions(){
+  var list = document.getElementById('questionsList');
+  list.innerHTML = '';
+  questions.forEach(function(q,i){
+    var div = document.createElement('div');
+    div.className = 'q-card';
+    div.innerHTML =
+      '<button type="button" class="q-remove" onclick="askRemoveQuestion('+i+')">'+
+        '<i class="fas fa-trash"></i>'+
+      '</button>'+
+      '<div class="q-num">سؤال '+(i+1)+'</div>'+
+      '<label class="ct-label">نص السؤال <span class="req">*</span></label>'+
+      '<input type="text" class="ct-input" value="'+escH(q.text)+'"'+
+             ' oninput="questions['+i+'].text=this.value;hideErrQ()"'+
+             ' placeholder="اكتب نص السؤال..." style="margin-bottom:.75rem;">'+
+      '<div class="q-options">'+
+        LABELS.map(function(lbl,k){
+          return '<div>'+
+            '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.25rem;">'+
+              '<span style="font-weight:800;color:var(--blue);">'+lbl+'.</span> خيار '+lbl+
+              (k<2?' <span class="req">*</span>':'')+
+            '</label>'+
+            '<input type="text" class="ct-input" value="'+escH(q.options[k])+'"'+
+              ' oninput="questions['+i+'].options['+k+']=this.value" placeholder="الخيار '+lbl+'">'+
+          '</div>';
+        }).join('')+
+      '</div>'+
+      '<div class="d-flex gap-3 align-items-center mt-3">'+
+        '<div class="q-correct">'+
+          '<label>الإجابة الصحيحة</label>'+
+          '<select onchange="questions['+i+'].correct=this.value">'+
+            LABELS.map(function(lbl){
+              return '<option value="'+lbl+'" '+(q.correct===lbl?'selected':'')+'>'+lbl+'</option>';
+            }).join('')+
+          '</select>'+
+        '</div>'+
+        '<div><label class="ct-label">الدرجة</label>'+
+          '<input type="number" class="ct-input" value="'+q.points+'" min="1" max="100"'+
+          ' oninput="questions['+i+'].points=parseInt(this.value)||1" style="width:80px;">'+
+        '</div>'+
+      '</div>';
+    list.appendChild(div);
+  });
+  document.getElementById('qCount').textContent = questions.length + ' سؤال';
+}
+
+function hideErrQ(){ document.getElementById('errQuestions').style.display='none'; }
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function showErr(id){ document.getElementById(id).style.display='block'; }
+function hideErr(id){ document.getElementById(id).style.display='none'; }
+
+function validateForm(){
+  var ok = true;
+  var title   = document.getElementById('testTitle').value.trim();
+  var classId = document.getElementById('classSelect').value;
+  var subjId  = document.getElementById('subjectSelect').value;
+  var lessonId= document.getElementById('lessonSelect').value;
+
+  if(!title){ showErr('errTitle'); document.getElementById('testTitle').classList.add('is-invalid'); ok=false; }
+  else { hideErr('errTitle'); document.getElementById('testTitle').classList.remove('is-invalid'); }
+  if(!classId){ showErr('errClass'); document.getElementById('classSelect').classList.add('is-invalid'); ok=false; }
+  else { hideErr('errClass'); document.getElementById('classSelect').classList.remove('is-invalid'); }
+  if(!subjId){ showErr('errSubject'); document.getElementById('subjectSelect').classList.add('is-invalid'); ok=false; }
+  else { hideErr('errSubject'); document.getElementById('subjectSelect').classList.remove('is-invalid'); }
+  if(currentScope==='lesson' && !lessonId){ showErr('errLesson'); document.getElementById('lessonSelect').classList.add('is-invalid'); ok=false; }
+  else { hideErr('errLesson'); document.getElementById('lessonSelect').classList.remove('is-invalid'); }
+
+  if(questions.length===0){
+    document.getElementById('errQuestions').textContent='أضف سؤالاً واحداً على الأقل.';
+    showErr('errQuestions'); ok=false;
+  } else {
+    var et = questions.findIndex(function(q){return !q.text.trim();});
+    var eo = questions.findIndex(function(q){return !q.options[0].trim()||!q.options[1].trim();});
+    if(et>=0){ document.getElementById('errQuestions').textContent='السؤال '+(et+1)+' لا يحتوي على نص.'; showErr('errQuestions'); ok=false; }
+    else if(eo>=0){ document.getElementById('errQuestions').textContent='السؤال '+(eo+1)+': يجب إدخال خيارَي أ و ب.'; showErr('errQuestions'); ok=false; }
+    else hideErr('errQuestions');
+  }
+  return ok;
+}
+
+function requestPublish(){
+  if(!validateForm()) return;
+  new bootstrap.Modal(document.getElementById('publishConfirmModal')).show();
+}
+
+function submitTest(){
+  bootstrap.Modal.getInstance(document.getElementById('publishConfirmModal'))?.hide();
+  document.getElementById('questionsJson').value = JSON.stringify(questions);
+  var formData = new FormData(document.getElementById('testForm'));
+  fetch(window.location.pathname, {
+    method:'POST', body:formData, headers:{'X-Requested-With':'XMLHttpRequest'},
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.ok){
+      document.getElementById('successMsg').textContent = d.message || 'تم نشر الاختبار بنجاح!';
+      new bootstrap.Modal(document.getElementById('successModal')).show();
+      setTimeout(function(){ window.location.href=document.getElementById('js-dashboard-url').textContent.trim(); }, 1800);
+    } else {
+      alert(d.error || 'حدث خطأ.');
+    }
+  })
+  .catch(function(){ document.getElementById('testForm').submit(); });
+}
+</script>
+
+<script>
+/* ── حذف الاختبار من صفحة create_test ── */
+function openDelModal(testId, title) {
+  document.getElementById('delTestName').textContent = '🗑 ' + title;
+  document.getElementById('delForm').action =
+    '/teacher/test/' + testId + '/delete/';
+  document.getElementById('delOverlay').classList.add('open');
+}
+function closeDelModal() {
+  document.getElementById('delOverlay').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  if (e.target === document.getElementById('delOverlay')) closeDelModal();
+});
+
+/* ── تصفية الاختبارات ── */
+function filterTests() {
+  var filterCls  = document.getElementById('filterClass').value;
+  var filterSubj = document.getElementById('filterSubject').value;
+  var filterScp  = document.getElementById('filterScope').value;
+  var rows       = document.querySelectorAll('.test-row');
+  var visible    = 0;
+  rows.forEach(function(row) {
+    var match = true;
+    if (filterCls  && row.dataset.class   !== filterCls)   match = false;
+    if (filterSubj && row.dataset.subject !== filterSubj)  match = false;
+    if (filterScp  && row.dataset.scope   !== filterScp)   match = false;
+    row.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  var emptyMsg = document.getElementById('filter-empty-msg');
+  if (!emptyMsg) {
+    emptyMsg = document.createElement('div');
+    emptyMsg.id = 'filter-empty-msg';
+    emptyMsg.className = 'tests-empty-filter';
+    emptyMsg.innerHTML = '<i class="fas fa-search" style="margin-left:.4rem;"></i>لا توجد اختبارات تطابق هذه التصفية.';
+    var wrap = document.querySelector('.my-tests-wrap');
+    if (wrap) wrap.appendChild(emptyMsg);
+  }
+  emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+}
+
+function resetFilter() {
+  document.getElementById('filterClass').value   = '';
+  document.getElementById('filterSubject').value = '';
+  document.getElementById('filterScope').value   = '';
+  filterTests();
+}
+
+/* ── معاينة الاختبار ── */
+var pvData    = null;  // بيانات الاختبار الحالي
+var pvCurrent = 0;     // السؤال الحالي
+
+var PREVIEW_BASE = '{% url "learning:preview_test" 0 %}'.replace('/0/', '/');
+
+function openPreview(testId) {
+  pvData    = null;
+  pvCurrent = 0;
+  document.getElementById('pvQuestions').innerHTML =
+    '<div style="text-align:center;padding:2rem;color:var(--muted);">'
+    + '<i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>جاري التحميل…</div>';
+  document.getElementById('pvOverlay').classList.add('open');
+
+  fetch(PREVIEW_BASE + testId + '/', {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (!data.ok) { alert('خطأ في تحميل الاختبار.'); closePreview(); return; }
+    pvData    = data;
+    pvCurrent = 0;
+    document.getElementById('pvTitle').innerHTML =
+      '<i class="fas fa-eye" style="margin-left:.4rem;"></i>' + pvData.title;
+    var meta = '<span class="pv-chip"><i class="fas fa-list-ol"></i> '
+      + pvData.questions.length + ' سؤال</span>';
+    if (pvData.duration) {
+      meta += ' <span class="pv-chip"><i class="fas fa-clock"></i> '
+        + pvData.duration + ' دقيقة</span>';
+    }
+    document.getElementById('pvMeta').innerHTML = meta;
+    pvRender();
+  })
+  .catch(function() { alert('تعذّر الاتصال.'); closePreview(); });
+}
+
+function closePreview() {
+  document.getElementById('pvOverlay').classList.remove('open');
+  pvData = null; pvCurrent = 0;
+}
+
+var LABELS = ['أ', 'ب', 'ج', 'د'];
+
+function pvRender() {
+  if (!pvData || !pvData.questions.length) return;
+  var q   = pvData.questions[pvCurrent];
+  var tot = pvData.questions.length;
+
+  var html = '<div class="pv-q-card">'
+    + '<div class="pv-q-num"><i class="fas fa-circle" style="font-size:.4rem;vertical-align:middle;margin-left:.3rem;"></i>'
+    + 'سؤال ' + (pvCurrent+1) + ' من ' + tot + '</div>'
+    + '<div class="pv-q-text">' + esc(q.text) + '</div>'
+    + '<div class="pv-options">';
+
+  q.options.forEach(function(opt, i) {
+    var isCorrect = opt === q.correct;
+    html += '<div class="pv-opt' + (isCorrect ? ' pv-correct' : '') + '">'
+      + '<div class="pv-opt-lbl">' + LABELS[i] + '</div>'
+      + '<span>' + esc(opt) + '</span>'
+      + (isCorrect ? ' <i class="fas fa-check-circle" style="margin-right:auto;color:#1d4ed8;"></i>' : '')
+      + '</div>';
+  });
+
+  html += '</div><div class="pv-q-pts"><i class="fas fa-star" style="margin-left:.3rem;"></i>'
+    + q.points + ' نقطة</div></div>';
+
+  document.getElementById('pvQuestions').innerHTML = html;
+  document.getElementById('pvProgress').textContent = 'سؤال ' + (pvCurrent+1) + ' من ' + tot;
+
+  // أزرار التنقل
+  var btnPrev   = document.getElementById('pvBtnPrev');
+  var btnNext   = document.getElementById('pvBtnNext');
+  var btnSubmit = document.getElementById('pvBtnSubmit');
+
+  btnPrev.style.visibility = pvCurrent === 0 ? 'hidden' : 'visible';
+
+  if (tot === 1) {
+    btnNext.style.display   = 'none';
+    btnSubmit.style.display = '';
+    btnPrev.style.visibility = 'hidden';
+  } else if (pvCurrent === tot - 1) {
+    btnNext.style.display   = 'none';
+    btnSubmit.style.display = '';
+  } else {
+    btnNext.style.display   = '';
+    btnSubmit.style.display = 'none';
+  }
+}
+
+function pvNext() { if (pvData && pvCurrent < pvData.questions.length-1) { pvCurrent++; pvRender(); } }
+function pvPrev() { if (pvData && pvCurrent > 0) { pvCurrent--; pvRender(); } }
+function pvSubmit() {
+  var q = document.getElementById('pvQuestions');
+  q.innerHTML = '<div style="text-align:center;padding:2rem;">'
+    + '<div style="font-size:2.5rem;margin-bottom:.75rem;">🎉</div>'
+    + '<div style="font-size:1rem;font-weight:800;color:var(--blue-dk);">انتهت المعاينة</div>'
+    + '<div style="font-size:.85rem;color:var(--muted);margin-top:.4rem;">في الاختبار الحقيقي ستظهر النتيجة هنا.</div>'
+    + '</div>';
+  document.getElementById('pvBtnNext').style.display   = 'none';
+  document.getElementById('pvBtnPrev').style.display   = 'none';
+  document.getElementById('pvBtnSubmit').style.display = 'none';
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.addEventListener('click', function(e) {
+  if (e.target === document.getElementById('pvOverlay')) closePreview();
+});
+</script>
+
+{% endblock %}

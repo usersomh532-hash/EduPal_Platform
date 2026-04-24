@@ -1,0 +1,549 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}اختبار: {{ test.testtitle }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap');
+:root{
+  --blue:#1d4ed8;--blue-dk:#1e3a8a;--blue-md:#3b82f6;
+  --blue-lt:#eff6ff;--blue-bd:#bfdbfe;--blue-xlt:#f0f7ff;
+  --slate:#475569;--slate-lt:#f1f5f9;--slate-bd:#cbd5e1;
+  --red:#dc2626;--red-lt:#fef2f2;--red-md:#ef4444;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f3f6fb;--white:#fff;
+  --r:.875rem;--sh:0 2px 8px rgba(0,0,0,.06),0 6px 24px rgba(0,0,0,.04);
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Cairo','Tajawal',sans-serif;}
+.td-wrap{max-width:1050px;margin:0 auto;padding:2rem 1rem 5rem;}
+
+/* Header */
+.td-header{
+  background:linear-gradient(120deg,var(--blue-dk),var(--blue));
+  border-radius:1.25rem;padding:1.75rem 2rem;margin-bottom:2rem;
+  display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;
+  box-shadow:0 6px 24px rgba(29,78,216,.22);
+}
+.td-header-icon{width:52px;height:52px;flex-shrink:0;background:rgba(255,255,255,.15);
+  border:1.5px solid rgba(255,255,255,.25);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.4rem;}
+.td-title{font-size:1.3rem;font-weight:900;color:#fff;margin:0;}
+.td-meta{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.4rem;}
+.td-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  border-radius:2rem;padding:.2rem .75rem;color:rgba(255,255,255,.9);
+  font-size:.8rem;display:flex;align-items:center;gap:.35rem;}
+.td-header-actions{display:flex;gap:.75rem;margin-right:auto;flex-shrink:0;flex-wrap:wrap;}
+
+/* Buttons */
+.td-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;
+  border-radius:.65rem;font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;text-decoration:none;transition:all .18s;border:none;white-space:nowrap;}
+.td-btn-danger{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);color:#fff;}
+.td-btn-danger:hover{background:var(--red-md);border-color:var(--red-md);}
+.td-btn-back{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);color:#fff !important;}
+.td-btn-back:hover{background:rgba(255,255,255,.2);}
+.td-btn-preview{background:rgba(255,255,255,.92);border:none;color:var(--blue);font-weight:800;}
+.td-btn-preview:hover{background:#fff;color:var(--blue-dk);}
+.td-btn-edit{background:#fff;border:none;color:var(--blue);font-size:.8rem;font-weight:700;
+  font-family:'Cairo',sans-serif;padding:.3rem .75rem;border-radius:.5rem;cursor:pointer;
+  transition:all .15s;}
+.td-btn-edit:hover{background:var(--blue);color:#fff;}
+.td-btn-del-q{background:none;border:none;color:var(--muted);font-size:.85rem;
+  cursor:pointer;padding:.25rem .5rem;border-radius:.4rem;transition:all .15s;}
+.td-btn-del-q:hover{background:var(--red-lt);color:var(--red);}
+.td-btn-save{background:var(--blue);color:#fff;border:none;padding:.6rem 1.4rem;
+  border-radius:.65rem;font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:all .18s;}
+.td-btn-save:hover{background:var(--blue-dk);}
+.td-btn-cancel-edit{background:var(--slate-lt);color:var(--slate);border:1px solid var(--slate-bd);
+  padding:.6rem 1.2rem;border-radius:.65rem;font-family:'Cairo',sans-serif;
+  font-size:.88rem;font-weight:700;cursor:pointer;}
+
+/* Layout */
+.td-layout{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;}
+
+/* Cards */
+.td-card{background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:1.25rem;}
+.td-card-head{display:flex;align-items:center;gap:.75rem;padding:1rem 1.5rem;
+  background:var(--blue-xlt);border-bottom:1.5px solid var(--blue-bd);
+  font-family:'Cairo',sans-serif;font-size:.95rem;font-weight:700;color:var(--blue-dk);}
+.td-card-head i{color:var(--blue);}
+.td-card-body{padding:1.25rem 1.5rem;}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.stat-box{background:var(--blue-lt);border:1.5px solid var(--blue-bd);
+  border-radius:.75rem;padding:1rem;text-align:center;}
+.stat-num{font-size:1.75rem;font-weight:900;color:var(--blue-dk);}
+.stat-lbl{font-size:.78rem;color:var(--muted);margin-top:.2rem;}
+
+/* Questions */
+.q-item{border:1.5px solid var(--border);border-radius:.75rem;
+  padding:1rem 1.25rem;margin-bottom:.85rem;background:var(--blue-xlt);
+  transition:border-color .2s;}
+.q-item:hover{border-color:var(--blue-bd);}
+.q-item-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;}
+.q-num{font-size:.78rem;font-weight:800;color:var(--blue);}
+.q-actions{margin-right:auto;display:flex;gap:.3rem;}
+.q-text{font-size:.97rem;font-weight:700;margin-bottom:.75rem;color:var(--ink);}
+.q-options{display:flex;flex-direction:column;gap:.4rem;}
+.q-opt{display:flex;align-items:center;gap:.6rem;font-size:.9rem;color:var(--muted);}
+.q-opt-lbl{width:26px;height:26px;border-radius:50%;background:var(--slate-lt);
+  border:1px solid var(--slate-bd);display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:800;flex-shrink:0;color:var(--slate);}
+.q-opt.correct .q-opt-lbl{background:var(--blue);color:#fff;border-color:var(--blue);}
+.q-opt.correct{color:var(--blue-dk);font-weight:700;}
+.q-pts{margin-top:.5rem;font-size:.78rem;color:var(--muted);}
+
+/* Edit form inside question */
+.q-edit-form{display:none;margin-top:.75rem;border-top:1.5px solid var(--blue-bd);padding-top:.75rem;}
+.q-edit-form.open{display:block;}
+.q-edit-input{width:100%;border:1.5px solid var(--border);border-radius:.55rem;
+  padding:.5rem .75rem;font-family:'Tajawal',sans-serif;font-size:.9rem;
+  color:var(--ink);background:var(--white);margin-bottom:.5rem;outline:none;direction:rtl;}
+.q-edit-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.08);}
+.q-edit-label{font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:.3rem;display:block;}
+.q-correct-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem;}
+.q-correct-opt{display:flex;align-items:center;gap:.35rem;font-size:.85rem;
+  color:var(--slate);cursor:pointer;padding:.3rem .7rem;border-radius:.5rem;
+  border:1.5px solid var(--border);background:var(--white);transition:all .15s;}
+.q-correct-opt:has(input:checked){background:var(--blue-lt);border-color:var(--blue-bd);color:var(--blue);font-weight:700;}
+.q-correct-opt input{accent-color:var(--blue);}
+.q-edit-row{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem;}
+
+/* Attempts table */
+.attempts-table{width:100%;border-collapse:collapse;font-family:'Tajawal',sans-serif;font-size:.88rem;}
+.attempts-table th{background:var(--blue-xlt);padding:.65rem 1rem;font-family:'Cairo',sans-serif;
+  font-size:.82rem;font-weight:700;color:var(--blue-dk);text-align:right;
+  border-bottom:1.5px solid var(--blue-bd);}
+.attempts-table td{padding:.65rem 1rem;border-bottom:1px solid var(--border);}
+.attempts-table tr:last-child td{border-bottom:none;}
+.attempts-table tbody tr:hover td{background:var(--blue-xlt);}
+.score-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.2rem .65rem;
+  border-radius:2rem;font-size:.82rem;font-weight:700;}
+.score-high{background:var(--blue-lt);color:var(--blue-dk);}
+.score-mid{background:var(--slate-lt);color:var(--slate);}
+.score-low{background:var(--red-lt);color:var(--red);}
+
+/* Delete modal */
+.td-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;}
+.td-modal.show{display:flex;}
+.td-modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);}
+.td-modal-box{position:relative;z-index:1;background:var(--white);border-radius:1.25rem;
+  padding:2.25rem;max-width:400px;width:90%;text-align:center;
+  box-shadow:0 24px 64px rgba(0,0,0,.2);}
+.td-modal-icon{width:56px;height:56px;background:var(--red-lt);border:2px solid #fecaca;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:var(--red);font-size:1.3rem;margin:0 auto 1.1rem;}
+.td-modal-title{font-family:'Cairo',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:.6rem;}
+.td-modal-body{font-family:'Tajawal',sans-serif;font-size:.9rem;color:var(--muted);
+  line-height:1.7;margin-bottom:1.4rem;}
+.td-modal-actions{display:flex;gap:.75rem;justify-content:center;}
+.td-btn-confirm{background:var(--red-md);color:#fff;border:none;padding:.6rem 1.4rem;
+  border-radius:.65rem;font-family:'Cairo',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;}
+.td-btn-confirm:hover{background:var(--red);}
+.td-btn-cancel-m{background:var(--slate-lt);color:var(--slate);border:1px solid var(--slate-bd);
+  padding:.6rem 1.2rem;border-radius:.65rem;font-family:'Cairo',sans-serif;
+  font-size:.9rem;font-weight:700;cursor:pointer;}
+
+/* Toast */
+#td-toast{position:fixed;bottom:1.75rem;left:50%;transform:translateX(-50%) translateY(10px);
+  padding:.65rem 1.5rem;border-radius:50px;font-family:'Cairo',sans-serif;
+  font-size:.9rem;font-weight:700;z-index:99999;opacity:0;
+  transition:all .3s;pointer-events:none;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.18);}
+#td-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#td-toast.success{background:var(--blue-dk);color:#fff;}
+#td-toast.error{background:var(--red);color:#fff;}
+
+@media(max-width:768px){
+  .td-layout{grid-template-columns:1fr;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .td-header{flex-direction:column;}
+  .td-header-actions{width:100%;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="td-wrap" dir="rtl">
+
+  <!-- Header -->
+  <div class="td-header">
+    <div class="td-header-icon"><i class="fas fa-file-alt"></i></div>
+    <div style="flex:1;">
+      <h1 class="td-title">{{ test.testtitle }}</h1>
+      <div class="td-meta">
+        <span class="td-badge"><i class="fas fa-book"></i> {{ test.lessonid.subjectid.subjectname|default:"—" }}</span>
+        <span class="td-badge"><i class="fas fa-door-open"></i> {{ test.lessonid.subjectid.classid.classname|default:"—" }}</span>
+        <span class="td-badge"><i class="fas fa-list-ol"></i> {{ questions|length }} سؤال</span>
+        <span class="td-badge"><i class="fas fa-users"></i> {{ attempts|length }} محاولة</span>
+        {% if test.durationtaken %}
+        <span class="td-badge"><i class="fas fa-clock"></i> {{ test.durationtaken }} دقيقة</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="td-header-actions">
+      <a href="{% url 'learning:preview_test' test.testid %}" target="_blank"
+         class="td-btn td-btn-preview">
+        <i class="fas fa-eye"></i> معاينة كالطالب
+      </a>
+      <button class="td-btn td-btn-danger" onclick="openDeleteModal()">
+        <i class="fas fa-trash"></i> حذف الاختبار
+      </button>
+      <a href="{% url 'learning:teacher_dashboard' %}" class="td-btn td-btn-back">
+        <i class="fas fa-arrow-right"></i> لوحة التحكم
+      </a>
+    </div>
+  </div>
+
+  <div class="td-layout">
+
+    <!-- Main Column -->
+    <div>
+
+      <!-- Stats -->
+      <div class="td-card">
+        <div class="td-card-head"><i class="fas fa-chart-bar"></i> إحصائيات الاختبار</div>
+        <div class="td-card-body">
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-num">{{ attempts|length }}</div>
+              <div class="stat-lbl">إجمالي المحاولات</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">{{ avg_score|default:"—" }}</div>
+              <div class="stat-lbl">متوسط الدرجات</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">{{ max_score }}</div>
+              <div class="stat-lbl">الدرجة العظمى</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attempts -->
+      <div class="td-card">
+        <div class="td-card-head">
+          <i class="fas fa-users"></i> الطلاب المتقدمون
+          {% if attempts %}
+          <span style="margin-right:auto;background:var(--blue-lt);border:1px solid var(--blue-bd);
+                border-radius:2rem;padding:.15rem .7rem;font-size:.78rem;color:var(--blue-dk);">
+            {{ attempts|length }}
+          </span>
+          {% endif %}
+        </div>
+        <div class="td-card-body" style="padding:0;">
+          {% if attempts %}
+          <table class="attempts-table">
+            <thead>
+              <tr>
+                <th>الطالب</th>
+                <th>الدرجة</th>
+                <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in attempts %}
+              <tr>
+                <td><strong>{{ a.studentid.userid.fullname|default:"—" }}</strong></td>
+                <td>
+                  {% if max_score %}
+                    {% with pct=a.score %}
+                    <span class="score-badge
+                      {% if a.score >= max_score|add:0 %}score-high
+                      {% elif a.score >= max_score|divisibleby:2 %}score-mid
+                      {% else %}score-low{% endif %}">
+                      {{ a.score }} / {{ max_score }}
+                    </span>
+                    {% endwith %}
+                  {% else %}
+                    <span class="score-badge score-mid">{{ a.score }}</span>
+                  {% endif %}
+                </td>
+                <td style="color:var(--muted);">{{ a.attemptdate|date:"d M Y" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div style="padding:2.5rem;text-align:center;color:var(--muted);font-family:'Tajawal',sans-serif;">
+            <i class="fas fa-users" style="font-size:2rem;opacity:.2;display:block;margin-bottom:.5rem;"></i>
+            لم يتقدم أي طالب لهذا الاختبار بعد.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sidebar: Questions with Edit -->
+    <div>
+      <div class="td-card">
+        <div class="td-card-head">
+          <i class="fas fa-question-circle"></i> أسئلة الاختبار
+          <span style="margin-right:auto;background:var(--blue-lt);border:1px solid var(--blue-bd);
+                border-radius:2rem;padding:.15rem .7rem;font-size:.78rem;color:var(--blue-dk);">
+            {{ questions|length }}
+          </span>
+        </div>
+        <div class="td-card-body">
+          {% for q in questions %}
+          <div class="q-item" id="qblock-{{ q.questionid }}">
+
+            <div class="q-item-head">
+              <span class="q-num">سؤال {{ forloop.counter }}</span>
+              <div class="q-actions">
+                <button class="td-btn-edit"
+                        data-qid="{{ q.questionid }}"
+                        onclick="toggleEdit(this.dataset.qid)">
+                  <i class="fas fa-pen"></i> تعديل
+                </button>
+                <button class="td-btn-del-q"
+                        data-qid="{{ q.questionid }}"
+                        data-num="{{ forloop.counter }}"
+                        onclick="deleteQuestion(this.dataset.qid, this.dataset.num)"
+                        title="حذف السؤال">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- عرض السؤال -->
+            <div id="qview-{{ q.questionid }}">
+              <div class="q-text">{{ q.questiontext }}</div>
+              <div class="q-options">
+                {% if q.optiona %}
+                <div class="q-opt {% if q.correctanswer == q.optiona %}correct{% endif %}">
+                  <span class="q-opt-lbl">أ</span><span>{{ q.optiona }}</span>
+                </div>
+                {% endif %}
+                {% if q.optionb %}
+                <div class="q-opt {% if q.correctanswer == q.optionb %}correct{% endif %}">
+                  <span class="q-opt-lbl">ب</span><span>{{ q.optionb }}</span>
+                </div>
+                {% endif %}
+                {% if q.optionc %}
+                <div class="q-opt {% if q.correctanswer == q.optionc %}correct{% endif %}">
+                  <span class="q-opt-lbl">ج</span><span>{{ q.optionc }}</span>
+                </div>
+                {% endif %}
+                {% if q.optiond %}
+                <div class="q-opt {% if q.correctanswer == q.optiond %}correct{% endif %}">
+                  <span class="q-opt-lbl">د</span><span>{{ q.optiond }}</span>
+                </div>
+                {% endif %}
+              </div>
+              <div class="q-pts"><i class="fas fa-star" style="color:var(--blue);font-size:.7rem;"></i> {{ q.points }} نقطة</div>
+            </div>
+
+            <!-- فورم التعديل -->
+            <div class="q-edit-form" id="qedit-{{ q.questionid }}">
+              <span class="q-edit-label">نص السؤال</span>
+              <input type="text" class="q-edit-input" id="qtext-{{ q.questionid }}" value="{{ q.questiontext }}">
+
+              <span class="q-edit-label">الخيار أ</span>
+              <input type="text" class="q-edit-input" id="qoa-{{ q.questionid }}" value="{{ q.optiona }}">
+              <span class="q-edit-label">الخيار ب</span>
+              <input type="text" class="q-edit-input" id="qob-{{ q.questionid }}" value="{{ q.optionb }}">
+              <span class="q-edit-label">الخيار ج (اختياري)</span>
+              <input type="text" class="q-edit-input" id="qoc-{{ q.questionid }}" value="{{ q.optionc }}">
+              <span class="q-edit-label">الخيار د (اختياري)</span>
+              <input type="text" class="q-edit-input" id="qod-{{ q.questionid }}" value="{{ q.optiond }}">
+
+              <span class="q-edit-label">الإجابة الصحيحة</span>
+              <div class="q-correct-row" id="qcorrect-{{ q.questionid }}">
+                <label class="q-correct-opt">
+                  <input type="radio" name="correct-{{ q.questionid }}" value="A" {% if q.correctanswer == q.optiona %}checked{% endif %}> أ
+                </label>
+                <label class="q-correct-opt">
+                  <input type="radio" name="correct-{{ q.questionid }}" value="B" {% if q.correctanswer == q.optionb %}checked{% endif %}> ب
+                </label>
+                <label class="q-correct-opt">
+                  <input type="radio" name="correct-{{ q.questionid }}" value="C" {% if q.correctanswer == q.optionc %}checked{% endif %}> ج
+                </label>
+                <label class="q-correct-opt">
+                  <input type="radio" name="correct-{{ q.questionid }}" value="D" {% if q.correctanswer == q.optiond %}checked{% endif %}> د
+                </label>
+              </div>
+
+              <span class="q-edit-label">النقاط</span>
+              <input type="number" class="q-edit-input" id="qpts-{{ q.questionid }}" value="{{ q.points }}" min="1" max="100" style="width:80px;">
+
+              <div class="q-edit-row">
+                <button class="td-btn-cancel-edit"
+                        data-qid="{{ q.questionid }}"
+                        onclick="toggleEdit(this.dataset.qid)">إلغاء</button>
+                <button class="td-btn-save"
+                        data-qid="{{ q.questionid }}"
+                        onclick="saveQuestion(this.dataset.qid)">
+                  <i class="fas fa-save"></i> حفظ
+                </button>
+              </div>
+            </div>
+
+          </div>
+          {% empty %}
+          <div style="text-align:center;color:var(--muted);padding:2rem;font-family:'Tajawal',sans-serif;">
+            لا توجد أسئلة في هذا الاختبار.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Delete Test Modal -->
+<div class="td-modal" id="deleteModal">
+  <div class="td-modal-backdrop" onclick="closeDeleteModal()"></div>
+  <div class="td-modal-box">
+    <div class="td-modal-icon"><i class="fas fa-trash"></i></div>
+    <h5 class="td-modal-title">حذف الاختبار نهائياً؟</h5>
+    <p class="td-modal-body">
+      سيُحذف اختبار "{{ test.testtitle }}" بما يشمل جميع الأسئلة والإجابات والمحاولات.
+      لا يمكن التراجع عن هذه العملية.
+    </p>
+    <div class="td-modal-actions">
+      <button class="td-btn-cancel-m" onclick="closeDeleteModal()">إلغاء</button>
+      <form method="POST" action="{% url 'learning:delete_test' test.testid %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="td-btn-confirm">
+          <i class="fas fa-trash"></i> نعم، احذف
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Question Modal -->
+<div class="td-modal" id="deleteQModal">
+  <div class="td-modal-backdrop" onclick="closeDeleteQModal()"></div>
+  <div class="td-modal-box">
+    <div class="td-modal-icon"><i class="fas fa-question"></i></div>
+    <h5 class="td-modal-title">حذف السؤال؟</h5>
+    <p class="td-modal-body" id="deleteQBody">هل تريد حذف هذا السؤال نهائياً؟</p>
+    <div class="td-modal-actions">
+      <button class="td-btn-cancel-m" onclick="closeDeleteQModal()">إلغاء</button>
+      <button class="td-btn-confirm" onclick="confirmDeleteQuestion()">
+        <i class="fas fa-trash"></i> احذف
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="td-toast"></div>
+
+<script>
+var CSRF = '{{ csrf_token }}';
+var pendingDeleteQId = null;
+
+/* ── Modal الاختبار ── */
+function openDeleteModal()  { document.getElementById('deleteModal').classList.add('show'); }
+function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('show'); }
+
+/* ── تبديل فورم التعديل ── */
+function toggleEdit(qid) {
+  var view = document.getElementById('qview-' + qid);
+  var form = document.getElementById('qedit-' + qid);
+  var isOpen = form.classList.contains('open');
+  form.classList.toggle('open');
+  view.style.display = isOpen ? 'block' : 'none';
+}
+
+/* ── حفظ تعديل السؤال (AJAX) ── */
+function saveQuestion(qid) {
+  var text = document.getElementById('qtext-' + qid).value.trim();
+  var oa   = document.getElementById('qoa-'   + qid).value.trim();
+  var ob   = document.getElementById('qob-'   + qid).value.trim();
+  var oc   = document.getElementById('qoc-'   + qid).value.trim();
+  var od   = document.getElementById('qod-'   + qid).value.trim();
+  var pts  = parseInt(document.getElementById('qpts-' + qid).value) || 1;
+  var correctLetter = document.querySelector('input[name="correct-' + qid + '"]:checked');
+
+  if (!text || !oa || !ob) { showToast('نص السؤال والخيارَين أ وب إلزاميان', 'error'); return; }
+  if (!correctLetter)       { showToast('اختر الإجابة الصحيحة', 'error'); return; }
+
+  /* تحويل A/B/C/D لنص الخيار */
+  var optMap = { A: oa, B: ob, C: oc, D: od };
+  var correctText = optMap[correctLetter.value] || oa;
+
+  fetch("{% url 'learning:update_question' %}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({
+      question_id:   qid,
+      questiontext:  text,
+      optiona:       oa,
+      optionb:       ob,
+      optionc:       oc,
+      optiond:       od,
+      correctanswer: correctText,
+      points:        pts,
+    }),
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.ok) {
+      showToast('✅ تم حفظ التعديلات', 'success');
+      // تحديث العرض محلياً
+      var view = document.getElementById('qview-' + qid);
+      view.querySelector('.q-text').textContent = text;
+      toggleEdit(qid);
+    } else {
+      showToast(d.error || 'حدث خطأ', 'error');
+    }
+  })
+  .catch(() => showToast('تعذّر الاتصال', 'error'));
+}
+
+/* ── حذف سؤال ── */
+function deleteQuestion(qid, num) {
+  pendingDeleteQId = qid;
+  document.getElementById('deleteQBody').textContent = 'هل تريد حذف السؤال رقم ' + num + ' نهائياً؟';
+  document.getElementById('deleteQModal').classList.add('show');
+}
+function closeDeleteQModal() {
+  document.getElementById('deleteQModal').classList.remove('show');
+  pendingDeleteQId = null;
+}
+function confirmDeleteQuestion() {
+  if (!pendingDeleteQId) return;
+  fetch("{% url 'learning:delete_question' %}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ question_id: pendingDeleteQId }),
+  })
+  .then(r => r.json())
+  .then(d => {
+    closeDeleteQModal();
+    if (d.ok) {
+      var block = document.getElementById('qblock-' + pendingDeleteQId);
+      if (block) block.remove();
+      showToast('تم حذف السؤال', 'success');
+      // تحديث عداد الأسئلة
+      var remaining = document.querySelectorAll('.q-item').length;
+      document.querySelectorAll('.q-num').forEach((el, i) => {
+        el.textContent = 'سؤال ' + (i + 1);
+      });
+    } else {
+      showToast(d.error || 'حدث خطأ', 'error');
+    }
+  })
+  .catch(() => { closeDeleteQModal(); showToast('تعذّر الاتصال', 'error'); });
+}
+
+/* ── Toast ── */
+function showToast(msg, type) {
+  var t = document.getElementById('td-toast');
+  t.textContent = msg;
+  t.className = 'show ' + (type || 'success');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = ''; }, 3200);
+}
+</script>
+{% endblock %}

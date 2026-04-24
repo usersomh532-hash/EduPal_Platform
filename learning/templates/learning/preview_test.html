@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}معاينة: {{ test.testtitle }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root{
+  --sky:#3b82f6;--sky-dk:#1d4ed8;--sky-lt:#eff6ff;--sky-bd:#bfdbfe;
+  --mint:#10b981;--mint-lt:#ecfdf5;
+  --rose:#ef4444;--rose-lt:#fef2f2;
+  --amber:#f59e0b;--amber-lt:#fffbeb;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f0f5fb;--card:#fff;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',sans-serif;}
+.quiz-wrap{max-width:720px;margin:0 auto;padding:1.5rem 1.25rem 5rem;}
+
+/* شريط المعاينة */
+.preview-banner{
+  background:linear-gradient(135deg,#7c3aed,#a855f7);
+  border-radius:1rem;padding:.85rem 1.5rem;margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:.75rem;
+  font-size:.88rem;font-weight:700;color:#fff;
+}
+.preview-banner i{font-size:1rem;}
+.preview-banner a{
+  color:rgba(255,255,255,.85);text-decoration:underline;
+  font-size:.82rem;margin-right:auto;
+}
+.preview-banner a:hover{color:#fff;}
+
+/* نفس CSS الاختبار */
+.quiz-header{background:linear-gradient(120deg,#0f172a,var(--sky-dk));border-radius:1.1rem;padding:1.5rem 1.75rem;margin-bottom:1.75rem;display:flex;align-items:center;gap:1.1rem;}
+.quiz-header-icon{width:52px;height:52px;flex-shrink:0;border-radius:14px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.4rem;}
+.quiz-title{font-size:1.2rem;font-weight:900;color:#fff;margin:0;}
+.quiz-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.4rem;}
+.quiz-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:2rem;padding:.2rem .75rem;color:rgba(255,255,255,.85);font-size:.8rem;display:flex;align-items:center;gap:.35rem;}
+.quiz-progress{background:var(--card);border-radius:.875rem;border:1.5px solid var(--border);padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;}
+.progress-bar{flex:1;height:8px;background:var(--border);border-radius:10px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--sky),var(--mint));border-radius:10px;transition:width .4s;}
+.progress-text{font-size:.82rem;font-weight:800;color:var(--sky-dk);white-space:nowrap;}
+.quiz-timer{display:flex;align-items:center;gap:.4rem;background:var(--amber-lt);border:1.5px solid #fde68a;border-radius:2rem;padding:.25rem .85rem;font-size:.88rem;font-weight:800;color:#92400e;}
+.question-card{background:var(--card);border-radius:1.1rem;border:1.5px solid var(--border);padding:1.75rem;margin-bottom:1.25rem;display:none;}
+.question-card.active{display:block;}
+.question-num{font-size:.78rem;font-weight:800;color:var(--sky);margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem;}
+.question-text{font-size:1.08rem;font-weight:700;line-height:1.7;margin-bottom:1.25rem;}
+.options-grid{display:flex;flex-direction:column;gap:.7rem;}
+.option-btn{display:flex;align-items:center;gap:.85rem;padding:.85rem 1.1rem;border-radius:.75rem;border:2px solid var(--border);background:#fafbfd;cursor:pointer;text-align:right;transition:all .18s;font-family:'Tajawal',sans-serif;font-size:.97rem;color:var(--ink);width:100%;}
+.option-btn:hover{border-color:var(--sky-bd);background:var(--sky-lt);}
+.option-btn.selected{border-color:var(--sky);background:var(--sky-lt);}
+.option-label{width:32px;height:32px;flex-shrink:0;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:var(--muted);transition:all .18s;}
+.option-btn.selected .option-label{background:var(--sky-dk);color:#fff;}
+/* الإجابة الصحيحة تظهر للمعلم */
+.option-btn.is-correct{border-color:var(--mint);background:var(--mint-lt);}
+.option-btn.is-correct .option-label{background:var(--mint);color:#fff;}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;gap:.75rem;}
+.nav-btn{display:flex;align-items:center;gap:.5rem;padding:.65rem 1.35rem;border-radius:.75rem;font-size:.93rem;font-weight:700;font-family:'Tajawal',sans-serif;cursor:pointer;transition:all .18s;border:none;}
+.nav-prev{background:var(--border);color:var(--muted);}
+.nav-prev:hover{background:#d1d5db;color:var(--ink);}
+.nav-next{background:var(--sky);color:#fff;box-shadow:0 4px 14px rgba(29,78,216,.3);}
+.nav-next:hover{background:var(--sky-dk);}
+.nav-submit{background:linear-gradient(135deg,var(--mint),#059669);color:#fff;box-shadow:0 4px 14px rgba(16,185,129,.3);cursor:default;opacity:.7;}
+.dots-nav{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap;}
+.dot{width:30px;height:30px;border-radius:50%;border:2px solid var(--border);background:var(--card);cursor:pointer;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .18s;}
+.dot.current{border-color:var(--sky-dk);background:var(--sky-dk);color:#fff;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-wrap" dir="rtl">
+
+  <!-- شريط المعاينة -->
+  <div class="preview-banner">
+    <i class="fas fa-eye"></i>
+    <span>وضع المعاينة — هذا ما يراه الطالب. لا يتم تسجيل أي إجابات.</span>
+    <a href="{% url 'learning:teacher_test_detail' test.testid %}">
+      <i class="fas fa-arrow-right"></i> العودة للتعديل
+    </a>
+  </div>
+
+  <!-- Header -->
+  <div class="quiz-header">
+    <div class="quiz-header-icon"><i class="fas fa-file-alt"></i></div>
+    <div>
+      <h1 class="quiz-title">{{ test.testtitle }}</h1>
+      <div class="quiz-meta">
+        <span class="quiz-badge"><i class="fas fa-book"></i> {{ test.lessonid.subjectid.subjectname|default:"—" }}</span>
+        <span class="quiz-badge"><i class="fas fa-list-ol"></i> {{ questions|length }} سؤال</span>
+        {% if test.durationtaken %}
+        <span class="quiz-badge"><i class="fas fa-clock"></i> {{ test.durationtaken }} دقيقة</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="quiz-progress" id="quiz-progress">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <span class="progress-text" id="progress-text">سؤال 1 من {{ questions|length }}</span>
+    {% if test.durationtaken %}
+    <div class="quiz-timer" id="quiz-timer">
+      <i class="fas fa-clock"></i>
+      <span id="timer-display">{{ test.durationtaken }}:00</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Dots -->
+  <div class="dots-nav" id="dots-nav">
+    {% for q in questions %}
+    <div class="dot {% if forloop.first %}current{% endif %}"
+         data-idx="{{ forloop.counter0 }}">{{ forloop.counter }}</div>
+    {% endfor %}
+  </div>
+
+  <!-- الأسئلة -->
+  <div id="quiz-form">
+    {% for q in questions %}
+    <div class="question-card {% if forloop.first %}active{% endif %}"
+         data-q-idx="{{ forloop.counter0 }}"
+         data-qid="{{ q.questionid }}"
+         data-correct="{{ q.correctanswer }}">
+
+      <div class="question-num">
+        <i class="fas fa-circle" style="font-size:.5rem;"></i>
+        سؤال {{ forloop.counter }} من {{ questions|length }}
+      </div>
+      <div class="question-text">{{ q.questiontext }}</div>
+
+      <div class="options-grid">
+        {% if q.optiona %}
+        <button type="button" class="option-btn {% if q.optiona == q.correctanswer %}is-correct{% endif %}"
+                onclick="selectOption(this)">
+          <span class="option-label">أ</span>
+          <span>{{ q.optiona }}</span>
+          {% if q.optiona == q.correctanswer %}<i class="fas fa-check-circle" style="margin-right:auto;color:var(--mint);"></i>{% endif %}
+        </button>
+        {% endif %}
+        {% if q.optionb %}
+        <button type="button" class="option-btn {% if q.optionb == q.correctanswer %}is-correct{% endif %}"
+                onclick="selectOption(this)">
+          <span class="option-label">ب</span>
+          <span>{{ q.optionb }}</span>
+          {% if q.optionb == q.correctanswer %}<i class="fas fa-check-circle" style="margin-right:auto;color:var(--mint);"></i>{% endif %}
+        </button>
+        {% endif %}
+        {% if q.optionc %}
+        <button type="button" class="option-btn {% if q.optionc == q.correctanswer %}is-correct{% endif %}"
+                onclick="selectOption(this)">
+          <span class="option-label">ج</span>
+          <span>{{ q.optionc }}</span>
+          {% if q.optionc == q.correctanswer %}<i class="fas fa-check-circle" style="margin-right:auto;color:var(--mint);"></i>{% endif %}
+        </button>
+        {% endif %}
+        {% if q.optiond %}
+        <button type="button" class="option-btn {% if q.optiond == q.correctanswer %}is-correct{% endif %}"
+                onclick="selectOption(this)">
+          <span class="option-label">د</span>
+          <span>{{ q.optiond }}</span>
+          {% if q.optiond == q.correctanswer %}<i class="fas fa-check-circle" style="margin-right:auto;color:var(--mint);"></i>{% endif %}
+        </button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Navigation -->
+  <div class="quiz-nav" id="quiz-nav">
+    <button type="button" class="nav-btn nav-prev" id="btn-prev" onclick="prevQ()" style="visibility:hidden;">
+      <i class="fas fa-chevron-right"></i> السابق
+    </button>
+    <button type="button" class="nav-btn nav-next" id="btn-next" onclick="nextQ()">
+      التالي <i class="fas fa-chevron-left"></i>
+    </button>
+    <button type="button" class="nav-btn nav-submit" id="btn-submit" style="display:none;" title="المعاينة فقط — لا يتم الإرسال">
+      <i class="fas fa-paper-plane"></i> إرسال الإجابات
+    </button>
+  </div>
+
+</div>
+
+<div id="pv-data"
+     data-total="{{ questions|length }}"
+     data-duration="{{ test.durationtaken|default:0 }}"
+     style="display:none;"></div>
+
+<script>
+var TOTAL_Q  = parseInt(document.getElementById('pv-data').dataset.total)  || 0;
+var DURATION = parseInt(document.getElementById('pv-data').dataset.duration) || 0;
+var current  = 0;
+var answers  = {};
+
+/* ── Timer للمعاينة (لا يُرسل) ── */
+var timeLeft = DURATION * 60;
+function _updateTimer(){
+  var m = Math.floor(timeLeft/60), s = timeLeft%60;
+  var el = document.getElementById('timer-display');
+  if(el) el.textContent = m+':'+(s<10?'0':'')+s;
+  if(timeLeft<=60){
+    var t=document.getElementById('quiz-timer');
+    if(t) t.classList.add('urgent');
+  }
+}
+if(DURATION > 0){
+  _updateTimer();
+  var _ti = setInterval(function(){
+    timeLeft--;
+    _updateTimer();
+    if(timeLeft<=0){
+      clearInterval(_ti);
+      var el=document.getElementById('timer-display');
+      if(el) el.textContent='00:00';
+      // في المعاينة نُظهر رسالة بدلاً من الإرسال
+      alert('⏰ انتهى الوقت — في الاختبار الحقيقي ستُرسل الإجابات تلقائياً.');
+    }
+  },1000);
+}
+
+/* ── اختيار إجابة للمعاينة ── */
+function selectOption(btn){
+  var card = btn.closest('.question-card');
+  card.querySelectorAll('.option-btn').forEach(function(b){ b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  var qIdx = parseInt(card.dataset.qIdx);
+  answers[qIdx] = btn.dataset.val;
+  updateDot(qIdx,'answered');
+  updateProgress();
+}
+
+/* ── التنقل ── */
+function showQuestion(idx){
+  document.querySelectorAll('.question-card').forEach(function(card){
+    card.classList.toggle('active', parseInt(card.dataset.qIdx)===idx);
+  });
+  document.querySelectorAll('.dot').forEach(function(d){
+    var i=parseInt(d.dataset.idx);
+    d.classList.toggle('current', i===idx);
+    if(i!==idx && answers[i]!==undefined) d.classList.add('answered');
+  });
+  document.getElementById('btn-prev').style.visibility = idx===0?'hidden':'visible';
+  var isLast = idx===TOTAL_Q-1;
+  if(TOTAL_Q===1){
+    document.getElementById('btn-next').style.display='none';
+    document.getElementById('btn-submit').style.display='';
+    document.getElementById('btn-prev').style.visibility='hidden';
+  } else {
+    document.getElementById('btn-next').style.display=isLast?'none':'';
+    document.getElementById('btn-submit').style.display=isLast?'':'none';
+  }
+  current=idx;
+  updateProgress();
+}
+function nextQ(){ if(current<TOTAL_Q-1) showQuestion(current+1); }
+function prevQ(){ if(current>0)         showQuestion(current-1); }
+function updateProgress(){
+  var pct=((current+1)/TOTAL_Q*100).toFixed(0);
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-text').textContent='سؤال '+(current+1)+' من '+TOTAL_Q;
+}
+function updateDot(i,cls){
+  var d=document.querySelector('.dot[data-idx="'+i+'"]');
+  if(d&&!d.classList.contains('current')) d.classList.add(cls);
+}
+
+/* ربط النقاط */
+document.querySelectorAll('.dot').forEach(function(dot){
+  dot.addEventListener('click',function(){
+    showQuestion(parseInt(this.dataset.idx));
+  });
+});
+
+updateProgress();
+</script>
+{% endblock %}

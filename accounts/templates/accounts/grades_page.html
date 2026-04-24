@@ -1,0 +1,588 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}رصد الدرجات — EduPal{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap');
+:root {
+  --blue:      #1d4ed8;
+  --blue-dk:   #1e3a5f;
+  --blue-lt:   #eff4ff;
+  --blue-bd:   #bfdbfe;
+  --indigo:    #4338ca;
+  --indigo-lt: #eef2ff;
+  --indigo-bd: #c7d2fe;
+  --teal:      #0f766e;
+  --teal-lt:   #f0fdfa;
+  --teal-bd:   #99f6e4;
+  --green:     #15803d;
+  --green-lt:  #f0fdf4;
+  --green-bd:  #bbf7d0;
+  --red:       #dc2626;
+  --red-lt:    #fef2f2;
+  --red-bd:    #fecaca;
+  --slate:     #475569;
+  --slate-lt:  #f8fafc;
+  --ink:       #1e293b;
+  --muted:     #64748b;
+  --border:    #e2e8f0;
+  --bg:        #f3f6fb;
+  --white:     #ffffff;
+  --r:         14px;
+  --sh:        0 1px 4px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.05);
+  --sh-h:      0 6px 20px rgba(0,0,0,.10), 0 20px 48px rgba(0,0,0,.08);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { direction: rtl; }
+body { background: var(--bg); font-family: 'Cairo', 'Tajawal', sans-serif; color: var(--ink); }
+
+/* ══ Layout ══════════════════════════════════════════════════ */
+.gd-wrap { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+/* ══ Hero ════════════════════════════════════════════════════ */
+.hero {
+  background: linear-gradient(125deg, #1e3a5f 0%, #1d4ed8 55%, #2563eb 100%);
+  border-radius: 20px; padding: 1.75rem 2.5rem;
+  display: flex; align-items: center; gap: 1.5rem;
+  position: relative; overflow: hidden;
+  box-shadow: 0 8px 40px rgba(29,78,216,.28); margin-bottom: 2rem;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 88% 20%, rgba(255,255,255,.10) 0%, transparent 55%);
+}
+.hero-icon {
+  width: 60px; height: 60px; flex-shrink: 0;
+  background: rgba(255,255,255,.16); border: 1.5px solid rgba(255,255,255,.28);
+  border-radius: 16px; display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; color: #fff;
+}
+.hero-text h1 { font-size: clamp(1.3rem, 2vw, 1.8rem); font-weight: 900; color: #fff; margin: 0 0 .3rem; line-height: 1.2; }
+.hero-text p  { font-size: .9rem; color: rgba(255,255,255,.8); margin: 0; }
+
+/* ══ Tabs ════════════════════════════════════════════════════ */
+.tabs-bar {
+  display: flex; gap: .5rem; margin-bottom: 1.5rem;
+  background: var(--white); padding: .4rem;
+  border-radius: 12px; border: 1.5px solid var(--border);
+  width: fit-content; box-shadow: var(--sh);
+}
+.tab-btn {
+  padding: .5rem 1.5rem; border-radius: 9px; font-family: 'Cairo', sans-serif;
+  font-size: .9rem; font-weight: 700; border: none; cursor: pointer;
+  background: transparent; color: var(--muted); transition: all .2s;
+  display: flex; align-items: center; gap: .4rem;
+}
+.tab-btn.active { background: var(--blue); color: #fff; box-shadow: 0 2px 8px rgba(29,78,216,.3); }
+.tab-btn:not(.active):hover { background: var(--blue-lt); color: var(--blue); }
+
+/* ══ Section Label ═══════════════════════════════════════════ */
+.sec-lbl {
+  font-size: .92rem; font-weight: 800; color: var(--ink);
+  display: flex; align-items: center; gap: .6rem;
+  margin-bottom: 1rem; padding-right: .75rem;
+  border-right: 4px solid var(--blue);
+}
+.sec-lbl i { color: var(--blue); }
+
+/* ══ Filter Panel ════════════════════════════════════════════ */
+.filter-panel {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem; box-shadow: var(--sh);
+}
+.filter-row { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
+.filter-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 150px; }
+.filter-lbl { font-size: .82rem; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: .3rem; }
+.filter-lbl i { color: var(--blue); }
+.arab-select {
+  direction: rtl; text-align: right; font-family: 'Cairo', sans-serif; font-size: .9rem;
+  color: var(--ink); padding: .58rem 1rem; border: 1.5px solid var(--border);
+  border-radius: 10px; background: #fafbfd; transition: border-color .2s; width: 100%;
+}
+.arab-select:focus { border-color: var(--blue); outline: none; }
+.btn-filter {
+  padding: .58rem 1.25rem; font-family: 'Cairo', sans-serif; font-size: .88rem;
+  font-weight: 700; border-radius: 10px; border: none; cursor: pointer;
+  transition: all .2s; display: flex; align-items: center; gap: .4rem; white-space: nowrap;
+}
+.btn-filter.primary { background: var(--blue); color: #fff; }
+.btn-filter.primary:hover { background: var(--blue-dk); }
+.btn-filter.reset { background: var(--slate-lt); color: var(--muted); border: 1.5px solid var(--border); }
+.btn-filter.reset:hover { background: var(--border); color: var(--ink); }
+
+/* ══ Panel ═══════════════════════════════════════════════════ */
+.panel { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); overflow: hidden; }
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+  padding: .9rem 1.5rem; background: var(--slate-lt); border-bottom: 1.5px solid var(--border);
+  font-size: .92rem; font-weight: 700; color: var(--ink);
+}
+.ph-left { display: flex; align-items: center; gap: .5rem; }
+.ph-left i { color: var(--blue); }
+.panel-badge {
+  background: var(--blue-lt); color: var(--blue); border: 1px solid var(--blue-bd);
+  border-radius: 100px; padding: .26rem .9rem; font-size: .8rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: .3rem;
+}
+
+/* ══ Table ═══════════════════════════════════════════════════ */
+.g-table { font-family: 'Tajawal', sans-serif; width: 100%; }
+.g-table thead th {
+  background: var(--slate-lt); font-family: 'Cairo', sans-serif;
+  font-size: .82rem; font-weight: 700; color: var(--muted);
+  padding: .8rem 1.1rem; border: none !important; text-align: right; white-space: nowrap;
+}
+.g-table thead th.tc { text-align: center; }
+.g-table td {
+  padding: .88rem 1.1rem; border: none !important;
+  border-bottom: 1px solid var(--border) !important;
+  font-size: .9rem; color: var(--ink); vertical-align: middle;
+}
+.g-table td.tc { text-align: center; }
+.g-table tbody tr:last-child td { border-bottom: none !important; }
+.g-table tbody tr:hover td { background: #fafbff; }
+
+/* ══ Badges & Pills ══════════════════════════════════════════ */
+.subj-tag {
+  background: var(--blue-lt); color: #0369a1;
+  border-radius: 6px; padding: .22rem .65rem; font-size: .78rem; font-weight: 700; white-space: nowrap;
+}
+.cls-tag {
+  background: var(--indigo-lt); color: var(--indigo);
+  border-radius: 6px; padding: .22rem .65rem; font-size: .78rem; font-weight: 700; white-space: nowrap;
+}
+.pill {
+  border-radius: 100px; padding: .28rem .88rem;
+  font-size: .78rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.pill-blue   { background: var(--blue-lt);   color: var(--blue);   border: 1px solid var(--blue-bd);   }
+.pill-green  { background: var(--green-lt);  color: var(--green);  border: 1px solid var(--green-bd);  }
+.pill-red    { background: var(--red-lt);    color: var(--red);    border: 1px solid var(--red-bd);    }
+.pill-indigo { background: var(--indigo-lt); color: var(--indigo); border: 1px solid var(--indigo-bd); }
+.score-auto  { color: var(--blue);   font-weight: 800; }
+.score-adj   { color: var(--indigo); font-weight: 800; }
+.score-max   { color: var(--muted);  font-size: .8rem; }
+
+/* ══ Action Buttons ══════════════════════════════════════════ */
+.btn-act {
+  padding: .3rem .75rem; border-radius: 8px; font-family: 'Cairo', sans-serif;
+  font-size: .8rem; font-weight: 700; border: 1.5px solid transparent;
+  cursor: pointer; transition: all .18s; display: inline-flex; align-items: center; gap: .3rem;
+}
+.btn-edit { background: var(--blue-lt);  color: var(--blue);  border-color: var(--blue-bd); }
+.btn-edit:hover  { background: var(--blue);  color: #fff; border-color: var(--blue); }
+.btn-del  { background: var(--red-lt);   color: var(--red);   border-color: var(--red-bd); }
+.btn-del:hover   { background: var(--red);   color: #fff; border-color: var(--red); }
+.btn-new {
+  background: var(--blue); color: #fff; padding: .52rem 1.2rem;
+  border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: .88rem;
+  font-weight: 700; border: none; cursor: pointer; transition: background .2s;
+  display: flex; align-items: center; gap: .4rem;
+}
+.btn-new:hover { background: var(--blue-dk); }
+
+/* ══ Empty State ══════════════════════════════════════════════ */
+.empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+.empty-state i { font-size: 2.5rem; opacity: .2; color: var(--blue); display: block; margin-bottom: 1rem; }
+.empty-state p { font-size: .92rem; margin: 0; }
+
+/* ══ Modal ═══════════════════════════════════════════════════ */
+.gd-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(15,23,42,.48); z-index: 9000;
+  align-items: center; justify-content: center;
+}
+.gd-backdrop.open { display: flex; }
+.gd-modal {
+  background: #fff; border-radius: 20px; width: 100%; max-width: 520px;
+  font-family: 'Cairo', sans-serif; box-shadow: 0 20px 60px rgba(0,0,0,.22);
+  direction: rtl; overflow: hidden;
+  animation: modalIn .22s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(.96) translateY(12px); } to { opacity: 1; transform: none; } }
+.gd-modal.sm { max-width: 380px; }
+.gd-mhead {
+  padding: 1.2rem 1.5rem; font-weight: 800; font-size: 1rem; color: #fff;
+  background: linear-gradient(120deg, var(--blue-dk), var(--blue));
+  display: flex; align-items: center; justify-content: space-between;
+}
+.gd-mhead.red { background: linear-gradient(120deg, #7f1d1d, var(--red)); }
+.close-btn {
+  background: rgba(255,255,255,.18); border: none; color: #fff;
+  width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s; font-size: .95rem;
+}
+.close-btn:hover { background: rgba(255,255,255,.32); }
+.gd-mbody { padding: 1.5rem; }
+.gd-mfoot {
+  padding: .9rem 1.5rem; display: flex; gap: .75rem; justify-content: flex-end;
+  border-top: 1px solid var(--border); background: var(--slate-lt);
+}
+.gd-btn-save {
+  background: var(--blue); color: #fff; padding: .55rem 1.4rem;
+  border: none; border-radius: 10px; font-family: 'Cairo', sans-serif;
+  font-weight: 700; font-size: .9rem; cursor: pointer; transition: background .2s;
+}
+.gd-btn-save:hover { background: var(--blue-dk); }
+.gd-btn-save.red   { background: var(--red); }
+.gd-btn-save.red:hover { background: #b91c1c; }
+.gd-btn-cancel {
+  background: var(--slate-lt); color: var(--muted); padding: .55rem 1.1rem;
+  border: 1.5px solid var(--border); border-radius: 10px; font-family: 'Cairo', sans-serif;
+  font-weight: 700; font-size: .9rem; cursor: pointer;
+}
+
+/* ══ Form ════════════════════════════════════════════════════ */
+.fg { margin-bottom: 1.1rem; }
+.fg label { display: block; font-size: .84rem; font-weight: 700; color: var(--muted); margin-bottom: .38rem; }
+.fg label .req { color: var(--red); }
+.fg-info { font-size: .95rem; font-weight: 700; color: var(--ink); padding: .3rem 0; }
+.fg-hint { font-size: .78rem; color: var(--muted); margin-top: .25rem; }
+.gd-input {
+  width: 100%; padding: .6rem 1rem; border: 1.5px solid var(--border);
+  border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: .93rem;
+  color: var(--ink); background: #fafbfd; transition: border-color .2s; direction: rtl;
+}
+.gd-input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(29,78,216,.08); }
+.gd-input.err   { border-color: var(--red) !important; background: var(--red-lt) !important; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.modal-alert {
+  padding: .6rem 1rem; border-radius: 8px; font-size: .85rem; font-weight: 600;
+  margin-bottom: 1rem; display: none;
+}
+.modal-alert.danger  { background: var(--red-lt);  color: var(--red);  border: 1px solid var(--red-bd);  }
+.modal-alert.warning { background: #fffbeb;          color: #92400e;     border: 1px solid #fde68a;         }
+
+/* ══ Vis label ═══════════════════════════════════════════════ */
+.vis-lbl { font-size: .75rem; color: var(--muted); font-weight: 600; }
+
+/* ══ Responsive ══════════════════════════════════════════════ */
+@media(max-width: 900px) {
+  .hero { flex-direction: column; text-align: center; }
+  .filter-row { flex-direction: column; }
+  .tabs-bar { width: 100%; }
+  .tab-btn  { flex: 1; justify-content: center; }
+  .two-col  { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gd-wrap" dir="rtl" lang="ar">
+
+  <div class="hero">
+    <div class="hero-icon"><i class="fas fa-chart-bar"></i></div>
+    <div class="hero-text">
+      <h1>رصد الدرجات</h1>
+      <p>متابعة نتائج الاختبارات وإرفاق الملاحظات التعليمية.</p>
+    </div>
+  </div>
+
+  <!-- تصفية النتائج -->
+  <div class="sec-lbl"><i class="fas fa-sliders-h"></i>تصفية النتائج</div>
+  <div class="filter-panel mb-4">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="filter-lbl"><i class="fas fa-door-open"></i>الصف</label>
+        <select id="fe-class" class="arab-select">
+          <option value="">كل الصفوف</option>
+          {% for cls in classes %}
+          <option value="{{ cls.classid }}">{{ cls.classname }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-lbl"><i class="fas fa-book"></i>المادة</label>
+        <select id="fe-subject" class="arab-select">
+          <option value="">كل المواد</option>
+          {% for sub in subjects %}
+          <option value="{{ sub.subjectid }}" data-class="{{ sub.classid_id }}">{{ sub.subjectname }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-lbl"><i class="fas fa-file-alt"></i>الاختبار</label>
+        <select id="fe-test" class="arab-select">
+          <option value="">كل الاختبارات</option>
+          {% for t in tests %}
+          <option value="{{ t.testid }}">{{ t.testtitle }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-lbl"><i class="fas fa-user-graduate"></i>الطالب</label>
+        <select id="fe-student" class="arab-select">
+          <option value="">كل الطلاب</option>
+          {% for s in students %}
+          <option value="{{ s.studentid }}">{{ s.userid.fullname }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn-filter primary" onclick="loadAttempts()"><i class="fas fa-search"></i>تطبيق</button>
+      <button class="btn-filter reset"   onclick="resetExamFilter()"><i class="fas fa-undo"></i>إعادة</button>
+    </div>
+  </div>
+
+  <div class="sec-lbl"><i class="fas fa-clipboard-list"></i>نتائج الاختبارات</div>
+  <div class="panel">
+    <div class="panel-head">
+      <div class="ph-left"><i class="fas fa-clipboard-list"></i><span>نتائج الطلاب</span></div>
+      <span class="panel-badge" id="exams-count"><i class="fas fa-spinner fa-spin"></i></span>
+    </div>
+    <div class="table-responsive" style="overflow-y:hidden;">
+      <table class="g-table align-middle mb-0">
+        <thead><tr>
+          <th>اسم الطالب</th><th>الصف</th><th>المادة</th><th>الاختبار</th>
+          <th class="tc">الدرجة التلقائية</th><th class="tc">الدرجة المعدَّلة</th>
+          <th class="tc">من يرى</th><th>سبب التعديل / ملاحظة</th><th class="tc">إجراء</th>
+        </tr></thead>
+        <tbody id="exams-tbody">
+          <tr><td colspan="9" style="padding:3rem;text-align:center;color:var(--muted);">
+            <i class="fas fa-spinner fa-spin me-2"></i>جارٍ التحميل...
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- Modal: تعديل درجة اختبار -->
+<div class="gd-backdrop" id="overrideModal">
+  <div class="gd-modal">
+    <div class="gd-mhead">
+      <span><i class="fas fa-edit me-2"></i>تعديل درجة الاختبار</span>
+      <button class="close-btn" onclick="closeModal('overrideModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="gd-mbody">
+      <div class="modal-alert danger" id="ov-alert"></div>
+      <input type="hidden" id="ov-attempt-id">
+      <input type="hidden" id="ov-max-score">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.1rem;">
+        <div>
+          <div style="font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:.25rem;">الطالب</div>
+          <div id="ov-student-name" style="font-weight:800;color:var(--ink);font-size:.95rem;"></div>
+        </div>
+        <div>
+          <div style="font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:.25rem;">الدرجة التلقائية / الأقصى</div>
+          <div id="ov-auto-score" style="font-size:1.1rem;font-weight:900;color:var(--blue);"></div>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:.75rem;">
+        <div style="font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:.25rem;">الاختبار</div>
+        <div id="ov-test-title" style="font-size:.9rem;color:var(--muted);"></div>
+      </div>
+      <div class="fg">
+        <label>الدرجة الجديدة <span class="req">*</span></label>
+        <input type="number" id="ov-score" class="gd-input" min="0" step="0.5" placeholder="0">
+        <div class="fg-hint" id="ov-hint"></div>
+      </div>
+      <div class="fg">
+        <label>سبب التعديل <span class="req">*</span>
+          <span style="font-size:.75rem;color:var(--red);font-weight:600;">(إجباري)</span>
+        </label>
+        <textarea id="ov-reason" class="gd-input" rows="3" placeholder="مثال: خطأ في الصياغة..."></textarea>
+      </div>
+      <div class="fg">
+        <label>ملاحظة للطالب <span style="font-size:.75rem;color:var(--muted);">(اختياري)</span></label>
+        <textarea id="ov-note" class="gd-input" rows="2" placeholder="ملاحظة تربوية..."></textarea>
+      </div>
+      <div class="fg" style="margin-bottom:0;">
+        <label>من يرى هذا التعديل</label>
+        <select id="ov-visible" class="gd-input">
+          <option value="student_parent">الطالب والأهل معاً</option>
+          <option value="student">الطالب فقط</option>
+          <option value="parent">الأهل فقط</option>
+        </select>
+      </div>
+    </div>
+    <div class="gd-mfoot">
+      <button class="gd-btn-cancel" onclick="closeModal('overrideModal')">إلغاء</button>
+      <button class="gd-btn-save"   onclick="saveOverride()"><i class="fas fa-save me-1"></i>حفظ التعديل</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- بيانات JS -->
+<div id="gd-js"
+  data-attempts-url="{% url 'accounts:grades_api_attempts' %}"
+  data-override-url="{% url 'accounts:grades_api_override' %}"
+  data-csrf="{{ csrf_token }}"
+  style="display:none;"></div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function () {
+'use strict';
+
+var DS           = document.getElementById('gd-js').dataset;
+var URL_ATTEMPTS = DS.attemptsUrl;
+var URL_OVERRIDE = DS.overrideUrl;
+var CSRF         = DS.csrf;
+
+var _attempts = [];
+
+/* ══ Filters ══════════════════════════════════════════════════ */
+function buildUrl(base, params) {
+  var parts = [];
+  for (var k in params) {
+    if (Object.prototype.hasOwnProperty.call(params, k) && params[k]) {
+      parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
+    }
+  }
+  return parts.length ? base + '?' + parts.join('&') : base;
+}
+
+window.resetExamFilter = function () {
+  ['fe-class','fe-subject','fe-test','fe-student'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.value = '';
+  });
+  loadAttempts();
+};
+
+/* ══ Load Attempts ════════════════════════════════════════════ */
+window.loadAttempts = function () {
+  setLoading('exams-tbody', 9);
+  var url = buildUrl(URL_ATTEMPTS, {
+    class_id:   val('fe-class'),
+    subject_id: val('fe-subject'),
+    test_id:    val('fe-test'),
+    student_id: val('fe-student'),
+  });
+  fetchJSON(url)
+    .then(function (d) { _attempts = d.attempts || []; renderAttempts(_attempts); })
+    .catch(function () { renderError('exams-tbody', 9); });
+};
+
+function renderAttempts(data) {
+  var tbody = document.getElementById('exams-tbody');
+  var badge = document.getElementById('exams-count');
+  badge.innerHTML = '<i class="fas fa-list me-1"></i>' + data.length + ' نتيجة';
+  if (!data.length) {
+    tbody.innerHTML = emptyRow(9,'fas fa-clipboard-list','لا توجد نتائج بالتصفية الحالية.');
+    return;
+  }
+  tbody.innerHTML = data.map(function (a) {
+    var adjCell = a.adjusted_score !== null
+      ? '<span class="score-adj">'+a.adjusted_score+'</span><span class="score-max">/'+a.max_score+'</span>'
+      : '<span style="color:var(--muted);font-size:.8rem;">—</span>';
+    var noteText = h(a.override_reason || a.override_note || '');
+    return '<tr>'+
+      '<td style="font-weight:700;">'+h(a.student_name)+'</td>'+
+      '<td><span class="cls-tag">'+h(a.class_name)+'</span></td>'+
+      '<td><span class="subj-tag">'+h(a.subject_name)+'</span></td>'+
+      '<td style="font-size:.88rem;font-weight:600;">'+h(a.test_title)+'</td>'+
+      '<td class="tc"><span class="score-auto">'+a.auto_score+'</span><span class="score-max">/'+a.max_score+'</span></td>'+
+      '<td class="tc">'+adjCell+'</td>'+
+      '<td class="tc"><span class="vis-lbl">'+visLabel(a.visible_to)+'</span></td>'+
+      '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.82rem;color:var(--muted);" title="'+noteText+'">'+noteText+'</td>'+
+      '<td class="tc"><button class="btn-act btn-edit" onclick="openOverrideModal('+a.attempt_id+')"><i class="fas fa-edit"></i>تعديل</button></td>'+
+      '</tr>';
+  }).join('');
+}
+
+/* ══ Override Modal ═══════════════════════════════════════════ */
+window.openOverrideModal = function (attemptId) {
+  var a = _attempts.find(function (x) { return x.attempt_id === attemptId; });
+  if (!a) return;
+  sval('ov-attempt-id', a.attempt_id); sval('ov-max-score', a.max_score);
+  document.getElementById('ov-student-name').textContent = a.student_name;
+  document.getElementById('ov-test-title').textContent   = a.test_title;
+  document.getElementById('ov-auto-score').textContent   = a.auto_score + ' / ' + a.max_score;
+  document.getElementById('ov-hint').textContent = 'الحد الأدنى: 0 | الحد الأقصى: ' + a.max_score;
+  document.getElementById('ov-score').max = a.max_score;
+  sval('ov-score',   a.adjusted_score !== null ? a.adjusted_score : a.auto_score);
+  sval('ov-reason',  a.override_reason || '');
+  sval('ov-note',    a.override_note   || '');
+  sval('ov-visible', a.visible_to      || 'student_parent');
+  hideAlert('ov-alert');
+  openModal('overrideModal');
+};
+
+window.saveOverride = function () {
+  var attemptId = parseInt(val('ov-attempt-id'));
+  var score     = parseFloat(val('ov-score'));
+  var maxScore  = parseFloat(val('ov-max-score'));
+  var reason    = val('ov-reason').trim();
+  var note      = val('ov-note').trim();
+  var visible   = val('ov-visible');
+
+  if (isNaN(score))     { showAlert('ov-alert','يرجى إدخال درجة صحيحة.'); return; }
+  if (score < 0)        { showAlert('ov-alert','لا يمكن أن تكون الدرجة أقل من صفر.'); return; }
+  if (score > maxScore) { showAlert('ov-alert','الدرجة ('+score+') تتجاوز الحد الأقصى ('+maxScore+').'); return; }
+  if (!reason)          { showAlert('ov-alert','سبب التعديل إجباري.'); return; }
+
+  hideAlert('ov-alert');
+  postJSON(URL_OVERRIDE, {
+    attempt_id: attemptId, adjusted_score: score,
+    reason: reason, teacher_note: note, visible_to: visible,
+  })
+  .then(function (d) {
+    if (d.saved) { closeModal('overrideModal'); loadAttempts(); }
+    else showAlert('ov-alert', d.error || 'خطأ غير معروف.');
+  })
+  .catch(function () { showAlert('ov-alert','خطأ في الاتصال بالخادم.'); });
+};
+
+/* ══ Modal helpers ════════════════════════════════════════════ */
+window.openModal  = function (id) { document.getElementById(id).classList.add('open'); };
+window.closeModal = function (id) { document.getElementById(id).classList.remove('open'); };
+document.querySelectorAll('.gd-backdrop').forEach(function (el) {
+  el.addEventListener('click', function (e) { if (e.target === el) el.classList.remove('open'); });
+});
+
+/* ══ Utilities ════════════════════════════════════════════════ */
+function fetchJSON(url) {
+  return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function (r) { return r.json(); });
+}
+function postJSON(url, body) {
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then(function (r) {
+    var ct = r.headers.get('content-type') || '';
+    if (ct.indexOf('application/json') !== -1) return r.json();
+    return r.text().then(function (t) {
+      console.error('Non-JSON response:', t.slice(0,200));
+      return { error: 'خطأ في الخادم (HTTP ' + r.status + ').' };
+    });
+  });
+}
+function h(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function val(id)     { return (document.getElementById(id)||{}).value||''; }
+function sval(id, v) { var el=document.getElementById(id); if(el) el.value=v; }
+function showAlert(id, msg) { var el=document.getElementById(id); if(el){el.textContent=msg;el.style.display='block';} }
+function hideAlert(id) { var el=document.getElementById(id); if(el){el.style.display='none';el.textContent='';} }
+function setLoading(tbodyId, cols) {
+  var el=document.getElementById(tbodyId);
+  if(el) el.innerHTML='<tr><td colspan="'+cols+'" style="padding:3rem;text-align:center;color:var(--muted);"><i class="fas fa-spinner fa-spin me-2"></i>جارٍ التحميل...</td></tr>';
+}
+function renderError(tbodyId, cols) {
+  var el=document.getElementById(tbodyId);
+  if(el) el.innerHTML='<tr><td colspan="'+cols+'" style="padding:3rem;text-align:center;color:var(--red);"><i class="fas fa-exclamation-circle me-2"></i>خطأ في تحميل البيانات.</td></tr>';
+}
+function emptyRow(cols, icon, msg) {
+  return '<tr><td colspan="'+cols+'"><div class="empty-state"><i class="'+icon+'"></i><p>'+h(msg)+'</p></div></td></tr>';
+}
+function visLabel(v) {
+  if(v==='student') return '👤 طالب';
+  if(v==='parent')  return '👨‍👩‍👦 أهل';
+  return '👤+👨‍👩‍👦 الجميع';
+}
+
+/* ══ Init ════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function () { loadAttempts(); });
+
+}());
+</script>
+{% endblock %}

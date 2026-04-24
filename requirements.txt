@@ -1,0 +1,13 @@
+Django==5.1.6
+psycopg2-binary
+google-genai
+edge-tts
+requests
+Pillow
+mediapipe>=0.10.0
+opencv-python>=4.8.0
+flask>=3.0.0
+flask-cors>=4.0.0
+numpy>=1.24.0
+scipy>=1.11.0
+flask-sock>=0.7.0

@@ -1,0 +1,653 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}منشئ الدروس الذكي{% endblock %}
+
+{% block content %}
+<div class="ul-wrap" dir="rtl">
+
+  <!-- ══ Hero ══════════════════════════════════════════════════ -->
+  <div class="ul-hero">
+    <div class="ul-hero-inner">
+      <div class="ul-hero-icon"><i class="fas fa-robot"></i></div>
+      <div>
+        <h1 class="ul-hero-title">منشئ الدروس الذكي</h1>
+        <p class="ul-hero-sub">حوّل نصّك إلى درس مبسّط بفقرات واضحة ووسائط متعددة — مدعوم بـ Gemini AI</p>
+      </div>
+    </div>
+    <a href="{% url 'learning:teacher_dashboard' %}" class="ul-back-btn">
+      <i class="fas fa-arrow-right"></i> لوحة التحكم
+    </a>
+  </div>
+
+  <!-- ══ Progress Steps ════════════════════════════════════════ -->
+  <div class="ul-steps">
+    <div class="ul-step active" id="step-dot-1">
+      <div class="ul-step-num">١</div>
+      <span>المعلومات الأساسية</span>
+    </div>
+    <div class="ul-step-line"></div>
+    <div class="ul-step" id="step-dot-2">
+      <div class="ul-step-num">٢</div>
+      <span>الصور</span>
+    </div>
+    <div class="ul-step-line"></div>
+    <div class="ul-step" id="step-dot-3">
+      <div class="ul-step-num">٣</div>
+      <span>نص الدرس</span>
+    </div>
+    <div class="ul-step-line"></div>
+    <div class="ul-step" id="step-dot-4">
+      <div class="ul-step-num">٤</div>
+      <span>التوليد</span>
+    </div>
+  </div>
+
+  <!-- ══ Form ══════════════════════════════════════════════════ -->
+  <form method="POST" id="aiGenerateForm" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="image_source" id="image_source_field" value="upload">
+
+    <!-- ── إرشادات المعلم ──────────────────────────────────────── -->
+    <div class="ul-guide-card" id="guideCard">
+      <div class="ul-guide-head">
+        <div class="ul-guide-icon"><i class="fas fa-lightbulb"></i></div>
+        <div>
+          <div class="ul-guide-title">💡 كيف تحصل على درس مثالي؟</div>
+          <div class="ul-guide-sub">اقرأ هذه النصائح قبل إدخال النص — تُحسّن نتيجة Gemini بشكل كبير</div>
+        </div>
+        <button type="button" class="ul-guide-toggle" id="guideToggle" onclick="toggleGuide()">
+          <i class="fas fa-chevron-up" id="guideChevron"></i>
+        </button>
+      </div>
+
+      <div class="ul-guide-body" id="guideBody">
+        <div class="ul-guide-cols">
+          <div class="ul-guide-col">
+            <h6 class="ul-guide-col-title"><i class="fas fa-pen-alt"></i> كيف تكتب نصاً جيداً؟</h6>
+            <ul class="ul-guide-list">
+              <li>اكتب الفكرة الرئيسية للدرس بوضوح</li>
+              <li>استخدم جملاً قصيرة أو نقاطاً مرتبة</li>
+              <li>ركّز على المفاهيم الأساسية فقط</li>
+              <li>لا تُطوّل — 100 إلى 300 كلمة كافية</li>
+            </ul>
+          </div>
+          <div class="ul-guide-col">
+            <h6 class="ul-guide-col-title"><i class="fas fa-star"></i> نصائح لتحسين النتيجة</h6>
+            <ul class="ul-guide-list">
+              <li>اذكر الكلمات المفتاحية المهمة في الدرس</li>
+              <li>أضف أمثلة حياتية إن وُجدت</li>
+              <li>تجنب النسخ العشوائي من الإنترنت</li>
+              <li>اختر مادة الدرس بدقة — تُؤثّر على الأسلوب</li>
+            </ul>
+          </div>
+          <div class="ul-guide-col">
+            <h6 class="ul-guide-col-title"><i class="fas fa-images"></i> نصائح للصور</h6>
+            <ul class="ul-guide-list">
+              <li>ارفع صورة واحدة على الأقل (إلزامي)</li>
+              <li>اختر صوراً توضيحية مرتبطة بالدرس</li>
+              <li>الصور تُعزّز التركيز لطلاب ADHD بشكل كبير</li>
+              <li>يمكنك ربط كل صورة بفقرة بعد التوليد</li>
+            </ul>
+          </div>
+        </div>
+        <div class="ul-guide-adhd">
+          <i class="fas fa-brain ul-guide-adhd-icon"></i>
+          <div>
+            <strong>لماذا هذا النظام مختلف؟</strong>
+            يُكيّف Gemini أسلوب الشرح تلقائياً حسب المادة التي اخترتها —
+            فالرياضيات تُشرح بأمثلة تدريجية، والتاريخ بأسلوب قصصي، والعلوم بربط بالحياة اليومية.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Step 1: المعلومات الأساسية ─────────────────────────── -->
+    <div class="ul-card" id="section-1">
+      <div class="ul-card-head">
+        <div class="ul-card-num">١</div>
+        <div>
+          <div class="ul-card-title">المعلومات الأساسية</div>
+          <div class="ul-card-sub">عنوان الدرس، الصف، والمادة الدراسية</div>
+        </div>
+      </div>
+      <div class="ul-card-body">
+        <div class="ul-row">
+          <div class="ul-field ul-field-full">
+            <label class="ul-lbl">
+              <i class="fas fa-heading"></i> عنوان الدرس <span class="ul-req">*</span>
+            </label>
+            <input type="text" name="lesson_title" id="lesson_title"
+                   class="ul-input" placeholder="مثال: الماء وأهميته في حياتنا"
+                   maxlength="150" required>
+            <div class="ul-hint">اجعل العنوان واضحاً ومشوّقاً للطالب</div>
+          </div>
+          <div class="ul-field">
+            <label class="ul-lbl">
+              <i class="fas fa-door-open"></i> الصف المستهدف <span class="ul-req">*</span>
+            </label>
+            <select name="class_id" id="class_select" class="ul-select" required>
+              <option value="">— اختر الصف —</option>
+              {% for cls in my_classes %}
+              <option value="{{ cls.classid }}">{{ cls.classname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="ul-field">
+            <label class="ul-lbl">
+              <i class="fas fa-book-open"></i> المادة الدراسية <span class="ul-req">*</span>
+            </label>
+            <select name="subjectid" id="subject_select" class="ul-select" required>
+              <option value="">— اختر الصف أولاً —</option>
+              {% for subject in subjects %}
+              <option value="{{ subject.subjectid }}" data-class="{{ subject.classid.classid }}">
+                {{ subject.subjectname }}
+              </option>
+              {% endfor %}
+            </select>
+            <div class="ul-hint" id="subject-hint">
+              <i class="fas fa-info-circle"></i>
+              اختر الصف أولاً لتظهر المواد المرتبطة به
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Step 2: الصور ─────────────────────────────────────── -->
+    <div class="ul-card" id="section-2">
+      <div class="ul-card-head">
+        <div class="ul-card-num">٢</div>
+        <div>
+          <div class="ul-card-title">صور الدرس</div>
+          <div class="ul-card-sub">ارفع من 1 إلى 5 صور — ستُوزَّع بين فقرات الدرس تلقائياً</div>
+        </div>
+        <div class="ul-img-counter" id="img-counter">
+          <span id="img-count">0</span> / 5
+        </div>
+      </div>
+      <div class="ul-card-body">
+        <div class="ul-img-note">
+          <i class="fas fa-lightbulb"></i>
+          <span><strong>صورة واحدة على الأقل إلزامية.</strong> اختر صوراً توضيحية مرتبطة بمحتوى الدرس — تُعزّز تركيز طلاب ADHD وصعوبات التعلم بشكل ملحوظ.</span>
+        </div>
+        <div class="ul-img-grid" id="img-grid">
+          {% for i in "12345" %}
+          <div class="ul-zone {% if not forloop.first %}ul-zone-optional{% endif %}" id="zone_{{ i }}" data-idx="{{ i }}">
+            <input type="file" id="img_file_{{ i }}" name="img_file_{{ i }}"
+                   accept="image/jpeg,image/png,image/gif,image/webp" class="d-none">
+            <div class="ul-zone-inner" id="zone-inner_{{ i }}">
+              <div class="ul-zone-icon"><i class="fas fa-plus"></i></div>
+              <div class="ul-zone-label">
+                صورة {{ i }}
+                {% if not forloop.first %}<span class="ul-opt-badge">اختياري</span>{% endif %}
+              </div>
+              <div class="ul-zone-hint">JPG · PNG · WEBP · حتى 5MB</div>
+            </div>
+            <button type="button" class="ul-del-btn d-none" id="del_{{ i }}"><i class="fas fa-times"></i></button>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="ul-img-min-warn d-none" id="img-min-warn">
+          <i class="fas fa-exclamation-triangle"></i>
+          يجب رفع صورة واحدة على الأقل — الصورة إلزامية لإنشاء الدرس
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Step 3: نص الدرس ──────────────────────────────────── -->
+    <div class="ul-card" id="section-3">
+      <div class="ul-card-head">
+        <div class="ul-card-num">٣</div>
+        <div>
+          <div class="ul-card-title">نص الدرس الأصلي</div>
+          <div class="ul-card-sub">أدخل النص الذي سيقوم Gemini بتحويله إلى درس مبسّط بأسلوب قصصي</div>
+        </div>
+      </div>
+      <div class="ul-card-body">
+        <div class="ul-field ul-field-full">
+          <label class="ul-lbl">
+            <i class="fas fa-align-right"></i> النص الأصلي <span class="ul-req">*</span>
+          </label>
+          <div class="ul-textarea-wrap">
+            <textarea name="lesson_text" id="lesson_text"
+                      class="ul-textarea" rows="10" maxlength="50000"
+                      placeholder="انسخ نص الدرس هنا… سيقوم Gemini بتقسيمه إلى فقرات واضحة مناسبة لفئة الطلاب المستهدفة ذوي تشتت الانتباه."
+                      required></textarea>
+            <div class="ul-char-counter">
+              <span id="char-count">0</span> / 50,000 حرف
+            </div>
+          </div>
+          <div class="ul-hint">
+            <i class="fas fa-info-circle"></i>
+            كلما كان النص أوضح وأكثر تفصيلاً، كانت نتيجة Gemini أفضل.
+            يُوصى بـ 200 كلمة على الأقل.
+          </div>
+        </div>
+        <div class="ul-text-quality" id="text-quality">
+          <div class="ul-quality-bar">
+            <div class="ul-quality-fill" id="quality-fill"></div>
+          </div>
+          <span class="ul-quality-label" id="quality-label">أدخل النص للبدء</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Step 4: التوليد ───────────────────────────────────── -->
+    <div class="ul-card ul-card-generate" id="section-4">
+      <div class="ul-card-body">
+        <div class="ul-generate-inner">
+
+          <div class="ul-generate-info">
+            <div class="ul-info-row">
+              <i class="fas fa-check-circle ul-info-icon"></i>
+              <span>تبسيط النص بأسلوب قصصي مناسب للأطفال</span>
+            </div>
+            <div class="ul-info-row">
+              <i class="fas fa-check-circle ul-info-icon"></i>
+              <span>تقسيمه إلى فقرات قصيرة مع صورة لكل فقرة</span>
+            </div>
+            <div class="ul-info-row">
+              <i class="fas fa-check-circle ul-info-icon"></i>
+              <span>تحويل النص إلى صوت عربي واضح</span>
+            </div>
+
+            {# ✅ إصلاح: استخدام has_personal_key و remaining المُمرَّرَين من الـ view #}
+            {% if has_personal_key %}
+            <div class="ul-info-row ul-info-premium">
+              <i class="fas fa-key ul-info-icon"></i>
+              <span>أنت تستخدم مفتاحك الشخصي — توليد بلا حدود</span>
+            </div>
+            {% else %}
+            <div class="ul-info-row ul-info-quota">
+              <i class="fas fa-clock ul-info-icon"></i>
+              <span>متبقي لهذا اليوم:
+                <strong>{{ remaining }}</strong> درس
+              </span>
+            </div>
+            {% endif %}
+          </div>
+
+          <button type="submit" class="ul-generate-btn" id="generateBtn">
+            <i class="fas fa-magic"></i>
+            <span>ابدأ التوليد الذكي</span>
+            <span class="ul-btn-sub">نص + صور + صوت</span>
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<!-- ══ Loading Overlay ═══════════════════════════════════════ -->
+<div class="ul-overlay d-none" id="loadingOverlay">
+  <div class="ul-overlay-card">
+    <div class="ul-overlay-spinner">
+      <div class="ul-spinner-ring"></div>
+      <div class="ul-spinner-ring ul-spinner-ring-2"></div>
+      <div class="ul-overlay-icon"><i class="fas fa-robot"></i></div>
+    </div>
+    <h4 class="ul-overlay-title">Gemini يعمل على درسك…</h4>
+    <p class="ul-overlay-sub">يتم الآن تبسيط النص، ترتيب الفقرات، ومعالجة الصور والصوت</p>
+    <div class="ul-overlay-steps">
+      <div class="ul-ov-step active" id="ov-step-1">
+        <i class="fas fa-brain"></i> تبسيط النص
+      </div>
+      <div class="ul-ov-step" id="ov-step-2">
+        <i class="fas fa-image"></i> معالجة الصور
+      </div>
+      <div class="ul-ov-step" id="ov-step-3">
+        <i class="fas fa-volume-up"></i> توليد الصوت
+      </div>
+    </div>
+    <div class="ul-overlay-progress">
+      <div class="ul-overlay-bar" id="overlay-bar"></div>
+    </div>
+    <p class="ul-overlay-time">قد يستغرق الأمر 20–40 ثانية</p>
+  </div>
+</div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap');
+:root {
+  --blue:#1d4ed8;--blue-dk:#1e3a8a;--blue-lt:#eff6ff;--blue-bd:#bfdbfe;
+  --teal:#0f766e;--teal-lt:#f0fdfa;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f3f6fb;--white:#ffffff;
+  --green:#16a34a;--amber:#d97706;--red:#dc2626;
+  --r:.875rem;--sh:0 2px 8px rgba(0,0,0,.06),0 6px 24px rgba(0,0,0,.04);
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);font-family:'Cairo','Tajawal',sans-serif;color:var(--ink);direction:rtl;}
+
+/* ── Guide Card ── */
+.ul-guide-card{background:linear-gradient(135deg,#fffbeb,#fef9ec);border:1.5px solid #fde68a;border-radius:var(--r);box-shadow:var(--sh);margin-bottom:1.5rem;overflow:hidden;}
+.ul-guide-head{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.5rem;border-bottom:1.5px solid #fde68a;cursor:default;}
+.ul-guide-icon{width:40px;height:40px;flex-shrink:0;background:#fef3c7;border:1.5px solid #fde68a;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#d97706;font-size:1rem;}
+.ul-guide-title{font-family:'Cairo',sans-serif;font-size:1rem;font-weight:800;color:#92400e;}
+.ul-guide-sub{font-family:'Tajawal',sans-serif;font-size:.82rem;color:#b45309;margin-top:.1rem;}
+.ul-guide-toggle{background:none;border:none;color:#d97706;cursor:pointer;padding:.35rem .6rem;border-radius:.5rem;margin-right:auto;transition:background .2s;}
+.ul-guide-toggle:hover{background:#fde68a;}
+.ul-guide-body{padding:1.5rem;}
+.ul-guide-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:1.25rem;}
+.ul-guide-col{background:#fff;border:1.5px solid #fde68a;border-radius:.75rem;padding:1rem 1.25rem;}
+.ul-guide-col-title{font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:800;color:#92400e;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem;}
+.ul-guide-col-title i{color:#d97706;}
+.ul-guide-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.4rem;}
+.ul-guide-list li{font-family:'Tajawal',sans-serif;font-size:.85rem;color:#78350f;padding-right:1rem;position:relative;line-height:1.6;}
+.ul-guide-list li::before{content:"•";position:absolute;right:0;color:#d97706;font-weight:700;}
+.ul-guide-adhd{background:#fff;border:1.5px solid #fde68a;border-radius:.75rem;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:.75rem;font-family:'Tajawal',sans-serif;font-size:.88rem;color:#78350f;line-height:1.7;}
+.ul-guide-adhd-icon{color:#d97706;font-size:1.1rem;margin-top:2px;flex-shrink:0;}
+
+/* ── Wrap ── */
+.ul-wrap{max-width:860px;margin:0 auto;padding:2rem 1rem 5rem;}
+
+/* ── Hero ── */
+.ul-hero{background:linear-gradient(120deg,#0f172a 0%,var(--blue-dk) 50%,var(--blue) 100%);border-radius:1.25rem;padding:2rem 2.25rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;box-shadow:0 8px 32px rgba(29,78,216,.3);margin-bottom:2rem;}
+.ul-hero-inner{display:flex;align-items:center;gap:1.25rem;}
+.ul-hero-icon{width:64px;height:64px;flex-shrink:0;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;}
+.ul-hero-title{font-size:1.75rem;font-weight:900;color:#fff;line-height:1.2;margin:0;}
+.ul-hero-sub{font-family:'Tajawal',sans-serif;font-size:.95rem;color:rgba(255,255,255,.75);margin:.3rem 0 0;}
+.ul-back-btn{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:.65rem;color:#fff !important;text-decoration:none;padding:.55rem 1.1rem;font-family:'Cairo',sans-serif;font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:.45rem;white-space:nowrap;transition:background .2s;}
+.ul-back-btn:hover{background:rgba(255,255,255,.2);}
+
+/* ── Steps ── */
+.ul-steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:2rem;padding:1.5rem 2.5rem;background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh);}
+.ul-step{display:flex;align-items:center;gap:.5rem;flex-direction:column;min-width:80px;}
+.ul-step-num{width:44px;height:44px;border-radius:50%;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-family:'Cairo',sans-serif;font-size:1.05rem;font-weight:800;transition:all .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 8px rgba(0,0,0,.08);border:2.5px solid transparent;}
+.ul-step span{font-size:.82rem;font-weight:700;color:var(--muted);white-space:nowrap;margin-top:.2rem;transition:color .3s;}
+.ul-step.active .ul-step-num{background:var(--blue);color:#fff;border-color:#93c5fd;box-shadow:0 4px 14px rgba(37,99,235,.35);transform:scale(1.1);}
+.ul-step.active span{color:var(--blue);}
+.ul-step.done .ul-step-num{background:var(--green);color:#fff;border-color:#86efac;box-shadow:0 4px 10px rgba(22,163,74,.25);}
+.ul-step.done span{color:var(--green);}
+.ul-step-line{flex:1;height:3px;background:var(--border);min-width:50px;margin:0 .5rem;margin-bottom:1.5rem;border-radius:2px;transition:background .4s;}
+
+/* ── Card ── */
+.ul-card{background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh);margin-bottom:1.5rem;overflow:hidden;transition:border-color .2s;}
+.ul-card:focus-within{border-color:var(--blue-bd);}
+.ul-card-head{display:flex;align-items:center;gap:1rem;padding:1.25rem 1.75rem;background:#f8fafc;border-bottom:1.5px solid var(--border);}
+.ul-card-num{width:40px;height:40px;flex-shrink:0;border-radius:12px;background:var(--blue-lt);border:1.5px solid var(--blue-bd);display:flex;align-items:center;justify-content:center;font-family:'Cairo',sans-serif;font-size:1rem;font-weight:800;color:var(--blue);}
+.ul-card-title{font-family:'Cairo',sans-serif;font-size:1.05rem;font-weight:700;color:var(--ink);}
+.ul-card-sub{font-family:'Tajawal',sans-serif;font-size:.85rem;color:var(--muted);margin-top:.1rem;}
+.ul-card-body{padding:1.75rem;}
+
+/* ── Fields ── */
+.ul-row{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+.ul-field-full{grid-column:1/-1;}
+.ul-field{display:flex;flex-direction:column;gap:.5rem;}
+.ul-lbl{font-family:'Cairo',sans-serif;font-size:.95rem;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:.4rem;}
+.ul-lbl i{color:var(--blue);font-size:.9rem;}
+.ul-req{color:var(--red);font-size:.85rem;}
+.ul-hint{font-family:'Tajawal',sans-serif;font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:.4rem;}
+.ul-hint i{color:var(--blue);}
+.ul-input,.ul-select,.ul-textarea{direction:rtl !important;text-align:right !important;font-family:'Cairo',sans-serif !important;font-size:.97rem !important;color:var(--ink) !important;padding:.75rem 1rem !important;border:1.5px solid var(--border) !important;border-radius:.65rem !important;background:#fafbfd !important;transition:border-color .2s,box-shadow .2s;outline:none !important;width:100% !important;display:block !important;box-shadow:none !important;}
+.ul-input:focus,.ul-select:focus,.ul-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.1);}
+.ul-select{appearance:none !important;-webkit-appearance:none !important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") !important;background-repeat:no-repeat !important;background-position:left .75rem center !important;padding-left:2.5rem !important;min-height:46px;}
+.ul-textarea{resize:vertical;min-height:200px;line-height:1.8;}
+.ul-textarea-wrap{position:relative;}
+.ul-char-counter{position:absolute;bottom:.6rem;left:.75rem;font-family:'Tajawal',sans-serif;font-size:.75rem;color:var(--muted);}
+
+/* ── Text Quality ── */
+.ul-text-quality{display:flex;align-items:center;gap:1rem;margin-top:1rem;}
+.ul-quality-bar{flex:1;height:6px;background:var(--border);border-radius:10px;overflow:hidden;}
+.ul-quality-fill{height:100%;width:0%;background:var(--green);border-radius:10px;transition:width .4s,background .4s;}
+.ul-quality-label{font-family:'Tajawal',sans-serif;font-size:.82rem;color:var(--muted);white-space:nowrap;}
+
+/* ── Image Grid ── */
+.ul-img-counter{margin-right:auto;background:var(--blue-lt);border:1.5px solid var(--blue-bd);border-radius:2rem;padding:.2rem .85rem;font-family:'Cairo',sans-serif;font-size:.85rem;font-weight:700;color:var(--blue);}
+.ul-img-note{background:var(--blue-lt);border:1.5px solid var(--blue-bd);border-radius:.65rem;padding:.85rem 1rem;margin-bottom:1.25rem;font-family:'Tajawal',sans-serif;font-size:.9rem;color:#1e40af;display:flex;align-items:flex-start;gap:.6rem;line-height:1.6;}
+.ul-img-note i{color:var(--blue);margin-top:2px;flex-shrink:0;}
+.ul-img-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.85rem;}
+.ul-zone{border:2px dashed var(--border);border-radius:.75rem;background:var(--white);cursor:pointer;position:relative;aspect-ratio:1;overflow:hidden;transition:border-color .2s,background .2s,transform .15s;display:flex;align-items:center;justify-content:center;}
+.ul-zone:hover{border-color:var(--blue);background:var(--blue-lt);transform:translateY(-2px);}
+.ul-zone.has-image{border-style:solid;border-color:var(--blue);}
+.ul-zone-optional{border-color:#cbd5e1;background:#f8fafc;}
+.ul-zone-optional:hover{border-color:var(--teal);background:var(--teal-lt);}
+.ul-zone-inner{display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:.75rem;text-align:center;width:100%;}
+.ul-zone-inner img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.ul-zone-icon{font-size:1.4rem;color:var(--muted);transition:color .2s;}
+.ul-zone:hover .ul-zone-icon{color:var(--blue);}
+.ul-zone-label{font-family:'Cairo',sans-serif;font-size:.78rem;font-weight:700;color:var(--ink);}
+.ul-zone-hint{font-family:'Tajawal',sans-serif;font-size:.7rem;color:var(--muted);}
+.ul-opt-badge{display:inline-block;background:#e2e8f0;color:var(--muted);border-radius:20px;padding:.05rem .4rem;font-size:.65rem;margin-right:.2rem;}
+.ul-del-btn{position:absolute;top:.35rem;left:.35rem;z-index:5;width:24px;height:24px;background:var(--red);color:#fff;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;cursor:pointer;transition:background .15s,transform .15s;}
+.ul-del-btn:hover{background:#b91c1c;transform:scale(1.1);}
+.ul-img-min-warn{margin-top:.85rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:.65rem;padding:.75rem 1rem;font-family:'Tajawal',sans-serif;font-size:.88rem;color:#92400e;display:flex;align-items:center;gap:.5rem;}
+
+/* ── Generate Card ── */
+.ul-card-generate{background:linear-gradient(135deg,#f0f9ff 0%,#eff6ff 100%);border-color:var(--blue-bd);}
+.ul-generate-inner{display:flex;align-items:center;justify-content:space-between;gap:2rem;}
+.ul-generate-info{display:flex;flex-direction:column;gap:.6rem;}
+.ul-info-row{display:flex;align-items:center;gap:.6rem;font-family:'Tajawal',sans-serif;font-size:.93rem;color:var(--ink);}
+.ul-info-icon{color:var(--green);font-size:.9rem;flex-shrink:0;}
+.ul-info-premium .ul-info-icon{color:var(--amber);}
+.ul-info-quota   .ul-info-icon{color:var(--blue);}
+.ul-generate-btn{flex-shrink:0;background:linear-gradient(135deg,var(--blue) 0%,var(--blue-dk) 100%);color:#fff;border:none;border-radius:.875rem;padding:1.1rem 2rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.2rem;font-family:'Cairo',sans-serif;box-shadow:0 6px 24px rgba(29,78,216,.35);transition:transform .15s,box-shadow .15s;min-width:180px;}
+.ul-generate-btn i{font-size:1.5rem;}
+.ul-generate-btn span:first-of-type{font-size:1.05rem;font-weight:800;}
+.ul-btn-sub{font-family:'Tajawal',sans-serif;font-size:.78rem;opacity:.8;}
+.ul-generate-btn:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(29,78,216,.4);}
+.ul-generate-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+/* ── Loading Overlay ── */
+.ul-overlay{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.88);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;}
+.ul-overlay.d-none{display:none !important;}
+.ul-overlay-card{background:#fff;border-radius:1.5rem;padding:2.5rem 3rem;max-width:440px;width:90%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.25);}
+.ul-overlay-spinner{position:relative;width:80px;height:80px;margin:0 auto 1.5rem;}
+.ul-spinner-ring{position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:var(--blue);animation:spin 1s linear infinite;}
+.ul-spinner-ring-2{border-top-color:transparent;border-right-color:var(--teal);animation-duration:1.4s;animation-direction:reverse;}
+.ul-overlay-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--blue);}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ul-overlay-title{font-family:'Cairo',sans-serif;font-size:1.25rem;font-weight:800;color:var(--ink);margin-bottom:.5rem;}
+.ul-overlay-sub{font-family:'Tajawal',sans-serif;font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:1.5rem;}
+.ul-overlay-steps{display:flex;justify-content:center;gap:.75rem;margin-bottom:1.5rem;}
+.ul-ov-step{display:flex;align-items:center;gap:.4rem;font-family:'Tajawal',sans-serif;font-size:.82rem;background:var(--border);color:var(--muted);border-radius:2rem;padding:.35rem .85rem;transition:all .4s;}
+.ul-ov-step.active{background:var(--blue-lt);color:var(--blue);border:1.5px solid var(--blue-bd);}
+.ul-ov-step.done{background:#dcfce7;color:var(--green);}
+.ul-overlay-progress{background:var(--border);border-radius:10px;height:6px;overflow:hidden;margin-bottom:.75rem;}
+.ul-overlay-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--teal));border-radius:10px;animation:progress-anim 35s linear forwards;}
+@keyframes progress-anim{to{width:95%;}}
+.ul-overlay-time{font-family:'Tajawal',sans-serif;font-size:.8rem;color:var(--muted);margin:0;}
+
+@media(max-width:768px){.ul-guide-cols{grid-template-columns:1fr;}}
+@media(max-width:640px){
+  .ul-hero{flex-direction:column;align-items:flex-start;}
+  .ul-steps{gap:0;padding:1rem;}
+  .ul-step span{display:none;}
+  .ul-row{grid-template-columns:1fr;}
+  .ul-img-grid{grid-template-columns:repeat(3,1fr);}
+  .ul-generate-inner{flex-direction:column;}
+  .ul-generate-btn{width:100%;}
+  .ul-overlay-steps{flex-wrap:wrap;}
+}
+</style>
+
+<script>
+function toggleGuide() {
+  const body = document.getElementById('guideBody');
+  const chev = document.getElementById('guideChevron');
+  const isVisible = !body.classList.contains('d-none');
+  body.classList.toggle('d-none', isVisible);
+  chev.className = isVisible ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const sel = document.getElementById('subject_select');
+  sel.querySelectorAll('option').forEach(o => { if (o.value) o.style.display = 'none'; });
+});
+
+document.getElementById('class_select').addEventListener('change', function () {
+  const cid = this.value;
+  const sel  = document.getElementById('subject_select');
+  const hint = document.getElementById('subject-hint');
+  sel.querySelectorAll('option').forEach(o => {
+    if (!o.value) return;
+    o.style.display = (cid && (o.getAttribute('data-class') || '') === cid) ? '' : 'none';
+  });
+  sel.value = '';
+  if (cid) { sel.options[0].textContent = '— اختر المادة —'; if (hint) hint.style.display = 'none'; }
+  else     { sel.options[0].textContent = '— اختر الصف أولاً —'; if (hint) hint.style.display = ''; }
+  updateSteps();
+});
+
+let imageCount = 0;
+
+window.addEventListener('load', function () {
+  document.querySelectorAll('.ul-zone').forEach(zone => {
+    const idx = zone.dataset.idx;
+    zone.addEventListener('click', function (e) {
+      if (e.target.closest('.ul-del-btn')) return;
+      document.getElementById('img_file_' + idx).click();
+    });
+    const input = document.getElementById('img_file_' + idx);
+    if (input) input.addEventListener('change', function () { handleFileChange(this, parseInt(idx)); });
+    const delBtn = document.getElementById('del_' + idx);
+    if (delBtn) delBtn.addEventListener('click', function (e) { e.stopPropagation(); removeImage(parseInt(idx)); });
+  });
+});
+
+function handleFileChange(input, idx) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) { alert('حجم الصورة يتجاوز 5MB — يرجى اختيار صورة أصغر.'); input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const inner = document.getElementById('zone-inner_' + idx);
+    const zone  = document.getElementById('zone_' + idx);
+    const del   = document.getElementById('del_' + idx);
+    inner.innerHTML = '<img src="' + e.target.result + '" alt="صورة ' + idx + '" style="width:100%;height:100%;object-fit:cover;border-radius:calc(.75rem - 2px);">';
+    zone.classList.add('has-image');
+    if (del) del.classList.remove('d-none');
+    zone.dataset.filled = '1';
+    updateImageCount();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(idx) {
+  const input = document.getElementById('img_file_' + idx);
+  const inner = document.getElementById('zone-inner_' + idx);
+  const zone  = document.getElementById('zone_' + idx);
+  const del   = document.getElementById('del_' + idx);
+  const isOpt = idx > 1;
+  if (input) input.value = '';
+  if (inner) inner.innerHTML =
+    '<div class="ul-zone-icon"><i class="fas fa-plus"></i></div>' +
+    '<div class="ul-zone-label">صورة ' + idx + (isOpt ? ' <span class="ul-opt-badge">اختياري</span>' : '') + '</div>' +
+    '<div class="ul-zone-hint">JPG · PNG · WEBP · حتى 5MB</div>';
+  if (zone) { zone.classList.remove('has-image'); delete zone.dataset.filled; }
+  if (del) del.classList.add('d-none');
+  updateImageCount();
+}
+
+function updateImageCount() {
+  imageCount = document.querySelectorAll('.ul-zone[data-filled="1"]').length;
+  document.getElementById('img-count').textContent = imageCount;
+  const warn = document.getElementById('img-min-warn');
+  if (warn) warn.classList.toggle('d-none', imageCount >= 1);
+  const counter = document.querySelector('.ul-img-counter');
+  if (counter) {
+    counter.style.background  = imageCount === 0 ? '#fef2f2' : '';
+    counter.style.borderColor = imageCount === 0 ? '#fecaca' : '';
+    counter.style.color       = imageCount === 0 ? '#dc2626' : '';
+  }
+}
+
+const textarea = document.getElementById('lesson_text');
+const charCount = document.getElementById('char-count');
+const qualFill  = document.getElementById('quality-fill');
+const qualLabel = document.getElementById('quality-label');
+
+textarea.addEventListener('input', function () {
+  const len   = this.value.length;
+  const words = this.value.trim().split(/\s+/).filter(Boolean).length;
+  charCount.textContent = len.toLocaleString('ar');
+  let pct = 0, label = 'أدخل النص للبدء', color = '#94a3b8';
+  if      (words >= 200) { pct = 100; label = 'ممتاز — جاهز للتوليد';        color = '#16a34a'; }
+  else if (words >= 100) { pct = 70;  label = 'جيد — يُنصح بإضافة المزيد';   color = '#d97706'; }
+  else if (words >= 50)  { pct = 40;  label = 'مقبول — يُفضَّل 100+ كلمة';   color = '#f59e0b'; }
+  else if (words > 0)    { pct = 15;  label = 'قصير جداً — أضف المزيد';      color = '#dc2626'; }
+  qualFill.style.width      = pct + '%';
+  qualFill.style.background = color;
+  qualLabel.textContent     = label;
+  qualLabel.style.color     = color;
+  updateSteps();
+});
+
+function updateSteps() {
+  const title   = document.getElementById('lesson_title').value.trim();
+  const cls     = document.getElementById('class_select').value;
+  const subject = document.getElementById('subject_select').value;
+  const words   = textarea.value.trim().split(/\s+/).filter(Boolean).length;
+  const s1 = document.getElementById('step-dot-1');
+  const s2 = document.getElementById('step-dot-2');
+  const s3 = document.getElementById('step-dot-3');
+  const s4 = document.getElementById('step-dot-4');
+  const lines = document.querySelectorAll('.ul-step-line');
+  const step1done = !!(title && cls && subject);
+  const step2done = imageCount >= 1;
+  const step3done = words >= 50;
+  function setStep(el, done, active) {
+    el.classList.toggle('done', done);
+    el.classList.toggle('active', active && !done);
+    const num = el.querySelector('.ul-step-num');
+    if (done) num.innerHTML = '<i class="fas fa-check" style="font-size:.85rem;"></i>';
+    else num.textContent = el.id.replace('step-dot-','').replace('1','١').replace('2','٢').replace('3','٣').replace('4','٤');
+  }
+  setStep(s1, step1done, true);
+  setStep(s2, step2done, step1done);
+  setStep(s3, step3done, step2done);
+  setStep(s4, false, step3done);
+  if (lines[0]) lines[0].style.background = step1done ? 'var(--green)' : 'var(--border)';
+  if (lines[1]) lines[1].style.background = step2done ? 'var(--green)' : 'var(--border)';
+  if (lines[2]) lines[2].style.background = step3done ? 'var(--green)' : 'var(--border)';
+}
+
+['lesson_title','class_select','subject_select'].forEach(id => {
+  document.getElementById(id).addEventListener('change', updateSteps);
+  document.getElementById(id).addEventListener('input',  updateSteps);
+});
+
+let _overlayShown = false;
+
+document.getElementById('aiGenerateForm').addEventListener('submit', function (e) {
+  const title   = document.getElementById('lesson_title').value.trim();
+  const subject = document.getElementById('subject_select').value;
+  const text    = textarea.value.trim();
+  if (!title || !subject || !text) return;
+  if (imageCount === 0) {
+    e.preventDefault();
+    const warn = document.getElementById('img-min-warn');
+    warn.classList.remove('d-none');
+    warn.textContent = '⚠️ يجب رفع صورة واحدة على الأقل قبل إنشاء الدرس.';
+    warn.style.fontWeight = '700';
+    warn.style.color = '#dc2626';
+    document.getElementById('section-2').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  _overlayShown = true;
+  document.getElementById('generateBtn').disabled = true;
+  document.getElementById('loadingOverlay').classList.remove('d-none');
+  setTimeout(() => activateOvStep(2), 8000);
+  setTimeout(() => activateOvStep(3), 18000);
+});
+
+function activateOvStep(n) {
+  for (let i = 1; i < n; i++) {
+    const el = document.getElementById('ov-step-' + i);
+    if (el) { el.classList.remove('active'); el.classList.add('done'); }
+  }
+  const el = document.getElementById('ov-step-' + n);
+  if (el) el.classList.add('active');
+}
+
+window.addEventListener('pageshow', function (e) {
+  if (e.persisted || _overlayShown) {
+    document.getElementById('loadingOverlay').classList.add('d-none');
+    document.getElementById('generateBtn').disabled = false;
+    _overlayShown = false;
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,58 @@
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm" style="background: linear-gradient(135deg, #5a91e6 0%, #4a7bc7 100%);">
+    <div class="container">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'accounts:home' %}">
+            <div class="bg-white text-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                <i class="fas fa-book-reader"></i>
+            </div>
+            <span style="letter-spacing: 1px;">EduPal <span class="fw-light">Platform</span></span>
+        </a>
+
+        <button class="navbar-toggler border-0" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                {% if user.is_authenticated %}
+                    <li class="nav-item me-3">
+                        <span class="nav-link text-white d-flex align-items-center gap-2">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}"
+                                     class="rounded-circle border border-2 border-white"
+                                     width="32" height="32"
+                                     style="object-fit:cover;"
+                                     alt="avatar"
+                                     onerror="this.src='https://ui-avatars.com/api/?name={{ user.fullname|urlencode|default:user.username }}&background=fff&color=5a91e6&bold=true&size=32'">
+                            {% else %}
+                                <img src="https://ui-avatars.com/api/?name={{ user.fullname|urlencode|default:user.username }}&background=fff&color=5a91e6&bold=true&size=32"
+                                     class="rounded-circle border border-2 border-white"
+                                     width="32" height="32"
+                                     alt="avatar">
+                            {% endif %}
+                            أهلاً، <strong>{{ user.fullname|default:user.username }}</strong>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-light btn-sm rounded-pill px-4 fw-bold text-primary shadow-sm"
+                           href="{% url 'accounts:logout' %}">
+                            <i class="fas fa-sign-out-alt me-1"></i> خروج
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white fw-bold" href="{% url 'accounts:login' %}">تسجيل الدخول</a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm"
+                           href="{% url 'accounts:signup' %}">ابدأ الآن مجاناً</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

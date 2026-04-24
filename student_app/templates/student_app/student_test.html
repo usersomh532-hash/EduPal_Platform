@@ -1,0 +1,875 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ test.testtitle }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root{
+  --sky:#3b82f6;--sky-dk:#1d4ed8;--sky-lt:#eff6ff;--sky-bd:#bfdbfe;
+  --mint:#10b981;--mint-lt:#ecfdf5;
+  --rose:#ef4444;--rose-lt:#fef2f2;
+  --amber:#f59e0b;--amber-lt:#fffbeb;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f0f5fb;--card:#fff;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',sans-serif;}
+
+/* ── Layout ── */
+.quiz-wrap{max-width:720px;margin:0 auto;padding:1.5rem 1.25rem 5rem;}
+
+/* ── Header ── */
+.quiz-header{
+  background:linear-gradient(120deg,#0f172a,var(--sky-dk));
+  border-radius:1.1rem;padding:1.5rem 1.75rem;margin-bottom:1.75rem;
+  display:flex;align-items:center;gap:1.1rem;
+}
+.quiz-header-icon{
+  width:52px;height:52px;flex-shrink:0;border-radius:14px;
+  background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1.4rem;
+}
+.quiz-title{font-size:1.2rem;font-weight:900;color:#fff;margin:0;}
+.quiz-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.4rem;}
+.quiz-badge{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  border-radius:2rem;padding:.2rem .75rem;
+  color:rgba(255,255,255,.85);font-size:.8rem;
+  display:flex;align-items:center;gap:.35rem;
+}
+
+/* ── Progress ── */
+.quiz-progress{
+  background:var(--card);border-radius:.875rem;border:1.5px solid var(--border);
+  padding:1rem 1.25rem;margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:1rem;
+}
+.progress-bar{flex:1;height:8px;background:var(--border);border-radius:10px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--sky),var(--mint));border-radius:10px;transition:width .4s;}
+.progress-text{font-size:.82rem;font-weight:800;color:var(--sky-dk);white-space:nowrap;}
+
+/* Timer */
+.quiz-timer{
+  display:flex;align-items:center;gap:.4rem;
+  background:var(--amber-lt);border:1.5px solid #fde68a;
+  border-radius:2rem;padding:.25rem .85rem;
+  font-size:.88rem;font-weight:800;color:#92400e;
+}
+.quiz-timer.urgent{background:var(--rose-lt);border-color:#fecaca;color:var(--rose);}
+
+/* ── Question Card ── */
+.question-card{
+  background:var(--card);border-radius:1.1rem;
+  border:1.5px solid var(--border);
+  padding:1.75rem;margin-bottom:1.25rem;
+  display:none;
+}
+.question-card.active{display:block;}
+.question-num{
+  font-size:.78rem;font-weight:800;color:var(--sky);
+  margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem;
+}
+.question-text{font-size:1.08rem;font-weight:700;line-height:1.7;margin-bottom:1.25rem;}
+.options-grid{display:flex;flex-direction:column;gap:.7rem;}
+.option-btn{
+  display:flex;align-items:center;gap:.85rem;
+  padding:.85rem 1.1rem;border-radius:.75rem;
+  border:2px solid var(--border);background:#fafbfd;
+  cursor:pointer;text-align:right;transition:all .18s;
+  font-family:'Tajawal',sans-serif;font-size:.97rem;color:var(--ink);
+  width:100%;
+}
+.option-btn:hover{border-color:var(--sky-bd);background:var(--sky-lt);}
+.option-btn.selected{border-color:var(--sky);background:var(--sky-lt);}
+.option-label{
+  width:32px;height:32px;flex-shrink:0;border-radius:50%;
+  background:var(--border);display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.85rem;color:var(--muted);transition:all .18s;
+}
+.option-btn.selected .option-label{background:var(--sky-dk);color:#fff;}
+.option-btn.correct{border-color:var(--mint);background:var(--mint-lt);}
+.option-btn.correct .option-label{background:var(--mint);color:#fff;}
+.option-btn.wrong{border-color:var(--rose);background:var(--rose-lt);}
+.option-btn.wrong .option-label{background:var(--rose);color:#fff;}
+
+/* ── Navigation ── */
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;gap:.75rem;}
+.nav-btn{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.65rem 1.35rem;border-radius:.75rem;font-size:.93rem;font-weight:700;
+  font-family:'Tajawal',sans-serif;cursor:pointer;transition:all .18s;border:none;
+}
+.nav-prev{background:var(--border);color:var(--muted);}
+.nav-prev:hover{background:#d1d5db;color:var(--ink);}
+.nav-next{background:var(--sky);color:#fff;box-shadow:0 4px 14px rgba(29,78,216,.3);}
+.nav-next:hover{background:var(--sky-dk);}
+.nav-submit{background:linear-gradient(135deg,var(--mint),#059669);color:#fff;box-shadow:0 4px 14px rgba(16,185,129,.3);}
+.nav-submit:hover{opacity:.9;}
+
+/* ── Result ── */
+.quiz-result{
+  background:var(--card);border-radius:1.25rem;border:2px solid var(--border);
+  padding:2.5rem;text-align:center;display:none;
+}
+.result-score-circle{
+  width:120px;height:120px;border-radius:50%;margin:0 auto 1.25rem;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:5px solid var(--mint);
+}
+.result-score-circle.fail{border-color:var(--rose);}
+.result-score-circle.ok{border-color:var(--amber);}
+.result-num{font-size:2rem;font-weight:900;color:var(--sky-dk);line-height:1;}
+.result-total{font-size:.85rem;color:var(--muted);}
+.result-title{font-size:1.3rem;font-weight:900;margin-bottom:.5rem;}
+.result-msg{color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:1.75rem;}
+.result-actions{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;}
+.btn-home{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.7rem 1.5rem;border-radius:.75rem;
+  background:var(--sky);color:#fff;text-decoration:none;
+  font-size:.93rem;font-weight:700;font-family:'Tajawal',sans-serif;
+  transition:opacity .15s;
+}
+.btn-home:hover{opacity:.85;color:#fff;}
+.btn-review{background:var(--border);color:var(--ink);}
+
+/* ── Dots nav ── */
+.dots-nav{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap;}
+.dot{
+  width:30px;height:30px;border-radius:50%;border:2px solid var(--border);
+  background:var(--card);cursor:pointer;font-size:.75rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;color:var(--muted);
+  transition:all .18s;
+}
+.dot.answered{border-color:var(--sky);background:var(--sky-lt);color:var(--sky-dk);}
+.dot.current{border-color:var(--sky-dk);background:var(--sky-dk);color:#fff;}
+.dot.unanswered-warn{
+  background:#fef2f2 !important;color:var(--rose) !important;
+  border:2px solid var(--rose) !important;
+  animation:warnPulse .4s ease 3;
+}
+@keyframes warnPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
+
+/* ── Start Confirm Modal ── */
+.start-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.start-overlay.open{display:flex;}
+.start-box{background:#fff;border-radius:1.25rem;width:90%;max-width:440px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.22);animation:sm-in .25s ease;}
+@keyframes sm-in{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.start-head{background:linear-gradient(120deg,#0f172a,var(--sky-dk));padding:1.1rem 1.5rem;display:flex;align-items:center;gap:.75rem;}
+.start-head-title{color:#fff;font-weight:800;font-size:1rem;display:flex;align-items:center;gap:.5rem;}
+.start-body{padding:1.5rem;}
+.start-info{background:var(--sky-lt);border:1.5px solid var(--sky-bd);border-radius:.75rem;padding:1rem 1.1rem;margin-bottom:1.25rem;}
+.start-info-row{display:flex;align-items:center;gap:.5rem;font-size:.88rem;font-weight:700;color:var(--sky-dk);margin-bottom:.4rem;}
+.start-info-row:last-child{margin-bottom:0;}
+.start-info-row i{color:var(--sky);width:16px;text-align:center;}
+.start-warn{background:var(--amber-lt);border:1.5px solid #fde68a;border-radius:.65rem;padding:.65rem 1rem;font-size:.82rem;font-weight:700;color:#92400e;display:flex;align-items:flex-start;gap:.5rem;margin-bottom:1.25rem;}
+.start-foot{display:flex;gap:.75rem;justify-content:center;padding:0 1.5rem 1.5rem;}
+.start-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.5rem;border-radius:.65rem;border:none;font-family:'Tajawal',sans-serif;font-size:.93rem;font-weight:800;cursor:pointer;transition:all .18s;}
+.start-btn-go{background:var(--sky-dk);color:#fff;box-shadow:0 4px 12px rgba(29,78,216,.3);}
+.start-btn-go:hover{background:#1e3a8a;}
+.start-btn-back{background:var(--border);color:var(--muted);}
+.start-btn-back:hover{background:#d1d5db;color:var(--ink);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-wrap" dir="rtl">
+
+  <!-- Header -->
+  <div class="quiz-header">
+    <div class="quiz-header-icon"><i class="fas fa-file-alt"></i></div>
+    <div>
+      <h1 class="quiz-title">{{ test.testtitle }}</h1>
+      <div class="quiz-meta">
+        <span class="quiz-badge"><i class="fas fa-book"></i> {{ test.lessonid.subjectid.subjectname|default:"—" }}</span>
+        <span class="quiz-badge"><i class="fas fa-list-ol"></i> {{ questions|length }} سؤال</span>
+        {% if test.durationtaken %}
+        <span class="quiz-badge"><i class="fas fa-clock"></i>
+          {% if prev_attempt and prev_attempt.durationtaken %}
+            <span id="actual-time-badge">—</span>
+          {% else %}
+            {{ test.durationtaken }} دقيقة
+          {% endif %}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="quiz-progress" id="quiz-progress">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <span class="progress-text" id="progress-text">سؤال 1 من {{ questions|length }}</span>
+    {% if test.durationtaken %}
+    <div class="quiz-timer" id="quiz-timer">
+      <i class="fas fa-clock"></i>
+      <span id="timer-display">{{ test.durationtaken }}:00</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Dots navigation -->
+  <div class="dots-nav" id="dots-nav">
+    {% for q in questions %}
+    <div class="dot {% if forloop.first %}current{% endif %}"
+         data-idx="{{ forloop.counter0 }}">{{ forloop.counter }}</div>
+    {% endfor %}
+  </div>
+
+  <!-- Questions -->
+  <form id="quiz-form">
+    {% csrf_token %}
+    {% for q in questions %}
+    <div class="question-card {% if forloop.first %}active{% endif %}"
+         data-q-idx="{{ forloop.counter0 }}"
+         data-qid="{{ q.questionid }}"
+         data-correct="{{ q.correctanswer }}">
+
+      <div class="question-num">
+        <i class="fas fa-circle" style="font-size:.5rem;"></i>
+        سؤال {{ forloop.counter }} من {{ questions|length }}
+      </div>
+      <div class="question-text">{{ q.questiontext }}</div>
+
+      <div class="options-grid">
+        {% if q.optiona %}
+        <button type="button" class="option-btn" data-val="{{ q.optiona }}" onclick="selectOption(this)">
+          <span class="option-label">أ</span>
+          <span>{{ q.optiona }}</span>
+        </button>
+        {% endif %}
+        {% if q.optionb %}
+        <button type="button" class="option-btn" data-val="{{ q.optionb }}" onclick="selectOption(this)">
+          <span class="option-label">ب</span>
+          <span>{{ q.optionb }}</span>
+        </button>
+        {% endif %}
+        {% if q.optionc %}
+        <button type="button" class="option-btn" data-val="{{ q.optionc }}" onclick="selectOption(this)">
+          <span class="option-label">ج</span>
+          <span>{{ q.optionc }}</span>
+        </button>
+        {% endif %}
+        {% if q.optiond %}
+        <button type="button" class="option-btn" data-val="{{ q.optiond }}" onclick="selectOption(this)">
+          <span class="option-label">د</span>
+          <span>{{ q.optiond }}</span>
+        </button>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endfor %}
+  </form>
+
+  <!-- Navigation -->
+  <div class="quiz-nav" id="quiz-nav">
+    <button class="nav-btn nav-prev" id="btn-prev" onclick="prevQ()" style="visibility:hidden;">
+      <i class="fas fa-chevron-right"></i> السابق
+    </button>
+    <button class="nav-btn nav-next" id="btn-next" onclick="nextQ()">
+      التالي <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="nav-btn nav-submit" id="btn-submit" onclick="submitQuiz()" style="display:none;">
+      <i class="fas fa-paper-plane"></i> إرسال الإجابات
+    </button>
+  </div>
+
+  <!-- Result (hidden until submit) -->
+  <div class="quiz-result" id="quiz-result">
+    <div class="result-score-circle" id="result-circle">
+      <div class="result-num" id="result-num">—</div>
+      <div class="result-total" id="result-total">— / —</div>
+    </div>
+    <h3 class="result-title" id="result-title">—</h3>
+    <p class="result-msg" id="result-msg">—</p>
+    <div class="result-actions">
+      <a href="{% url 'student:student_home' %}" class="btn-home">
+        <i class="fas fa-home"></i> العودة للرئيسية
+      </a>
+      <button class="nav-btn btn-home btn-review" onclick="reviewAnswers()">
+        <i class="fas fa-eye"></i> مراجعة الإجابات
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ Start Confirm Modal ══ -->
+<div class="start-overlay" id="startModal">
+  <div class="start-box">
+    <div class="start-head">
+      <div class="start-head-title"><i class="fas fa-file-alt"></i> {{ test.testtitle }}</div>
+    </div>
+    <div class="start-body">
+      <div class="start-info">
+        <div class="start-info-row"><i class="fas fa-list-ol"></i> {{ questions|length }} سؤال</div>
+        {% if test.durationtaken %}
+        <div class="start-info-row"><i class="fas fa-clock"></i> المدة: {{ test.durationtaken }} دقيقة — لا يمكن إيقاف العداد</div>
+        {% endif %}
+        <div class="start-info-row"><i class="fas fa-lock"></i> لا يمكن إعادة الاختبار بعد الإرسال</div>
+      </div>
+      <div class="start-warn">
+        <i class="fas fa-exclamation-triangle" style="flex-shrink:0;margin-top:.1rem;"></i>
+        <span>تأكد من استعدادك واتصالك بالإنترنت. سيبدأ العداد فور الضغط على "ابدأ الآن".</span>
+      </div>
+    </div>
+    <div class="start-foot">
+      <a href="{% url 'student:student_home' %}" class="start-btn start-btn-back"><i class="fas fa-arrow-right"></i> رجوع</a>
+      <button class="start-btn start-btn-go" onclick="confirmStart()"><i class="fas fa-play"></i> ابدأ الآن</button>
+    </div>
+  </div>
+</div>
+
+{{ test.testid|json_script:"dj-test-id" }}
+{{ questions|length|json_script:"dj-total-q" }}
+{{ test.durationtaken|default:0|json_script:"dj-duration" }}
+{{ prev_attempt.attemptid|default:"null"|json_script:"dj-prev-attempt" }}
+{{ prev_attempt.score|json_script:"dj-prev-score" }}
+{{ prev_attempt.durationtaken|default:"null"|json_script:"dj-prev-duration" }}
+{{ max_score|default:"null"|json_script:"dj-max-score" }}
+{{ percentage|default:"null"|json_script:"dj-percentage" }}
+{{ prev_answers|default:"null"|json_script:"dj-prev-answers" }}
+
+<script>
+(function() {
+/* ══════════════════════════════════════════════════════════
+   EduPal Quiz Engine v3 — 2026
+   - مصدر الحقيقة: السيرفر (dj-prev-attempt)
+   - المؤقت: مستمر عبر localStorage (يصمد بعد الرجوع)
+   - أمان: لا إعادة إرسال، لا تعديل بعد الإرسال
+══════════════════════════════════════════════════════════ */
+
+/* ── قراءة البيانات من DOM ── */
+var TEST_ID    = JSON.parse(document.getElementById('dj-test-id').textContent);
+var TOTAL_Q    = JSON.parse(document.getElementById('dj-total-q').textContent);
+var DURATION   = JSON.parse(document.getElementById('dj-duration').textContent);
+var SUBMIT_URL = "{% url 'student:submit_test' test.testid %}";
+var CSRF       = "{{ csrf_token }}";
+
+/* ── مفاتيح التخزين (localStorage) ── */
+var KEY_TIMER  = 'qz_timer_'  + TEST_ID;   // وقت بدء الاختبار
+var KEY_ANS    = 'qz_ans_'    + TEST_ID;   // إجابات الطالب
+
+/* ── حالة الاختبار ── */
+var current  = 0;
+var answers  = {};
+var timerInt = null;
+var timeLeft = DURATION * 60;
+var locked   = false;  // true بعد الإرسال أو وجود محاولة سابقة
+
+/* ──────────────────────────────────────────────────────
+   مصدر الحقيقة: هل أجاب الطالب فعلاً؟ (من السيرفر)
+─────────────────────────────────────────────────────── */
+var _prevEl      = document.getElementById('dj-prev-attempt');
+var _serverAttemptId = null;
+try {
+  var _v = JSON.parse(_prevEl ? _prevEl.textContent : 'null');
+  _serverAttemptId = (_v && _v !== 'null') ? _v : null;
+} catch(e) {}
+
+/* إذا لا توجد محاولة سابقة → نمسح أي بقايا قديمة */
+if (!_serverAttemptId) {
+  try { localStorage.removeItem(KEY_TIMER); } catch(e) {}
+  try { localStorage.removeItem(KEY_ANS);   } catch(e) {}
+}
+
+/* إذا توجد محاولة سابقة → وضع القفل فوراً */
+if (_serverAttemptId) {
+  locked = true;
+}
+
+/* ──────────────────────────────────────────────────────
+   استرجاع إجابات الجلسة الحالية (لو لم يكمل بعد)
+─────────────────────────────────────────────────────── */
+if (!locked) {
+  try {
+    var _savedAns = localStorage.getItem(KEY_ANS);
+    if (_savedAns) answers = JSON.parse(_savedAns);
+  } catch(e) {}
+}
+
+/* ──────────────────────────────────────────────────────
+   استرجاع المؤقت (يستمر حتى بعد مغادرة الصفحة)
+─────────────────────────────────────────────────────── */
+if (DURATION > 0 && !locked) {
+  try {
+    var _startTs = localStorage.getItem(KEY_TIMER);
+    if (_startTs) {
+      var _elapsed = Math.floor((Date.now() - parseInt(_startTs)) / 1000);
+      timeLeft = Math.max(0, DURATION * 60 - _elapsed);
+    }
+  } catch(e) {}
+}
+
+/* ──────────────────────────────────────────────────────
+   Start Modal — يظهر مرة واحدة فقط
+─────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  var alreadyStarted = false;
+  try { alreadyStarted = !!localStorage.getItem(KEY_TIMER); } catch(e) {}
+
+  if (locked) {
+    /* وجود محاولة سابقة → عرض النتيجة مباشرة */
+    _showPrevResult();
+  } else if (!alreadyStarted) {
+    /* لم يبدأ بعد → عرض modal التأكيد */
+    _showStartModal();
+  } else {
+    /* بدأ مسبقاً وعاد → استئناف الاختبار */
+    _resumeQuiz();
+  }
+});
+
+/* ── عرض نتيجة المحاولة السابقة ── */
+function _showPrevResult() {
+  _hideQuizUI();
+  var scoreEl  = document.getElementById('dj-prev-score');
+  var maxEl    = document.getElementById('dj-max-score');
+  var pctEl    = document.getElementById('dj-percentage');
+  var prevAns  = {};
+  try {
+    var paEl = document.getElementById('dj-prev-answers');
+    prevAns  = JSON.parse(paEl ? JSON.parse(paEl.textContent) : '{}');
+  } catch(e) {}
+
+  var score = 0;
+  var maxS  = 0;
+  try { var _s = JSON.parse(scoreEl ? scoreEl.textContent : '0'); score = (_s !== null && _s !== undefined) ? _s : 0; } catch(e) {}
+  try { var _m = JSON.parse(maxEl   ? maxEl.textContent   : '0'); maxS  = (_m !== null && _m !== undefined) ? _m : 0; } catch(e) {}
+
+  /* تطبيق إجابات الطالب بصرياً */
+  var corrections = {};
+  document.querySelectorAll('.question-card').forEach(function(card) {
+    var qid = card.dataset.qid;
+    if (qid && card.dataset.correct)
+      corrections[qid] = { correct: card.dataset.correct };
+  });
+  Object.keys(prevAns).forEach(function(qid) {
+    var card = document.querySelector('.question-card[data-qid="' + qid + '"]');
+    if (!card) return;
+    var sel = prevAns[qid] && prevAns[qid].selected;
+    card.querySelectorAll('.option-btn').forEach(function(btn) {
+      if (btn.dataset.val === sel) btn.classList.add('selected');
+    });
+  });
+
+  _renderResult({
+    ok: true, score: score, max_score: maxS,
+    corrections: corrections, pending_approval: true,
+    prev_answers: prevAns,
+  });
+}
+
+/* ── إظهار Start Modal ── */
+function _showStartModal() {
+  var modal = document.getElementById('startModal');
+  if (modal) modal.classList.add('open');
+  _hideQuizUI();
+}
+
+/* ── استئناف الاختبار (عاد من صفحة أخرى) ── */
+function _resumeQuiz() {
+  _bindDots();
+  _applyRestoredAnswers();
+  showQuestion(0);
+  _startTimer();
+}
+
+/* ── إخفاء واجهة الاختبار ── */
+function _hideQuizUI() {
+  ['quiz-form','quiz-nav','quiz-progress','dots-nav'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+
+/* ── إظهار واجهة الاختبار ── */
+function _showQuizUI() {
+  ['quiz-form','quiz-nav','quiz-progress','dots-nav'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = '';
+  });
+}
+
+/* ── تطبيق الإجابات المستردة على الواجهة ── */
+function _applyRestoredAnswers() {
+  document.querySelectorAll('.question-card').forEach(function(card) {
+    var qIdx = parseInt(card.dataset.qIdx);
+    if (answers[qIdx] !== undefined) {
+      card.querySelectorAll('.option-btn').forEach(function(btn) {
+        btn.classList.toggle('selected', btn.dataset.val === answers[qIdx]);
+      });
+      _updateDot(qIdx, 'answered');
+    }
+  });
+  _updateProgress();
+}
+
+/* ── ربط نقاط التنقل ── */
+function _bindDots() {
+  document.querySelectorAll('.dot').forEach(function(dot) {
+    dot.addEventListener('click', function() {
+      if (!locked) goToQuestion(parseInt(this.dataset.idx));
+    });
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   confirmStart — يُستدعى من زر "ابدأ الآن"
+══════════════════════════════════════════════════════════ */
+window.confirmStart = function() {
+  var modal = document.getElementById('startModal');
+  if (modal) { modal.classList.remove('open'); modal.style.display = 'none'; }
+  _showQuizUI();
+  _bindDots();
+  _applyRestoredAnswers();
+  showQuestion(0);
+
+  if (DURATION > 0 && !locked) {
+    try { localStorage.setItem(KEY_TIMER, Date.now().toString()); } catch(e) {}
+    timeLeft = DURATION * 60;
+    _startTimer();
+  }
+};
+
+/* ══════════════════════════════════════════════════════════
+   المؤقت
+══════════════════════════════════════════════════════════ */
+function _startTimer() {
+  if (!DURATION || locked) return;
+  _updateTimerDisplay();
+  if (timeLeft <= 0) { submitQuiz(true); return; }
+  if (timerInt) clearInterval(timerInt);
+  timerInt = setInterval(function() {
+    timeLeft--;
+    _updateTimerDisplay();
+    if (timeLeft <= 0) { clearInterval(timerInt); submitQuiz(true); }
+  }, 1000);
+}
+
+function _updateTimerDisplay() {
+  var m  = Math.floor(timeLeft / 60);
+  var s  = timeLeft % 60;
+  var el = document.getElementById('timer-display');
+  if (el) el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+  var t = document.getElementById('quiz-timer');
+  if (t) {
+    if (timeLeft <= 60) t.classList.add('urgent');
+    else t.classList.remove('urgent');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   اختيار الإجابة
+══════════════════════════════════════════════════════════ */
+window.selectOption = function(btn) {
+  if (locked) return;
+  var card = btn.closest('.question-card');
+  card.querySelectorAll('.option-btn').forEach(function(b) {
+    b.classList.remove('selected');
+  });
+  btn.classList.add('selected');
+  var qIdx = parseInt(card.dataset.qIdx);
+  answers[qIdx] = btn.dataset.val;
+  try { localStorage.setItem(KEY_ANS, JSON.stringify(answers)); } catch(e) {}
+  _updateDot(qIdx, 'answered');
+  _updateProgress();
+};
+
+/* ══════════════════════════════════════════════════════════
+   التنقل بين الأسئلة
+══════════════════════════════════════════════════════════ */
+window.showQuestion = function(idx) {
+  document.querySelectorAll('.question-card').forEach(function(card) {
+    card.classList.toggle('active', parseInt(card.dataset.qIdx) === idx);
+  });
+  document.querySelectorAll('.dot').forEach(function(d) {
+    var i = parseInt(d.dataset.idx);
+    d.classList.toggle('current', i === idx);
+    if (i === idx) d.classList.remove('answered');
+    else if (answers[i] !== undefined) d.classList.add('answered');
+  });
+
+  var prevBtn   = document.getElementById('btn-prev');
+  var nextBtn   = document.getElementById('btn-next');
+  var submitBtn = document.getElementById('btn-submit');
+
+  if (TOTAL_Q === 1) {
+    /* سؤال واحد → submit فقط، بلا prev/next */
+    if (prevBtn)   prevBtn.style.visibility = 'hidden';
+    if (nextBtn)   nextBtn.style.display    = 'none';
+    if (submitBtn) submitBtn.style.display  = '';
+  } else {
+    var isFirst = idx === 0;
+    var isLast  = idx === TOTAL_Q - 1;
+    if (prevBtn)   prevBtn.style.visibility = isFirst ? 'hidden' : 'visible';
+    if (nextBtn)   nextBtn.style.display    = isLast  ? 'none'   : '';
+    if (submitBtn) submitBtn.style.display  = isLast  ? ''       : 'none';
+  }
+
+  current = idx;
+  _updateProgress();
+};
+
+window.goToQuestion = function(i) { showQuestion(i); };
+window.nextQ = function() { if (current < TOTAL_Q - 1) showQuestion(current + 1); };
+window.prevQ = function() { if (current > 0)           showQuestion(current - 1); };
+
+function _updateProgress() {
+  var pf = document.getElementById('progress-fill');
+  var pt = document.getElementById('progress-text');
+  var pct = ((current + 1) / TOTAL_Q * 100).toFixed(0);
+  if (pf) pf.style.width = pct + '%';
+  if (pt) pt.textContent = 'سؤال ' + (current + 1) + ' من ' + TOTAL_Q;
+}
+
+function _updateDot(i, cls) {
+  var d = document.querySelector('.dot[data-idx="' + i + '"]');
+  if (d && !d.classList.contains('current')) d.classList.add(cls);
+}
+
+/* ══════════════════════════════════════════════════════════
+   تنبيه الأسئلة غير المُجاب عليها
+══════════════════════════════════════════════════════════ */
+function _showUnansweredAlert(list) {
+  var old = document.getElementById('unanswered-alert');
+  if (old) old.remove();
+  var el = document.createElement('div');
+  el.id = 'unanswered-alert';
+  el.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);'
+    + 'background:#eff6ff;border:2px solid #93c5fd;border-radius:14px;'
+    + 'padding:.9rem 1.5rem;font-family:Tajawal,sans-serif;font-weight:700;'
+    + 'color:#1e3a8a;font-size:.92rem;z-index:9999;'
+    + 'box-shadow:0 4px 20px rgba(0,0,0,.15);'
+    + 'display:flex;align-items:center;gap:.6rem;max-width:90vw;direction:rtl;';
+  el.innerHTML = '<i class="fas fa-exclamation-circle"></i> أجب على السؤال '
+    + list.join(' و') + ' أولاً!';
+  document.body.appendChild(el);
+  document.querySelectorAll('.dot').forEach(function(d) {
+    if (list.indexOf(parseInt(d.dataset.idx) + 1) !== -1)
+      d.classList.add('unanswered-warn');
+  });
+  setTimeout(function() {
+    if (el.parentNode) el.remove();
+    document.querySelectorAll('.dot.unanswered-warn')
+      .forEach(function(d) { d.classList.remove('unanswered-warn'); });
+  }, 4000);
+}
+
+/* ══════════════════════════════════════════════════════════
+   إرسال الإجابات
+══════════════════════════════════════════════════════════ */
+window.submitQuiz = function(forceSubmit) {
+  if (locked) return;
+
+  /* التحقق من الإجابات — إلا عند انتهاء الوقت */
+  if (!forceSubmit) {
+    var unanswered = [];
+    document.querySelectorAll('.question-card').forEach(function(card) {
+      var i = parseInt(card.dataset.qIdx);
+      if (answers[i] === undefined) unanswered.push(i + 1);
+    });
+    if (unanswered.length > 0) {
+      _showUnansweredAlert(unanswered);
+      showQuestion(unanswered[0] - 1);
+      return;
+    }
+  }
+
+  /* تأمين فوري */
+  locked = true;
+  if (timerInt) clearInterval(timerInt);
+  try { localStorage.removeItem(KEY_TIMER); } catch(e) {}
+  try { localStorage.removeItem(KEY_ANS);   } catch(e) {}
+
+  /* تعطيل الواجهة */
+  document.querySelectorAll('.option-btn').forEach(function(b) { b.disabled = true; });
+  var btnNext   = document.getElementById('btn-next');
+  var btnPrev   = document.getElementById('btn-prev');
+  var btnSubmit = document.getElementById('btn-submit');
+  if (btnNext)   btnNext.disabled   = true;
+  if (btnPrev)   btnPrev.disabled   = true;
+  if (btnSubmit) {
+    btnSubmit.disabled  = true;
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ الإرسال…';
+  }
+
+  /* بناء payload — null للأسئلة غير المُجاب عليها */
+  var timeSpent = DURATION > 0 ? Math.max(0, DURATION * 60 - timeLeft) : 0;
+  var payload   = { answers: {}, time_spent: timeSpent };
+  document.querySelectorAll('.question-card').forEach(function(card) {
+    var i   = parseInt(card.dataset.qIdx);
+    var qid = card.dataset.qid;
+    payload.answers[qid] = (answers[i] !== undefined) ? answers[i] : '';
+  });
+
+  fetch(SUBMIT_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body:    JSON.stringify(payload),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.ok) {
+      /* حفظ إجابات الطالب في الـ data للعرض */
+      var pa = {};
+      document.querySelectorAll('.question-card').forEach(function(card) {
+        var qid  = card.dataset.qid;
+        var qIdx = parseInt(card.dataset.qIdx);
+        if (answers[qIdx] !== undefined) pa[qid] = { selected: answers[qIdx] };
+      });
+      data.prev_answers = pa;
+
+      /* رسالة خاصة إذا انتهى الوقت وهناك أسئلة فارغة */
+      if (forceSubmit) {
+        var emptyCount = Object.values(payload.answers)
+          .filter(function(v) { return !v; }).length;
+        if (emptyCount > 0) {
+          data.timeout_msg = 'انتهى الوقت! تم تسليم الاختبار تلقائياً ('
+            + emptyCount + ' سؤال لم يُجَب عليه).';
+        }
+      }
+      _renderResult(data);
+    } else {
+      _renderError(data.error || 'حدث خطأ. تواصل مع المعلم.');
+    }
+  })
+  .catch(function() {
+    _renderError('تعذّر الاتصال بالخادم. تواصل مع المعلم.');
+  });
+};
+
+/* ══════════════════════════════════════════════════════════
+   عرض النتيجة
+══════════════════════════════════════════════════════════ */
+function _renderResult(data) {
+  _hideQuizUI();
+  document.getElementById('quiz-result').style.display = 'block';
+
+  var pct    = data.max_score > 0 ? (data.score / data.max_score * 100) : 0;
+  var circle = document.getElementById('result-circle');
+  if (circle) circle.className = 'result-score-circle '
+    + (pct >= 75 ? '' : pct >= 50 ? 'ok' : 'fail');
+
+  document.getElementById('result-num').textContent   = data.score;
+  document.getElementById('result-total').textContent = 'من ' + data.max_score;
+  document.getElementById('result-title').textContent =
+    pct >= 75 ? '🎉 ممتاز!' : pct >= 50 ? '👍 جيد' : '🍀 لا بأس، حظاً أوفر!';
+
+  var msg = 'حصلت على ' + data.score + ' من ' + data.max_score
+    + ' (' + pct.toFixed(0) + '%). ';
+  if (data.timeout_msg) {
+    msg = data.timeout_msg + '\n' + msg;
+  } else {
+    msg += 'سيتم إظهار النتيجة التفصيلية بعد اعتماد المعلم.';
+  }
+  document.getElementById('result-msg').textContent = msg;
+
+  /* تصحيح الإجابات بصرياً */
+  if (data.corrections) {
+    document.querySelectorAll('.question-card').forEach(function(card) {
+      var qid  = card.dataset.qid;
+      var corr = data.corrections[qid];
+      if (!corr) return;
+      var sa = null;
+      if (data.prev_answers && data.prev_answers[qid])
+        sa = data.prev_answers[qid].selected;
+      card.querySelectorAll('.option-btn').forEach(function(btn) {
+        btn.classList.remove('selected', 'correct', 'wrong');
+        var v = btn.dataset.val;
+        if (v === corr.correct) btn.classList.add('correct');
+        if (sa && v === sa && v !== corr.correct) btn.classList.add('wrong');
+        if (sa && v === sa) btn.classList.add('selected');
+      });
+    });
+  }
+}
+
+function _renderError(msg) {
+  _hideQuizUI();
+  document.getElementById('quiz-result').style.display = 'block';
+  document.getElementById('result-title').textContent  = '⚠️ خطأ';
+  document.getElementById('result-msg').textContent    = msg;
+}
+
+/* ══════════════════════════════════════════════════════════
+   مراجعة الإجابات (بعد الإرسال)
+══════════════════════════════════════════════════════════ */
+window.reviewAnswers = function() {
+  document.getElementById('quiz-result').style.display   = 'none';
+  document.getElementById('quiz-form').style.display     = '';
+  document.getElementById('dots-nav').style.display      = '';
+  document.getElementById('quiz-progress').style.display = '';
+  document.getElementById('quiz-nav').style.display      = 'none';
+
+  document.querySelectorAll('.question-card').forEach(function(c) {
+    c.classList.add('active');
+  });
+  document.querySelectorAll('.option-btn').forEach(function(b) {
+    b.disabled = true;
+  });
+  document.getElementById('quiz-form').style.pointerEvents = 'none';
+  document.getElementById('quiz-form').style.opacity = '0.92';
+
+  var form = document.getElementById('quiz-form');
+  if (form && !document.getElementById('review-banner')) {
+    var banner = document.createElement('div');
+    banner.id = 'review-banner';
+    banner.style.cssText = 'background:#dbeafe;border:1.5px solid #93c5fd;'
+      + 'border-radius:10px;padding:.75rem 1.25rem;margin-bottom:1rem;'
+      + 'font-size:.88rem;font-weight:700;color:#1e3a8a;'
+      + 'display:flex;align-items:center;gap:.5rem;';
+    banner.innerHTML = '<i class="fas fa-lock"></i>'
+      + ' وضع المراجعة — لا يمكن تعديل الإجابات بعد الإرسال.';
+    form.insertBefore(banner, form.firstChild);
+  }
+};
+
+/* ══════════════════════════════════════════════════════════
+   أمان: منع التلاعب
+══════════════════════════════════════════════════════════ */
+if (!locked) {
+  document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+  document.addEventListener('copy',        function(e) { e.preventDefault(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12'
+     || (e.ctrlKey && (e.key === 'u' || e.key === 'U'))
+     || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))
+    ) { e.preventDefault(); return false; }
+  });
+  window.addEventListener('beforeprint', function() { return false; });
+}
+
+_updateProgress();
+
+/* ── عرض الوقت الفعلي في header ── */
+(function() {
+  function _showActualTime() {
+    var badge = document.getElementById('actual-time-badge');
+    if (!badge) return;
+    try {
+      var el = document.getElementById('dj-prev-duration');
+      var secs = el ? JSON.parse(el.textContent) : null;
+      if (!secs || secs === null || String(secs) === 'null' || isNaN(parseInt(secs))) {
+        badge.textContent = '—'; return;
+      }
+      secs = parseInt(secs);
+      var m = Math.floor(secs / 60);
+      var s = secs % 60;
+      badge.textContent = (m > 0 ? m + ' د ' : '') + s + ' ث';
+    } catch(e) { badge.textContent = '—'; }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _showActualTime);
+  } else {
+    _showActualTime();
+  }
+})();
+
+})(); /* نهاية IIFE */
+</script>
+{% endblock %}

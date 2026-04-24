@@ -1,0 +1,200 @@
+{% load static %}
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+<div class="sidebar-wrapper shadow-lg" id="sidebar" dir="rtl">
+    <div class="sidebar-header p-4 text-center">
+        <div class="user-avatar-container mb-3" style="position:relative;display:inline-block;">
+            {% if user.avatar %}
+                <img src="{{ user.avatar.url }}"
+                     class="rounded-circle shadow-lg border border-3 border-white"
+                     width="75" height="75"
+                     style="object-fit:cover;"
+                     alt="User Avatar"
+                     onerror="this.src='https://ui-avatars.com/api/?name={{ user.fullname|urlencode|default:user.username }}&background=fff&color=5a91e6&bold=true&size=75'">
+            {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ user.fullname|urlencode|default:user.username }}&background=fff&color=5a91e6&bold=true&size=75"
+                     class="rounded-circle shadow-lg border border-3 border-white"
+                     width="75" height="75"
+                     alt="User Avatar">
+            {% endif %}
+            <div class="status-indicator online"></div>
+        </div>
+        <h6 class="user-name mb-1">{{ user.fullname|default:user.username }}</h6>
+        <span class="user-role-label">
+            {% if request.user.userrole == 'Student' %} طالب
+            {% elif request.user.userrole == 'Teacher' %} معلم
+            {% elif request.user.userrole == 'Parent' %} ولي أمر
+            {% elif request.user.userrole == 'Admin' %} مشرف النظام
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="sidebar-menu px-3">
+        <ul class="nav flex-column gap-2 p-0">
+
+            <li class="nav-item">
+                <a href="{% url 'accounts:home' %}" class="nav-link d-flex align-items-center active">
+                    <i class="fas fa-columns ms-3"></i> <span>الرئيسية</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'accounts:messaging_inbox' %}" class="nav-link d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-paper-plane ms-3 text-info"></i> <span>مراسلات</span>
+                    </div>
+                    <span class="msg-unread-badge"
+                          style="display:none;background:#ef4444;color:#fff;
+                                 border-radius:100px;padding:1px 7px;
+                                 font-size:.7rem;font-weight:700;"></span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="#" class="nav-link d-flex align-items-center justify-content-between"
+                   data-bs-toggle="offcanvas" data-bs-target="#notifOffcanvas" role="button">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-bell ms-3 text-warning"></i> <span>الإشعارات</span>
+                    </div>
+                    <span class="notif-unread-badge"
+                          style="display:none;background:#ef4444;color:#fff;
+                                 border-radius:100px;padding:1px 7px;
+                                 font-size:.7rem;font-weight:700;"></span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'accounts:schedule_page' %}" class="nav-link d-flex align-items-center">
+                    <i class="fas fa-calendar-alt ms-3 text-success"></i> <span>جدول المهام</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                {% if request.user.userrole == 'Student' %}
+                <a href="{% url 'student:profile' %}" class="nav-link d-flex align-items-center">
+                {% elif request.user.userrole == 'Parent' %}
+                <a href="{% url 'parent:profile' %}" class="nav-link d-flex align-items-center">
+                {% elif request.user.userrole == 'Teacher' or request.user.is_staff %}
+                <a href="{% url 'learning:teacher_profile' %}" class="nav-link d-flex align-items-center">
+                {% else %}
+                <a href="#" class="nav-link d-flex align-items-center">
+                {% endif %}
+                    <i class="fas fa-user-circle ms-3"></i> <span>الملف الشخصي</span>
+                </a>
+            </li>
+
+            <div class="menu-divider my-3 opacity-25 border-top border-white"></div>
+
+            {% if request.user.userrole == 'Teacher' or request.user.is_staff %}
+            <label class="menu-section-label px-4 mb-2">أدوات لوحة التحكم</label>
+
+                <li class="nav-item">
+                    <a href="{% url 'learning:classroom_manage' %}" class="nav-link d-flex align-items-center">
+                        <i class="fas fa-users-cog ms-3"></i> <span>إدارة الصفوف</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{% url 'accounts:grades_page' %}" class="nav-link d-flex align-items-center">
+                        <i class="fas fa-chart-bar ms-3"></i> <span>رصد الدرجات</span>
+                    </a>
+                </li>
+            {% endif %}
+
+        </ul>
+    </div>
+</div>
+
+<style>
+    .sidebar-wrapper {
+        width: 280px;
+        height: 100vh;
+        max-height: 100vh;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #5a91e6 0%, #3a61a0 100%);
+        transition: all 0.3s ease;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        color: white;
+        font-family: 'Cairo', sans-serif;
+        text-align: right;
+        flex-shrink: 0;
+    }
+    .user-name {
+        font-family: 'Cairo', sans-serif;
+        font-weight: 700;
+        color: white;
+        font-size: 1.1rem;
+    }
+    .user-role-label {
+        font-family: 'Tajawal', sans-serif;
+        font-size: 0.85rem;
+        opacity: 0.85;
+        color: white;
+        font-weight: 500;
+    }
+    .nav-link {
+        color: rgba(255, 255, 255, 0.9);
+        padding: 12px 18px;
+        border-radius: 12px;
+        margin: 0 10px;
+        font-family: 'Cairo', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: 0.3s;
+        text-decoration: none;
+    }
+    .nav-link:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        transform: translateX(-5px);
+    }
+    .nav-link.active {
+        background: #ffffff;
+        color: #5a91e6 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-weight: 700;
+    }
+    .menu-section-label {
+        font-family: 'Tajawal', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgba(255,255,255,0.6) !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .ms-3 { margin-left: 1rem !important; }
+    .status-indicator {
+        position: absolute;
+        bottom: 3px;
+        left: 3px;
+        width: 15px;
+        height: 15px;
+        background: #00e676;
+        border: 3px solid #5a91e6;
+        border-radius: 50%;
+    }
+</style>
+
+<script>
+/* ── polling الإشعارات في السايدبار — كل 20 ثانية ── */
+(function pollNotifBadge(){
+    fetch("{% url 'accounts:notifications_unread' %}", {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        var badge = document.querySelector('.notif-unread-badge');
+        if(!badge) return;
+        if(d.count && d.count > 0){
+            badge.textContent = d.count > 99 ? '99+' : d.count;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    })
+    .catch(function(){});
+    setTimeout(pollNotifBadge, 20000);
+})();
+</script>

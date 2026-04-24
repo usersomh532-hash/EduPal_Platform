@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}نتيجة الاختبار — {{ test.testtitle }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root {
+  --sky:#3b82f6; --sky-dk:#1d4ed8; --sky-lt:#eff6ff; --sky-bd:#bfdbfe;
+  --mint:#10b981; --mint-lt:#ecfdf5; --mint-bd:#6ee7b7;
+  --rose:#ef4444; --rose-lt:#fef2f2; --rose-bd:#fecaca;
+  --amber:#f59e0b; --amber-lt:#fffbeb;
+  --ink:#1e293b; --muted:#64748b; --border:#e2e8f0; --bg:#f0f5fb; --card:#fff;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); direction: rtl; font-family: 'Tajawal', sans-serif; }
+.tr-wrap { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.25rem 5rem; }
+
+.score-card {
+  background: linear-gradient(120deg, #0f172a, var(--sky-dk));
+  border-radius: 1.25rem; padding: 2.25rem 2rem;
+  text-align: center; margin-bottom: 1.75rem;
+  box-shadow: 0 8px 32px rgba(29,78,216,.25);
+}
+.score-circle {
+  width: 130px; height: 130px; border-radius: 50%;
+  border: 5px solid rgba(255,255,255,.35);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  margin: 0 auto 1.25rem; background: rgba(255,255,255,.1);
+}
+.score-circle.pass { border-color: #6ee7b7; }
+.score-circle.ok   { border-color: #fde68a; }
+.score-circle.fail { border-color: #fca5a5; }
+.score-num   { font-size: 2.2rem; font-weight: 900; color: #fff; line-height: 1; }
+.score-denom { font-size: .88rem; color: rgba(255,255,255,.7); margin-top: .15rem; }
+.score-title { font-size: 1.4rem; font-weight: 900; color: #fff; margin-bottom: .4rem; }
+.score-sub   { font-size: .9rem; color: rgba(255,255,255,.75); }
+.score-pct-bar {
+  height: 8px; border-radius: 10px; background: rgba(255,255,255,.2);
+  margin: 1rem auto 0; max-width: 320px; overflow: hidden;
+}
+.score-pct-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--mint), #34d399); }
+
+.info-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.info-chip {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: .75rem; padding: .6rem 1.1rem;
+  display: flex; align-items: center; gap: .5rem;
+  font-size: .85rem; font-weight: 700; color: var(--ink);
+  flex: 1; min-width: 130px;
+}
+.info-chip i { color: var(--sky-dk); }
+
+.override-banner {
+  background: var(--amber-lt); border: 1.5px solid #fde68a;
+  border-radius: 10px; padding: .75rem 1.1rem;
+  display: flex; align-items: flex-start; gap: .6rem;
+  margin-bottom: 1.25rem; font-size: .88rem; color: #78350f;
+}
+.override-banner i { color: var(--amber); margin-top: .1rem; flex-shrink: 0; }
+
+.review-head {
+  font-size: .92rem; font-weight: 800; color: var(--ink);
+  display: flex; align-items: center; gap: .5rem;
+  margin-bottom: 1rem; padding-right: .75rem;
+  border-right: 4px solid var(--sky-dk);
+}
+.q-card {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 1rem; padding: 1.25rem 1.5rem; margin-bottom: 1rem;
+}
+.q-card.correct { border-color: var(--mint-bd); background: var(--mint-lt); }
+.q-card.wrong   { border-color: var(--rose-bd); background: var(--rose-lt); }
+.q-card.skipped { background: #f8fafc; }
+.q-header { display: flex; align-items: flex-start; gap: .6rem; margin-bottom: .75rem; }
+.q-num {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: var(--sky-dk); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; font-weight: 800;
+}
+.q-card.correct .q-num { background: var(--mint); }
+.q-card.wrong   .q-num { background: var(--rose); }
+.q-card.skipped .q-num { background: var(--muted); }
+.q-text { font-size: .97rem; font-weight: 700; line-height: 1.65; flex: 1; }
+.q-badge {
+  font-size: .75rem; font-weight: 700; padding: .2rem .65rem;
+  border-radius: 100px; white-space: nowrap; flex-shrink: 0;
+}
+.q-badge.b-correct { background: var(--mint-lt); color: #059669; border: 1px solid var(--mint-bd); }
+.q-badge.b-wrong   { background: var(--rose-lt); color: var(--rose); border: 1px solid var(--rose-bd); }
+.q-badge.b-skip    { background: #f1f5f9; color: var(--muted); border: 1px solid var(--border); }
+.ans-row { font-size: .85rem; margin-top: .45rem; }
+.ans-lbl { font-weight: 700; color: var(--muted); margin-bottom: .15rem; }
+.ans-val { font-weight: 700; }
+.ans-val.c { color: #059669; }
+.ans-val.w { color: var(--rose); }
+.ans-val.s { color: var(--muted); font-style: italic; }
+
+.tr-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
+.tr-btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .7rem 1.5rem; border-radius: .75rem;
+  font-family: 'Tajawal', sans-serif; font-size: .93rem; font-weight: 700;
+  text-decoration: none; border: none; cursor: pointer;
+}
+.tr-btn-primary { background: var(--sky-dk); color: #fff; box-shadow: 0 4px 12px rgba(29,78,216,.3); }
+.tr-btn-primary:hover { opacity: .88; color: #fff; }
+.tr-btn-ghost { background: var(--border); color: var(--ink); }
+.tr-btn-ghost:hover { background: #d1d5db; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tr-wrap" dir="rtl">
+
+  <div class="score-card">
+    <div class="score-circle" id="score-circle" data-pct="{{ percentage }}">
+      <div class="score-num">{{ attempt.score }}</div>
+      <div class="score-denom">من {{ max_score }}</div>
+    </div>
+    <div class="score-title" id="score-title"></div>
+    <div class="score-sub">
+      حصلت على {{ attempt.score }} من {{ max_score }} ({{ percentage }}%)
+    </div>
+    <div class="score-pct-bar">
+      <div class="score-pct-fill" id="score-pct-fill" style="width:0%;"></div>
+    </div>
+  </div>
+
+  <div class="info-row">
+    <div class="info-chip"><i class="fas fa-file-alt"></i> {{ test.testtitle }}</div>
+    <div class="info-chip"><i class="fas fa-book"></i> {{ test.lessonid.subjectid.subjectname|default:"—" }}</div>
+    <div class="info-chip"><i class="fas fa-list-ol"></i> {{ questions|length }} سؤال</div>
+    {% if attempt.durationtaken %}
+    <div class="info-chip"><i class="fas fa-clock"></i> <span id="tr-time-display">—</span></div>
+    {% endif %}
+  </div>
+
+  {% if override %}
+  <div class="override-banner">
+    <i class="fas fa-exclamation-circle"></i>
+    <div>
+      <strong>تم تعديل الدرجة من قِبل المعلم.</strong>
+      {% if override.reason %}<br>السبب: {{ override.reason }}{% endif %}
+      {% if override.teacher_note %}<br>ملاحظة: {{ override.teacher_note }}{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="review-head"><i class="fas fa-search"></i> مراجعة الإجابات</div>
+
+  {% for q in questions %}
+  <div class="q-card" id="qr-{{ q.questionid }}">
+    <div class="q-header">
+      <div class="q-num">{{ forloop.counter }}</div>
+      <div class="q-text">{{ q.questiontext }}</div>
+      <span class="q-badge" id="qbadge-{{ q.questionid }}">—</span>
+    </div>
+    <div class="ans-row">
+      <div class="ans-lbl">إجابتك:</div>
+      <div class="ans-val" id="qans-{{ q.questionid }}">—</div>
+    </div>
+    <div class="ans-row" style="margin-top:.35rem;">
+      <div class="ans-lbl">الإجابة الصحيحة:</div>
+      <div class="ans-val c">{{ q.correctanswer }}</div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="tr-actions">
+    <a href="{% url 'student:student_home' %}" class="tr-btn tr-btn-primary">
+      <i class="fas fa-home"></i> العودة للرئيسية
+    </a>
+    <a href="{% url 'student:view_lesson_student' test.lessonid.pk %}" class="tr-btn tr-btn-ghost">
+      <i class="fas fa-arrow-right"></i> العودة للدرس
+    </a>
+  </div>
+
+</div>
+
+{{ answers_json|json_script:"dj-answers" }}
+{{ attempt.durationtaken|default:0|json_script:"dj-tr-duration" }}
+
+<script>
+(function() {
+  var circle  = document.getElementById('score-circle');
+  var titleEl = document.getElementById('score-title');
+  var fillEl  = document.getElementById('score-pct-fill');
+  var pct     = parseFloat(circle ? circle.dataset.pct : 0) || 0;
+
+  if (circle) {
+    if (pct >= 75)      circle.classList.add('pass');
+    else if (pct >= 50) circle.classList.add('ok');
+    else                circle.classList.add('fail');
+  }
+  if (titleEl) titleEl.textContent = pct >= 75 ? '🎉 ممتاز!' : pct >= 50 ? '👍 جيد' : '🍀 لا بأس، حظاً أوفر!';
+  if (fillEl)  fillEl.style.width  = pct + '%';
+
+  /* ── وقت الإنجاز الفعلي ── */
+  (function() {
+    var el = document.getElementById('tr-time-display');
+    if (!el) return;
+    try {
+      var secs = parseInt(JSON.parse(
+        document.getElementById('dj-tr-duration').textContent
+      )) || 0;
+      var m = Math.floor(secs / 60);
+      var s = secs % 60;
+      el.textContent = (m > 0 ? m + ' د ' : '') + s + ' ث';
+    } catch(e) {}
+  })();
+
+  var answers = {};
+  try {
+    answers = JSON.parse(document.getElementById('dj-answers').textContent || '{}');
+  } catch(e) {}
+
+  document.querySelectorAll('.q-card').forEach(function(card) {
+    var qid   = card.id.replace('qr-', '');
+    var badge = document.getElementById('qbadge-' + qid);
+    var ansEl = document.getElementById('qans-'   + qid);
+    var sa    = answers[qid];
+
+    if (!sa || !sa.selected) {
+      card.classList.add('skipped');
+      if (badge) { badge.textContent = '— لم يُجَب'; badge.className = 'q-badge b-skip'; }
+      if (ansEl) { ansEl.textContent = 'لم تُجب على هذا السؤال'; ansEl.className = 'ans-val s'; }
+      var num = card.querySelector('.q-num');
+      if (num) num.style.background = '#94a3b8';
+    } else if (sa.is_correct) {
+      card.classList.add('correct');
+      if (badge) { badge.textContent = '✓ صحيح'; badge.className = 'q-badge b-correct'; }
+      if (ansEl) { ansEl.textContent = sa.selected; ansEl.className = 'ans-val c'; }
+    } else {
+      card.classList.add('wrong');
+      if (badge) { badge.textContent = '✗ خطأ'; badge.className = 'q-badge b-wrong'; }
+      if (ansEl) { ansEl.textContent = sa.selected || '—'; ansEl.className = 'ans-val w'; }
+    }
+  });
+})();
+</script>
+{% endblock %}

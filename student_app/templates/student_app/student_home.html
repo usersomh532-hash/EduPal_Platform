@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}مكتبتي — {{ request.user.fullname }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root {
+  --sky:     #3b82f6;
+  --sky-dk:  #1d4ed8;
+  --sky-lt:  #eff6ff;
+  --sky-bd:  #bfdbfe;
+  --mint:    #10b981;
+  --mint-lt: #ecfdf5;
+  --amber:   #f59e0b;
+  --rose:    #ef4444;
+  --rose-lt: #fef2f2;
+  --ink:     #1e293b;
+  --muted:   #64748b;
+  --border:  #e2e8f0;
+  --bg:      #f0f5fb;
+  --card:    #ffffff;
+  --r:       16px;
+  --sh:      0 2px 8px rgba(30,64,175,0.07), 0 6px 24px rgba(30,64,175,0.05);
+  --sh-h:    0 8px 28px rgba(30,64,175,0.14), 0 24px 48px rgba(30,64,175,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',sans-serif;}
+.page-wrap{max-width:1160px;margin:0 auto;padding:2rem 1.25rem 5rem;}
+
+/* ══ بانر الترحيب ══ */
+.welcome{
+  background:linear-gradient(135deg,var(--sky-dk) 0%,var(--sky) 100%);
+  border-radius:1.5rem;padding:2rem 2.5rem;margin-bottom:2.5rem;
+  color:#fff;display:flex;align-items:center;gap:1.5rem;
+  box-shadow:0 8px 32px rgba(29,78,216,0.25);
+  position:relative;overflow:hidden;
+}
+.welcome::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 85% 50%,rgba(255,255,255,0.09) 0%,transparent 60%);
+}
+.welcome-emoji{font-size:3.2rem;flex-shrink:0;}
+.welcome h1{font-size:clamp(1.3rem,2.5vw,1.85rem);font-weight:900;margin-bottom:.3rem;}
+.welcome p{font-size:.9rem;opacity:.85;font-weight:500;margin:0;}
+.welcome-stats{margin-right:auto;display:flex;gap:1.75rem;flex-shrink:0;}
+.ws-item{text-align:center;}
+.ws-num{font-size:1.8rem;font-weight:900;line-height:1;}
+.ws-lbl{font-size:.75rem;opacity:.8;font-weight:500;margin-top:.15rem;}
+
+/* ══ عنوان قسم ══ */
+.sec-title{
+  font-size:1.1rem;font-weight:800;color:var(--ink);
+  margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem;
+  padding-right:.75rem;border-right:4px solid var(--sky);
+}
+.sec-title span{color:var(--muted);font-size:.85rem;font-weight:500;}
+
+/* ══ شبكة المواد ══ */
+.subjects-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:1.5rem;
+}
+
+/* ══ كارد المادة ══ */
+.subj-card{
+  background:var(--card);border-radius:var(--r);
+  border:1.5px solid var(--border);box-shadow:var(--sh);
+  overflow:hidden;
+  transition:transform .25s,box-shadow .25s,border-color .25s;
+}
+.subj-card:hover{transform:translateY(-4px);box-shadow:var(--sh-h);border-color:var(--sky-bd);}
+
+/* غلاف المادة */
+.subj-cover{
+  height:140px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--sky-lt),var(--sky-bd));
+}
+.subj-badge{
+  position:absolute;top:10px;right:10px;
+  background:rgba(255,255,255,0.92);border-radius:100px;padding:3px 12px;
+  font-size:.75rem;font-weight:700;color:var(--sky-dk);
+  backdrop-filter:blur(4px);
+}
+
+/* ✅ شارة التقدم على الغلاف */
+.subj-progress-badge{
+  position:absolute;top:10px;left:10px;
+  background:rgba(16,185,129,0.92);color:#fff;
+  border-radius:100px;padding:3px 10px;
+  font-size:.72rem;font-weight:700;
+  display:none;align-items:center;gap:.3rem;
+  backdrop-filter:blur(4px);
+}
+.subj-progress-badge.visible{display:flex;}
+.subj-progress-badge i{font-size:.65rem;}
+
+/* بيانات الكارد */
+.subj-body{padding:1.1rem 1.4rem 1.3rem;}
+.subj-name{font-size:1.05rem;font-weight:800;color:var(--ink);margin-bottom:.4rem;}
+.subj-meta{
+  display:flex;align-items:center;gap:.9rem;
+  font-size:.8rem;color:var(--muted);font-weight:500;margin-bottom:.9rem;
+}
+.subj-meta i{color:var(--sky);}
+
+/* شريط التقدم */
+.prog-lbl{display:flex;justify-content:space-between;font-size:.73rem;color:var(--muted);font-weight:600;margin-bottom:.3rem;}
+.prog-bar{height:5px;background:var(--sky-lt);border-radius:100px;overflow:hidden;margin-bottom:.9rem;}
+.prog-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--mint),var(--sky));
+  border-radius:100px;
+  transition:width .6s ease;
+}
+/* ✅ مكتملة: شريط أخضر */
+.prog-fill.complete{background:linear-gradient(90deg,#059669,var(--mint));}
+
+/* زر الكارد */
+.subj-btn{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  width:100%;padding:.68rem;
+  background:linear-gradient(135deg,var(--sky-dk),var(--sky));
+  color:#fff;border:none;border-radius:10px;
+  font-size:.9rem;font-weight:700;font-family:'Tajawal',sans-serif;
+  cursor:pointer;transition:opacity .2s,transform .15s;
+  text-decoration:none;
+}
+.subj-btn:hover{opacity:.9;transform:translateY(-1px);color:#fff;text-decoration:none;}
+
+/* ══ حالة فارغة ══ */
+.empty-state{
+  grid-column:1/-1;text-align:center;
+  padding:5rem 2rem;background:var(--card);
+  border-radius:var(--r);border:2px dashed var(--border);
+}
+.empty-state .ei{font-size:4rem;display:block;margin-bottom:1rem;}
+.empty-state h4{font-size:1.1rem;font-weight:800;margin-bottom:.5rem;}
+.empty-state p{color:var(--muted);}
+
+@media(max-width:600px){
+  .welcome{flex-direction:column;text-align:center;}
+  .welcome-stats{margin-right:0;}
+  .subjects-grid{grid-template-columns:1fr;}
+}
+
+/* ── ألوان غلاف المادة ── */
+.subj-emoji-box{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:transform .3s;}
+.subj-card:hover .subj-emoji-box{transform:scale(1.08);}
+.subj-emoji{font-size:3.5rem;line-height:1;display:block;}
+.subj-cover[data-color="science"]{background:linear-gradient(135deg,#ecfdf5,#a7f3d0);}
+.subj-cover[data-color="math"]   {background:linear-gradient(135deg,#eff6ff,#bfdbfe);}
+.subj-cover[data-color="arabic"] {background:linear-gradient(135deg,#fdf4ff,#e9d5ff);}
+.subj-cover[data-color="english"]{background:linear-gradient(135deg,#fff7ed,#fed7aa);}
+.subj-cover[data-color="history"]{background:linear-gradient(135deg,#fefce8,#fde68a);}
+.subj-cover[data-color="geo"]    {background:linear-gradient(135deg,#f0fdf4,#bbf7d0);}
+.subj-cover[data-color="cs"]     {background:linear-gradient(135deg,#f0f9ff,#bae6fd);}
+.subj-cover[data-color="islam"]  {background:linear-gradient(135deg,#fff7ed,#ffedd5);}
+.subj-cover[data-color="pe"]     {background:linear-gradient(135deg,#fef2f2,#fecaca);}
+.subj-cover[data-color="art"]    {background:linear-gradient(135deg,#fdf2f8,#fbcfe8);}
+.subj-cover[data-color="default"]{background:linear-gradient(135deg,var(--sky-lt),#bfdbfe);}
+
+/* ✅ شارة المادة المكتملة */
+.subj-complete-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(5,150,105,.82),rgba(16,185,129,.75));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.35rem;opacity:0;transition:opacity .25s;
+  border-radius:inherit;
+}
+.subj-card:hover .subj-complete-overlay{opacity:1;}
+.subj-complete-overlay-icon{font-size:2rem;color:#fff;}
+.subj-complete-overlay-text{font-size:.8rem;font-weight:800;color:#fff;}
+
+/* شارة ثابتة أعلى يسار الغلاف */
+.subj-done-badge{
+  position:absolute;top:10px;left:10px;
+  background:linear-gradient(135deg,#059669,#10b981);
+  color:#fff;border-radius:100px;padding:.22rem .85rem;
+  font-size:.72rem;font-weight:800;
+  display:flex;align-items:center;gap:.3rem;
+  box-shadow:0 3px 10px rgba(5,150,105,.4);
+  z-index:3;
+}
+.subj-done-badge i{font-size:.65rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap" dir="rtl">
+
+  <!-- بانر الترحيب -->
+  <div class="welcome">
+    <div class="welcome-emoji">📚</div>
+    <div>
+      <h1>أهلاً يا {{ student.userid.fullname|default:request.user.fullname }}!</h1>
+      <p>اختر مادتك وابدأ رحلة التعلم اليوم </p>
+    </div>
+    <div class="welcome-stats">
+      <div class="ws-item">
+        <div class="ws-num">{{ subjects|length }}</div>
+        <div class="ws-lbl">مادة</div>
+      </div>
+      <div class="ws-item">
+        <div class="ws-num">{{ total_lessons }}</div>
+        <div class="ws-lbl">درس</div>
+      </div>
+      <div class="ws-item">
+        <div class="ws-num">{{ watched_ids|length }}</div>
+        <div class="ws-lbl">شاهدته</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- عنوان القسم -->
+  <div class="sec-title">
+    <i class="fas fa-book-open" style="color:var(--sky)"></i>
+    المواد الدراسية
+    <span>({{ subjects|length }} مادة)</span>
+  </div>
+
+  <!-- ══ شبكة المواد ══ -->
+  <div class="subjects-grid">
+    {% for item in subjects %}
+    {% with subj=item.subject lessons=item.lessons count=item.lesson_count cover=item.cover %}
+
+    <div class="subj-card">
+
+      <!-- غلاف المادة -->
+      <div class="subj-cover subject-emoji-cover" data-subject="{{ subj.subjectname }}">
+        <div class="subj-emoji-box">
+          <span class="subj-emoji">📖</span>
+        </div>
+        <div class="subj-badge">
+          <i class="fas fa-book-reader" style="margin-left:4px;"></i>
+          {% if count %}{{ count }} درس{% else %}قريباً{% endif %}
+        </div>
+        <!-- ✅ شارة التقدم على الغلاف — تُملأ بـ JS -->
+        <div class="subj-progress-badge" id="cover-badge-{{ subj.pk }}">
+          <i class="fas fa-check-circle"></i>
+          <span class="cover-badge-text"></span>
+        </div>
+        {% if item.is_subject_completed %}
+        <!-- ✅ شارة "مادة منجزة" ثابتة -->
+        <div class="subj-done-badge">
+          <i class="fas fa-trophy"></i> مادة مكتملة
+        </div>
+        <!-- طبقة overlay عند hover -->
+        <div class="subj-complete-overlay">
+          <div class="subj-complete-overlay-icon"><i class="fas fa-trophy"></i></div>
+          <div class="subj-complete-overlay-text">أنجزت هذه المادة! 🎉</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- بيانات المادة -->
+      <div class="subj-body">
+        <div class="subj-name">{{ subj.subjectname }}</div>
+        <div class="subj-meta">
+          <span>
+            <i class="fas fa-chalkboard-teacher" style="margin-left:3px;"></i>
+            {% for lesson in lessons %}{% if forloop.first %}{{ lesson.teacherid.userid.fullname|default:"معلم" }}{% endif %}{% endfor %}
+          </span>
+          <span>
+            <i class="fas fa-layer-group" style="margin-left:3px;"></i>
+            {{ count }} درس
+          </span>
+        </div>
+
+        <!-- ✅ شريط التقدم — يُحدَّث بـ JS من watched_counts_json -->
+        <div class="prog-lbl">
+          <span>التقدم</span>
+          <span id="prog-lbl-{{ subj.pk }}">—</span>
+        </div>
+        <div class="prog-bar">
+          <div class="prog-fill" id="prog-fill-{{ subj.pk }}" style="width:0%"></div>
+        </div>
+
+        <!-- زر الانتقال لصفحة المادة -->
+        <a href="{% url 'student:subject_detail' subj.pk %}" class="subj-btn">
+          <i class="fas fa-play-circle"></i>
+          ابدأ الدراسة
+          <i class="fas fa-chevron-left" style="margin-right:auto;"></i>
+        </a>
+      </div>
+
+    </div><!-- /subj-card -->
+    {% endwith %}
+    {% empty %}
+    <div class="empty-state">
+      <span class="ei">☁️</span>
+      <h4>لا توجد مواد منشورة الآن</h4>
+      <p>معلمك سيضيف دروساً قريباً — تحقق لاحقاً!</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ lesson_test_map_json|json_script:"dj-lesson-test-map" }}
+{{ watched_counts_json|json_script:"dj-watched-counts" }}
+
+<script>
+
+/* ── إيموجي المواد ── */
+var SUBJECT_EMOJI_MAP = [
+  {keys:['علوم','science','فيزياء','كيمياء','أحياء','احياء','biology','physics','chemistry'],emoji:'🔬',color:'science'},
+  {keys:['رياضيات','math','حساب','رياض'],emoji:'📐',color:'math'},
+  {keys:['عربي','العربية','arabic','لغة عربية'],emoji:'📝',color:'arabic'},
+  {keys:['انجليزي','إنجليزي','english','لغة إنجليزية','لغة انجليزية'],emoji:'🌍',color:'english'},
+  {keys:['تاريخ','history'],emoji:'📜',color:'history'},
+  {keys:['جغرافيا','geography'],emoji:'🗺️',color:'geo'},
+  {keys:['حاسوب','computer','تكنولوجيا','technology','it','معلومات'],emoji:'💻',color:'cs'},
+  {keys:['اسلامية','إسلامية','islamic','دين','قران','قرآن'],emoji:'🕌',color:'islam'},
+  {keys:['بدنية','رياضة بدنية','physical','sport'],emoji:'⚽',color:'pe'},
+  {keys:['فنية','فنون','art','رسم'],emoji:'🎨',color:'art'},
+  {keys:['اجتماعية','اجتماعيات','social'],emoji:'🌐',color:'history'},
+  {keys:['نفس','psychology'],emoji:'🧠',color:'default'},
+];
+function getSubjectEmoji(name){
+  if(!name) return {emoji:'📖',color:'default'};
+  var l=name.toLowerCase();
+  for(var i=0;i<SUBJECT_EMOJI_MAP.length;i++){
+    var e=SUBJECT_EMOJI_MAP[i];
+    for(var j=0;j<e.keys.length;j++){
+      if(l.includes(e.keys[j])) return {emoji:e.emoji,color:e.color};
+    }
+  }
+  return {emoji:'📖',color:'default'};
+}
+document.querySelectorAll('.subject-emoji-cover').forEach(function(cover){
+  var r=getSubjectEmoji(cover.dataset.subject||'');
+  var el=cover.querySelector('.subj-emoji');
+  if(el) el.textContent=r.emoji;
+  cover.setAttribute('data-color',r.color);
+});
+
+/* ── خريطة اختبارات الدروس ── */
+var LESSON_TEST_MAP = (function(){
+  try {
+    var el = document.getElementById('dj-lesson-test-map');
+    return el ? JSON.parse(el.textContent) : {};
+  } catch(e) { return {}; }
+})();
+
+/* ── ✅ تحديث شرائط التقدم من watched_counts_json ── */
+(function updateProgress(){
+  var watchedCounts = {};
+  try {
+    var el = document.getElementById('dj-watched-counts');
+    watchedCounts = el ? JSON.parse(el.textContent) : {};
+  } catch(e) {}
+
+  /* نجمع عدد الدروس لكل مادة من الـ DOM */
+  document.querySelectorAll('.subj-card').forEach(function(card){
+    /* استخراج pk المادة من id شريط التقدم */
+    var fillEl = card.querySelector('[id^="prog-fill-"]');
+    var lblEl  = card.querySelector('[id^="prog-lbl-"]');
+    var badgeEl = card.querySelector('[id^="cover-badge-"]');
+    if(!fillEl || !lblEl) return;
+
+    var subjPk = fillEl.id.replace('prog-fill-','');
+
+    /* عدد الدروس الكلي من الـ badge النصي */
+    var badgeText = card.querySelector('.subj-badge');
+    var total = 0;
+    if(badgeText){
+      var m = badgeText.textContent.match(/(\d+)/);
+      if(m) total = parseInt(m[1]);
+    }
+
+    var watched = watchedCounts[subjPk] || 0;
+    /* لا نتجاوز الـ total */
+    watched = Math.min(watched, total);
+    var pct = total > 0 ? Math.round((watched / total) * 100) : 0;
+
+    /* تحديث الشريط */
+    fillEl.style.width = pct + '%';
+    if(pct >= 100) fillEl.classList.add('complete');
+
+    /* تحديث النص */
+    lblEl.textContent = watched + ' / ' + total;
+
+    /* ✅ شارة الغلاف: تظهر فقط إذا شاهد شيئاً */
+    if(badgeEl && watched > 0){
+      var badgeSpan = badgeEl.querySelector('.cover-badge-text');
+      if(badgeSpan){
+        if(pct >= 100){
+          badgeSpan.textContent = 'مكتملة ✓';
+        } else {
+          badgeSpan.textContent = pct + '%';
+        }
+      }
+      badgeEl.classList.add('visible');
+    }
+  });
+})();
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,260 @@
+{# student_app/templates/student_app/chatbot_widget_js.html #}
+<script>
+(function(){
+'use strict';
+
+/* ══════════════════════════════════════════════════════
+   1. قراءة الإعدادات من data-* (الطريقة الآمنة والصحيحة)
+   ══════════════════════════════════════════════════════ */
+var _cfg = document.getElementById('chat-config');
+
+var _chatUrl   = _cfg ? _cfg.dataset.chatUrl   : '';
+var _csrf      = _cfg ? _cfg.dataset.csrf       : '';
+var _chatLimit = _cfg ? parseInt(_cfg.dataset.limit || '20') : 20;
+var _chatUsed  = _cfg ? parseInt(_cfg.dataset.used  || '0')  : 0;
+var _lessonTitle = _cfg ? (_cfg.dataset.lessonTitle || 'الدرس') : 'الدرس';
+
+/* ══════════════════════════════════════════════════════
+   2. الحالة الداخلية
+   ══════════════════════════════════════════════════════ */
+var chatOpen      = false;
+var chatLoading   = false;
+var chatRemaining = _chatLimit - _chatUsed;
+
+/*
+ * ✅ التعديل الجوهري:
+ * chatHistory يخزَّن بصيغة {role, parts:[{text}]}
+ * وهي الصيغة الوحيدة التي يفهمها chat_views.py
+ * (السيرفر يقرأ h['parts'][0]['text'] أو h['text'])
+ */
+var chatHistory = [];
+
+/* ══════════════════════════════════════════════════════
+   3. تهيئة عنوان الدرس وشارة الكوتا
+   ══════════════════════════════════════════════════════ */
+function initUI() {
+    var titleEl = document.getElementById('chat-lesson-title');
+    if (titleEl) titleEl.textContent = _lessonTitle;
+    updateQuotaUI();
+}
+
+function updateQuotaUI(rem) {
+    if (rem !== undefined) chatRemaining = rem;
+    var rem2  = Math.max(0, chatRemaining);
+    var badge = document.getElementById('chat-quota-badge');
+    if (badge) {
+        badge.textContent = rem2 + ' رسالة متبقية';
+        badge.style.color = rem2 <= 5 ? '#fca5a5' : 'rgba(255,255,255,.85)';
+    }
+}
+
+/* ══════════════════════════════════════════════════════
+   4. فتح وإغلاق النافذة
+   ══════════════════════════════════════════════════════ */
+window.toggleChat = function() {
+    chatOpen = !chatOpen;
+    var panel = document.getElementById('chat-panel');
+    var fab   = document.getElementById('chat-fab');
+    if (!panel) return;
+
+    panel.classList.toggle('open', chatOpen);
+    if (chatOpen) {
+        fab.innerHTML = '<i class="fas fa-times"></i>';
+        setTimeout(function() {
+            var inp = document.getElementById('chat-input');
+            if (inp) inp.focus();
+            scrollChat();
+        }, 300);
+    } else {
+        fab.innerHTML = '<i class="fas fa-robot"></i>';
+    }
+};
+
+/* ══════════════════════════════════════════════════════
+   5. إرسال الرسالة — الدالة الرئيسية
+   ══════════════════════════════════════════════════════ */
+window.sendChat = function() {
+    if (chatLoading) return;
+
+    var inp = document.getElementById('chat-input');
+    var msg = (inp ? inp.value : '').trim();
+    if (!msg) return;
+
+    /* فحص الكوتا */
+    if (chatRemaining <= 0) {
+        appendMsg('bot', '🌟 لقد استهلكت محاولاتك اليوم، نراك غداً بنشاط جديد!');
+        return;
+    }
+
+    /* تجهيز الواجهة */
+    inp.value = '';
+    inp.style.height = 'auto';
+    appendMsg('user', msg);
+
+    chatLoading = true;
+    var sendBtn = document.getElementById('chat-send');
+    if (sendBtn) sendBtn.disabled = true;
+
+    var typingId = 'typing_' + Date.now();
+    showTyping(typingId);
+
+    /*
+     * ✅ إرسال history بالصيغة الصحيحة التي يتوقعها chat_views.py:
+     *    [{role: 'user',  parts: [{text: '...'}]},
+     *     {role: 'model', parts: [{text: '...'}]}, ...]
+     *
+     * السيرفر في chat_views.py يقرأ:
+     *   h.get('parts')[0].get('text')  ← الصيغة الأساسية
+     *   h.get('text')                  ← fallback
+     * كلا الصيغتين تعمل — نستخدم parts لأنها الأولوية
+     */
+    var historyToSend = chatHistory.slice(-6);
+
+    fetch(_chatUrl, {
+        method:  'POST',
+        headers: {
+            'Content-Type':     'application/json',
+            'X-CSRFToken':      _csrf,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({
+            message: msg,
+            history: historyToSend,
+        }),
+    })
+    .then(function(response) {
+        /* ✅ نقرأ الـ JSON دائماً حتى عند الخطأ لاستخراج رسالة واضحة */
+        return response.json().then(function(data) {
+            return { status: response.status, data: data };
+        });
+    })
+    .then(function(result) {
+        removeTyping(typingId);
+        chatLoading = false;
+        if (sendBtn) sendBtn.disabled = false;
+
+        var data   = result.data;
+        var status = result.status;
+
+        /* ✅ تحديد نوع الرسالة */
+        if (data.ok) {
+            /* رد ناجح */
+            appendMsg('bot', data.reply);
+        } else if (status === 429 || data.quota_exceeded) {
+            /* تجاوز الحصة */
+            appendMsg('bot', '🌟 ' + (data.error || 'وصلت للحد اليومي. عد غداً!'));
+            chatRemaining = 0;
+            updateQuotaUI(0);
+            return;
+        } else if (status === 503 && data.reply) {
+            /* API غير متاح — نعرض الرد الودي */
+            appendMsg('bot', data.reply);
+            return;
+        } else {
+            /* أي خطأ آخر */
+            var errMsg = data.reply || data.error || 'عذراً، حدث خطأ غير متوقع. حاول مرة أخرى.';
+            appendMsg('bot', errMsg, true);
+            return;
+        }
+
+        /* ✅ تحديث history بالصيغة الصحيحة */
+        chatHistory.push({ role: 'user',  parts: [{ text: msg }] });
+        chatHistory.push({ role: 'model', parts: [{ text: data.reply }] });
+
+        /* الاحتفاظ بآخر 12 رسالة فقط (6 أزواج) */
+        if (chatHistory.length > 12) {
+            chatHistory = chatHistory.slice(-12);
+        }
+
+        /* تحديث الكوتا */
+        if (data.remaining !== undefined) {
+            updateQuotaUI(data.remaining);
+        } else if (!data.is_out_of_scope) {
+            /* لا نخصم إذا كان السؤال خارج الدرس */
+            chatRemaining = Math.max(0, chatRemaining - 1);
+            updateQuotaUI();
+        }
+    })
+    .catch(function(err) {
+        removeTyping(typingId);
+        chatLoading = false;
+        if (sendBtn) sendBtn.disabled = false;
+        appendMsg('bot', '📡 تعذّر الاتصال بالسيرفر — تحقق من الإنترنت وأعد المحاولة.', true);
+        console.error('[Chat] fetch error:', err);
+    });
+};
+
+/* ══════════════════════════════════════════════════════
+   6. أدوات الواجهة
+   ══════════════════════════════════════════════════════ */
+
+/* إضافة رسالة — isError اختياري لتلوين الفقاعة بالأحمر */
+function appendMsg(type, text, isError) {
+    var msgsEl = document.getElementById('chat-messages');
+    if (!msgsEl) return;
+
+    var div = document.createElement('div');
+    var cls = 'chat-msg ' + (type === 'user' ? 'user' : 'bot');
+    if (isError) cls += ' error-msg';
+    div.className = cls;
+
+    /* تنسيق النص: escape +줄바꿈 + Bold */
+    var safe = (text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    div.innerHTML = safe;
+    msgsEl.appendChild(div);
+    scrollChat();
+}
+
+/* مؤشر التفكير (ثلاث نقاط متحركة) */
+function showTyping(id) {
+    var msgsEl = document.getElementById('chat-messages');
+    if (!msgsEl) return;
+    var div = document.createElement('div');
+    div.className = 'chat-msg bot';
+    div.id = id;
+    div.innerHTML =
+        '<div class="typing-dots">' +
+        '<span></span><span></span><span></span>' +
+        '</div>';
+    msgsEl.appendChild(div);
+    scrollChat();
+}
+
+function removeTyping(id) {
+    var el = document.getElementById(id);
+    if (el) el.remove();
+}
+
+function scrollChat() {
+    var msgsEl = document.getElementById('chat-messages');
+    if (msgsEl) msgsEl.scrollTo({ top: msgsEl.scrollHeight, behavior: 'smooth' });
+}
+
+/* ══════════════════════════════════════════════════════
+   7. أحداث لوحة المفاتيح وتغيير الحجم
+   ══════════════════════════════════════════════════════ */
+window.handleChatKey = function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        window.sendChat();
+    }
+};
+
+window.autoResize = function(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+};
+
+/* ══════════════════════════════════════════════════════
+   8. تهيئة عند تحميل الصفحة
+   ══════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', initUI);
+
+})();
+</script>

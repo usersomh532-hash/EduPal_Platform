@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}لوحة تحكم المعلم — EduPal{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap');
+:root {
+  --blue:      #1d4ed8;
+  --blue-dk:   #1e3a5f;
+  --blue-lt:   #eff4ff;
+  --blue-bd:   #bfdbfe;
+  --teal:      #0f766e;
+  --teal-lt:   #f0fdfa;
+  --teal-bd:   #99f6e4;
+  --purple:    #6d28d9;
+  --purple-lt: #f5f3ff;
+  --slate:     #475569;
+  --slate-lt:  #f8fafc;
+  --ink:       #1e293b;
+  --muted:     #64748b;
+  --border:    #e2e8f0;
+  --bg:        #f3f6fb;
+  --white:     #ffffff;
+  --r:         14px;
+  --sh:        0 1px 4px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.05);
+  --sh-h:      0 6px 20px rgba(0,0,0,.10), 0 20px 48px rgba(0,0,0,.08);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { direction: rtl; }
+body { background: var(--bg); font-family: 'Cairo', 'Tajawal', sans-serif; color: var(--ink); }
+.dash-wrap { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+/* ══ Hero ════════════════════════════════════════════════════ */
+.hero {
+  background: linear-gradient(125deg, #1e3a5f 0%, #1d4ed8 55%, #2563eb 100%);
+  border-radius: 20px; padding: 2.25rem 2.5rem;
+  display: flex; align-items: center; gap: 2rem;
+  position: relative; overflow: hidden;
+  box-shadow: 0 8px 40px rgba(29,78,216,.28);
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 88% 20%, rgba(255,255,255,.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 12% 80%, rgba(255,255,255,.05) 0%, transparent 50%);
+}
+.hero-icon {
+  width: 68px; height: 68px; flex-shrink: 0;
+  background: rgba(255,255,255,.16); border: 1.5px solid rgba(255,255,255,.28);
+  border-radius: 18px; display: flex; align-items: center; justify-content: center;
+  font-size: 1.65rem; color: #fff; backdrop-filter: blur(4px);
+}
+.hero-text h1 { font-size: clamp(1.5rem, 2.5vw, 2.1rem); font-weight: 900; color: #fff; margin: 0 0 .4rem; line-height: 1.2; }
+.hero-text p  { font-size: .98rem; color: rgba(255,255,255,.82); margin: 0; font-family: 'Tajawal', sans-serif; line-height: 1.8; }
+.hero-kpis { margin-right: auto; display: flex; gap: 2.5rem; flex-shrink: 0; }
+.kpi-item  { text-align: center; }
+.kpi-num   { font-size: 2.4rem; font-weight: 900; color: #fff; line-height: 1; }
+.kpi-lbl   { font-size: .78rem; color: rgba(255,255,255,.75); font-weight: 600; margin-top: .2rem; letter-spacing: .03em; }
+
+/* ══ Section Label ══════════════════════════════════════════ */
+.sec-lbl {
+  font-size: .95rem; font-weight: 800; color: var(--ink);
+  display: flex; align-items: center; gap: .6rem;
+  margin-bottom: 1.2rem; padding-right: .8rem;
+  border-right: 4px solid var(--blue);
+}
+.sec-lbl i { color: var(--blue); }
+
+/* ══ Tool Cards — 3 بطاقات ════════════════════════════════ */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+@media(max-width: 900px) { .tools-grid { grid-template-columns: repeat(2, 1fr); } }
+@media(max-width: 520px)  { .tools-grid { grid-template-columns: 1fr; } }
+
+.tool-card {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 2rem 1.75rem 1.6rem;
+  display: flex; flex-direction: column; gap: .75rem;
+  box-shadow: var(--sh); text-decoration: none; color: inherit;
+  transition: transform .22s, box-shadow .22s, border-color .22s;
+  position: relative; overflow: hidden;
+}
+.tool-card::after {
+  content: ''; position: absolute; bottom: 0; right: 0; left: 0;
+  height: 3px; border-radius: 0 0 var(--r) var(--r);
+  opacity: 0; transition: opacity .22s;
+}
+.tool-card:hover { transform: translateY(-5px); box-shadow: var(--sh-h); text-decoration: none; color: inherit; }
+.tool-card:hover::after { opacity: 1; }
+
+.tc-blue::after   { background: var(--blue);   }
+.tc-teal::after   { background: var(--teal);   }
+.tc-purple::after { background: var(--purple); }
+.tool-card:hover.tc-blue   { border-color: var(--blue-bd); }
+.tool-card:hover.tc-teal   { border-color: var(--teal-bd); }
+.tool-card:hover.tc-purple { border-color: #ddd6fe; }
+
+.tc-icon {
+  width: 56px; height: 56px; border-radius: 15px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; flex-shrink: 0;
+}
+.tc-blue   .tc-icon { background: var(--blue-lt);   color: var(--blue);   }
+.tc-teal   .tc-icon { background: var(--teal-lt);   color: var(--teal);   }
+.tc-purple .tc-icon { background: var(--purple-lt); color: var(--purple); }
+
+.tc-title { font-size: 1.02rem; font-weight: 800; color: var(--ink); line-height: 1.35; }
+.tc-desc  { font-size: .88rem; color: var(--muted); line-height: 1.85; font-family: 'Tajawal', sans-serif; flex: 1; }
+.tc-cta {
+  display: inline-flex; align-items: center; gap: .45rem;
+  font-size: .86rem; font-weight: 700; padding: .48rem 1rem;
+  border-radius: 9px; border: 1.5px solid transparent;
+  transition: background .18s, color .18s; margin-top: .2rem;
+  width: fit-content;
+}
+.tc-blue   .tc-cta { background: var(--blue-lt);   color: var(--blue);   border-color: var(--blue-bd); }
+.tc-teal   .tc-cta { background: var(--teal-lt);   color: var(--teal);   border-color: var(--teal-bd); }
+.tc-purple .tc-cta { background: var(--purple-lt); color: var(--purple); border-color: #ddd6fe; }
+.tool-card:hover .tc-cta { color: #fff; border-color: transparent; }
+.tool-card.tc-blue:hover   .tc-cta { background: var(--blue);   }
+.tool-card.tc-teal:hover   .tc-cta { background: var(--teal);   }
+.tool-card.tc-purple:hover .tc-cta { background: var(--purple); }
+
+/* ══ Panel ═══════════════════════════════════════════════════ */
+.panel { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); overflow: hidden; }
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .75rem; padding: 1rem 1.5rem;
+  background: var(--slate-lt); border-bottom: 1.5px solid var(--border);
+  font-size: .95rem; font-weight: 700; color: var(--ink);
+}
+.ph-left { display: flex; align-items: center; gap: .6rem; }
+.ph-left i { color: var(--blue); }
+.panel-badge {
+  background: var(--blue-lt); color: var(--blue);
+  border: 1px solid var(--blue-bd); border-radius: 100px;
+  padding: .28rem .9rem; font-size: .8rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: .35rem;
+}
+.panel-body { padding: 1.5rem; }
+
+/* ══ Filter ══════════════════════════════════════════════════ */
+.filter-row   { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
+.filter-group { display: flex; flex-direction: column; gap: .4rem; flex: 1; min-width: 160px; }
+.filter-lbl   { font-size: .83rem; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: .35rem; }
+.filter-lbl i { color: var(--blue); }
+.arab-select {
+  direction: rtl; text-align: right;
+  font-family: 'Cairo', sans-serif; font-size: .93rem; color: var(--ink);
+  padding: .62rem 1rem; border: 1.5px solid var(--border); border-radius: 10px;
+  background-color: #fafbfd; transition: border-color .2s; width: 100%;
+}
+.arab-select:focus { border-color: var(--blue); outline: none; }
+.btn-reset {
+  padding: .62rem 1.25rem; font-family: 'Cairo', sans-serif;
+  font-size: .88rem; font-weight: 700;
+  background: var(--slate-lt); color: var(--muted);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  transition: all .2s; display: flex; align-items: center; gap: .4rem;
+  white-space: nowrap; text-decoration: none;
+}
+.btn-reset:hover { background: var(--border); color: var(--ink); text-decoration: none; }
+
+/* ══ Table ═══════════════════════════════════════════════════ */
+.arab-table { font-family: 'Tajawal', sans-serif; width: 100%; }
+.arab-table thead th {
+  background: var(--slate-lt); font-family: 'Cairo', sans-serif;
+  font-size: .85rem; font-weight: 700; color: var(--muted);
+  padding: .85rem 1.25rem; border: none !important;
+  text-align: right; white-space: nowrap;
+}
+.arab-table thead th.tc { text-align: center; }
+.arab-table td {
+  padding: .95rem 1.25rem; border: none !important;
+  border-bottom: 1px solid var(--border) !important;
+  font-size: .93rem; color: var(--ink); vertical-align: middle;
+}
+.arab-table td.tc { text-align: center; }
+.arab-table tbody tr:last-child td { border-bottom: none !important; }
+.arab-table tbody tr:hover td { background: #fafbff; }
+.lesson-cell   { background: #f8faff !important; border-right: 4px solid var(--blue) !important; vertical-align: top !important; padding-top: 1.1rem !important; }
+.lesson-name   { font-family: 'Cairo', sans-serif; font-size: .95rem; font-weight: 800; color: var(--ink); }
+.lesson-link   { color: var(--ink); text-decoration: none; transition: color .2s; }
+.lesson-link:hover { color: var(--blue); text-decoration: underline; }
+.lesson-actions { display: flex; gap: .4rem; margin-top: .4rem; }
+.lesson-act-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 6px;
+  background: var(--blue-lt); color: var(--blue); font-size: .78rem;
+  text-decoration: none; transition: background .2s, transform .15s;
+}
+.lesson-act-btn:hover { background: var(--blue); color: #fff; transform: scale(1.1); }
+.grp-start td { border-top: 2px solid var(--border) !important; }
+.arab-table tbody tr.grp-start:first-child td { border-top: none !important; }
+.subj-tag { background: #eff8ff; color: #0369a1; border-radius: 6px; padding: .28rem .72rem; font-size: .8rem; font-weight: 700; white-space: nowrap; display: inline-block; }
+.cls-txt  { font-size: .88rem; font-weight: 700; color: var(--muted); }
+.std-txt  { font-size: .88rem; color: var(--muted); display: flex; align-items: center; gap: .4rem; }
+.status-pill {
+  border-radius: 100px; padding: .32rem .9rem;
+  font-size: .8rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.status-pill.watched { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.status-pill.pending { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.status-pill.stale   { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.empty-row { font-size: .88rem; color: var(--muted); font-style: italic; }
+
+#filterOverlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.4); z-index: 8000; align-items: center; justify-content: center; }
+.ov-card { background: #fff; border-radius: 1rem; padding: 2rem 3rem; text-align: center; font-family: 'Cairo', sans-serif; box-shadow: 0 8px 40px rgba(0,0,0,.18); }
+
+[dir="rtl"] .me-1 { margin-left: .25rem !important; margin-right: 0 !important; }
+[dir="rtl"] .me-2 { margin-left: .5rem  !important; margin-right: 0 !important; }
+[dir="rtl"] .ms-1 { margin-right: .25rem !important; margin-left: 0 !important; }
+[dir="rtl"] .ms-2 { margin-right: .5rem  !important; margin-left: 0 !important; }
+[dir="rtl"] .ms-auto { margin-right: auto !important; margin-left: 0 !important; }
+.align-top  { vertical-align: top !important; }
+.opacity-20 { opacity: .20 !important; }
+.table-responsive { overflow-y: hidden; }
+
+@media(max-width: 768px) {
+  .hero { flex-direction: column; text-align: center; }
+  .hero-kpis { margin-right: 0; justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-wrap" dir="rtl" lang="ar">
+
+  <!-- ══ Hero ════════════════════════════════════════════════ -->
+  <div class="hero mb-4">
+    <div class="hero-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+    <div class="hero-text">
+      <h1>لوحة تحكم المعلم</h1>
+      <p>أهلاً بك في EduPal — أدر صفوفك وتابع طلابك وبسّط دروسك بذكاء.</p>
+    </div>
+    <div class="hero-kpis">
+      <div class="kpi-item">
+        <div class="kpi-num">{{ published_count }}</div>
+        <div class="kpi-lbl">درس منشور</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-num">{{ student_count }}</div>
+        <div class="kpi-lbl">طالب مسجّل</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ الأدوات التعليمية — 3 بطاقات ══════════════════════ -->
+  <div class="sec-lbl"><i class="fas fa-th-large"></i> الأدوات التعليمية</div>
+  <div class="tools-grid mb-5">
+
+    <a href="{% url 'learning:simplify_lesson' %}" class="tool-card tc-blue">
+      <div class="tc-icon"><i class="fas fa-robot"></i></div>
+      <div class="tc-title">منشئ الدروس الذكي</div>
+      <div class="tc-desc">حوّل دروسك إلى محتوى قصصي صوتي تفاعلي بذكاء Gemini AI.</div>
+      <span class="tc-cta"><i class="fas fa-magic"></i> ابدأ الآن</span>
+    </a>
+
+    <a href="{% url 'learning:create_test' %}" class="tool-card tc-teal">
+      <div class="tc-icon"><i class="fas fa-pencil-alt"></i></div>
+      <div class="tc-title">إنشاء اختبار</div>
+      <div class="tc-desc">أنشئ اختبارات اختيار من متعدد لطلابك بسرعة وسهولة.</div>
+      <span class="tc-cta"><i class="fas fa-plus-circle"></i> أنشئ الآن</span>
+    </a>
+
+    <a href="#" class="tool-card tc-purple">
+      <div class="tc-icon"><i class="fas fa-tools"></i></div>
+      <div class="tc-title">أدوات تعليمية متقدمة</div>
+      <div class="tc-desc">مجموعة أدوات مساعدة لتطوير تجربة التعليم ورفع تفاعل طلابك.</div>
+      <span class="tc-cta"><i class="fas fa-compass"></i> استكشف</span>
+    </a>
+
+  </div>
+
+  <!-- ══ فلتر ════════════════════════════════════════════════ -->
+  <div class="sec-lbl"><i class="fas fa-sliders-h"></i> تصفية العرض</div>
+  <div class="panel mb-4">
+    <div class="panel-body">
+      <form method="GET" id="filterForm">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label class="filter-lbl"><i class="fas fa-book"></i> المادة الدراسية</label>
+            <select name="subject" id="subject_filter"
+                    class="arab-select form-select" onchange="filterWithLoading()">
+              <option value="">كل المواد الدراسية</option>
+              {% for sub in my_subjects %}
+              <option value="{{ sub.subjectid }}"
+                      {% if selected_subject == sub.subjectid|stringformat:"s" %}selected{% endif %}>
+                {{ sub.subjectname }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-lbl"><i class="fas fa-door-open"></i> الصف الدراسي</label>
+            <select name="class" id="class_filter"
+                    class="arab-select form-select" onchange="filterWithLoading()">
+              <option value="">كل الصفوف</option>
+              {% for cls in my_classes %}
+              <option value="{{ cls.classid }}"
+                      {% if selected_class == cls.classid|stringformat:"s" %}selected{% endif %}>
+                {{ cls.classname }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <a href="{% url 'learning:teacher_dashboard' %}" class="btn-reset">
+            <i class="fas fa-undo"></i> إعادة ضبط
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ جدول إنجاز الدروس ══════════════════════════════════ -->
+  <div class="sec-lbl"><i class="fas fa-table"></i> تفاصيل إنجاز الدروس</div>
+  <div class="panel">
+    <div class="panel-head">
+      <div class="ph-left">
+        <i class="fas fa-users"></i>
+        <span>متابعة الطلاب</span>
+      </div>
+      <span class="panel-badge"><i class="fas fa-eye"></i> حالة المشاهدة</span>
+    </div>
+    <div class="table-responsive">
+      <table class="arab-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>اسم الدرس</th>
+            <th>المادة</th>
+            <th>الصف</th>
+            <th>اسم الطالب</th>
+            <th class="tc">حالة المشاهدة</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lesson in lessons %}
+            {% if lesson.cached_students %}
+              {% for student in lesson.cached_students %}
+              <tr class="{% if forloop.first %}grp-start{% endif %}">
+                {% if forloop.first %}
+                <td rowspan="{{ lesson.cached_students|length }}" class="lesson-cell align-top">
+                  <a href="{% url 'learning:lesson_result' lesson.pk %}"
+                     class="lesson-name lesson-link" title="معاينة الدرس">
+                    {{ lesson.lessontitle }}
+                  </a>
+                  <div class="lesson-actions">
+                    <a href="{% url 'learning:lesson_result' lesson.pk %}"
+                       class="lesson-act-btn" title="معاينة">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                  </div>
+                </td>
+                <td rowspan="{{ lesson.cached_students|length }}" class="align-top" style="padding-top:1.1rem">
+                  <span class="subj-tag">{{ lesson.subjectid.subjectname }}</span>
+                </td>
+                <td rowspan="{{ lesson.cached_students|length }}" class="cls-txt align-top" style="padding-top:1.1rem">
+                  {{ lesson.subjectid.classid.classname }}
+                </td>
+                {% endif %}
+                <td>
+                  <span class="std-txt">
+                    <i class="far fa-user-circle" style="opacity:.35;color:var(--blue);"></i>
+                    {{ student.userid.username }}
+                  </span>
+                </td>
+                <td class="tc">
+                  {% if student.studentid in lesson.watched_student_ids %}
+                    <span class="status-pill watched">
+                      <i class="fas fa-check-circle"></i> شاهد
+                    </span>
+                  {% elif student.studentid in lesson.stale_watched_student_ids %}
+                    <span class="status-pill stale" title="شاهد الدرس لكن قبل آخر تعديل عليه">
+                      <i class="fas fa-exclamation-circle"></i> يحتاج إعادة مشاهدة
+                    </span>
+                  {% else %}
+                    <span class="status-pill pending">
+                      <i class="fas fa-clock"></i> لم يشاهد
+                    </span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr class="grp-start">
+                <td class="lesson-cell">
+                  <a href="{% url 'learning:lesson_result' lesson.pk %}"
+                     class="lesson-name lesson-link" title="معاينة الدرس">
+                    {{ lesson.lessontitle }}
+                  </a>
+                  <div class="lesson-actions">
+                    <a href="{% url 'learning:lesson_result' lesson.pk %}"
+                       class="lesson-act-btn" title="معاينة">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                  </div>
+                </td>
+                <td><span class="subj-tag">{{ lesson.subjectid.subjectname }}</span></td>
+                <td class="cls-txt">{{ lesson.subjectid.classid.classname }}</td>
+                <td colspan="2" class="tc empty-row">لا يوجد طلاب مسجلين</td>
+              </tr>
+            {% endif %}
+          {% empty %}
+            <tr>
+              <td colspan="5" class="tc" style="padding:4rem 2rem;">
+                <i class="fas fa-clipboard-list fa-2x d-block mb-3 opacity-20"
+                   style="color:var(--blue);"></i>
+                <span style="color:var(--muted);font-size:.9rem;">
+                  لا توجد دروس منشورة حالياً.
+                </span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Loading Overlay -->
+<div id="filterOverlay">
+  <div class="ov-card">
+    <div class="spinner-border text-primary mb-3" role="status"
+         style="width:2.5rem;height:2.5rem;"></div>
+    <div style="font-weight:700;color:#1e293b;">جاري تحديث النتائج…</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var _filterTimer = null;
+function filterWithLoading() {
+  if (_filterTimer) clearTimeout(_filterTimer);
+  _filterTimer = setTimeout(function () {
+    var ov = document.getElementById('filterOverlay');
+    if (ov) ov.style.display = 'flex';
+    var f = document.getElementById('filterForm');
+    if (f) f.submit();
+  }, 300);
+}
+window.addEventListener('pageshow', function () {
+  if (_filterTimer) clearTimeout(_filterTimer);
+  var ov = document.getElementById('filterOverlay');
+  if (ov) ov.style.display = 'none';
+});
+</script>
+{% endblock %}

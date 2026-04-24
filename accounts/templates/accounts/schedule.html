@@ -1,0 +1,754 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}جدول المهام{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-3" dir="rtl" style="font-family:'Cairo',sans-serif;max-width:1300px;">
+
+  <!-- ══ Header ══ -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h3 class="fw-bold mb-0" style="color:#1e3a5f;">
+        <i class="fas fa-calendar-alt me-2" style="color:#1d4ed8;"></i>جدول المهام الأسبوعي
+      </h3>
+      <p class="text-muted mb-0 small" id="weekRangeLabel"></p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-outline-primary btn-sm fw-bold" id="btnPrev">
+        <i class="fas fa-chevron-right"></i> الأسبوع السابق
+      </button>
+      <button class="btn btn-primary btn-sm fw-bold" id="btnToday">اليوم</button>
+      <button class="btn btn-outline-primary btn-sm fw-bold" id="btnNext">
+        الأسبوع القادم <i class="fas fa-chevron-left"></i>
+      </button>
+      {% if role == 'Teacher' %}
+      <button class="btn btn-success btn-sm fw-bold ms-2" id="btnAddEntry">
+        <i class="fas fa-plus me-1"></i>إضافة موعد
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══ التقويم ══ -->
+  <div class="card shadow-sm border-0" style="border-radius:16px;overflow:hidden;">
+    <div class="card-body p-0">
+      <div id="calWrapper">
+        <div id="calHeader"></div>
+        <div id="calBody"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ Modal: إضافة / تعديل ══ -->
+{% if role == 'Teacher' %}
+<div class="modal fade" id="entryModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
+    <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;" dir="rtl">
+      <div class="modal-header border-0 pb-0"
+           style="background:linear-gradient(120deg,#1e3a5f,#1d4ed8);border-radius:16px 16px 0 0;">
+        <h5 class="modal-title text-white fw-bold" id="entryModalTitle">إضافة موعد</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 pt-3">
+        <input type="hidden" id="editEntryId"      value="">
+        <input type="hidden" id="editSubjectId"    value="">
+        <input type="hidden" id="editClassId"      value="">
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small">المادة والصف</label>
+          <select class="form-select" id="selSubject">
+            <option value="">-- اختر المادة --</option>
+            {% for s in subjects %}
+            <option value="{{ s.subjectid }}"
+                    data-class-id="{{ s.classid__classid }}"
+                    data-class-name="{{ s.classid__classname }}">
+              {{ s.subjectname }} — {{ s.classid__classname }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small">نوع الموعد</label>
+          <div class="d-flex gap-3">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="entryType" id="typeLesson" value="lesson" checked>
+              <label class="form-check-label" for="typeLesson">📖 حصة</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="entryType" id="typeExam" value="exam">
+              <label class="form-check-label" for="typeExam">📝 اختبار</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small">التاريخ</label>
+          <input type="date" class="form-control" id="entryDate">
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col">
+            <label class="form-label fw-bold small">من</label>
+            <input type="time" class="form-control" id="startTime">
+          </div>
+          <div class="col">
+            <label class="form-label fw-bold small">إلى</label>
+            <input type="time" class="form-control" id="endTime">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small">ملاحظات (اختياري)</label>
+          <textarea class="form-control" id="entryNotes" rows="2" maxlength="300"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small">
+            <i class="fas fa-video text-primary"></i> رابط الحصة الأونلاين (اختياري)
+          </label>
+          <input type="url" class="form-control" id="entryOnlineLink"
+                 placeholder="https://meet.google.com/... أو أي رابط اجتماع"
+                 maxlength="500">
+          <div class="form-text">سيظهر هذا الرابط للطلاب في الجدول ليتمكنوا من الدخول مباشرة.</div>
+        </div>
+
+        <div id="conflictAlert" class="alert d-none py-2 px-3 small" role="alert"></div>
+      </div>
+      <div class="modal-footer border-0 pt-0 px-4 pb-3">
+        <button type="button" class="btn btn-secondary btn-sm fw-bold" data-bs-dismiss="modal">إلغاء</button>
+        <button type="button" class="btn btn-primary btn-sm fw-bold"   id="btnSaveEntry">حفظ</button>
+        <button type="button" class="btn btn-warning btn-sm fw-bold d-none" id="btnForceEntry">حفظ رغم التعارض</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Modal: عرض تفاصيل -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+    <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;" dir="rtl">
+      <div class="modal-header border-0" style="border-radius:16px 16px 0 0;" id="detailModalHeader">
+        <h5 class="modal-title fw-bold text-white" id="detailModalTitle"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4"           id="detailModalBody"></div>
+      <div class="modal-footer border-0 pt-0 px-4 pb-3" id="detailModalFooter"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: تأكيد حذف -->
+<div class="modal fade" id="deleteEntryModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+    <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;" dir="rtl">
+      <div class="modal-header border-0 pb-1"
+           style="background:#fef2f2;border-radius:16px 16px 0 0;">
+        <h5 class="modal-title fw-bold" style="color:#dc2626;">
+          <i class="fas fa-trash-alt me-2"></i>حذف الموعد
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <p class="mb-1">هل أنت متأكد من حذف موعد
+          <strong id="deleteEntrySubject" style="color:#dc2626;"></strong>؟
+        </p>
+        <p class="text-muted small mb-0">لا يمكن التراجع عن هذه العملية.</p>
+      </div>
+      <div class="modal-footer border-0 pt-0 px-4 pb-3">
+        <button type="button" class="btn btn-secondary btn-sm fw-bold"
+                data-bs-dismiss="modal" style="font-family:'Cairo',sans-serif;">إلغاء</button>
+        <button type="button" class="btn btn-danger btn-sm fw-bold"
+                id="btnConfirmDelete" style="font-family:'Cairo',sans-serif;">
+          <i class="fas fa-trash me-1"></i>حذف
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+#calWrapper { direction:rtl; overflow-x:auto; }
+#calHeader {
+  display:grid;
+  grid-template-columns:64px repeat(6,minmax(100px,1fr));
+  background:#1e3a5f; color:#fff;
+  width:100%; min-width:700px; direction:rtl;
+}
+.cal-grid {
+  display:grid;
+  grid-template-columns:64px repeat(6,minmax(100px,1fr));
+  width:100%; min-width:700px; direction:rtl;
+}
+.cal-day-col {
+  border-left:1px solid #e2e8f0;
+  min-height:600px; position:relative; padding-top:4px;
+}
+.cal-hour-line {
+  position:absolute; width:100%;
+  border-top:1px solid #f1f5f9; right:0; pointer-events:none;
+}
+.cal-entry {
+  position:absolute; right:3px; left:3px;
+  border-radius:6px; padding:3px 6px; font-size:.7rem;
+  cursor:pointer; overflow:hidden; z-index:2;
+  box-shadow:0 1px 4px rgba(0,0,0,.12);
+  transition:opacity .15s,transform .1s;
+  direction:rtl; text-align:right;
+}
+.cal-entry:hover { opacity:.88; transform:scale(1.01); }
+.cal-entry.type-lesson { background:#dbeafe; color:#1e3a8a; border-right:3px solid #1d4ed8; }
+.cal-entry.type-exam   { background:#e0e7ff; color:#3730a3; border-right:3px solid #4338ca; }
+.cal-time-col { width:64px; min-width:64px; border-left:1px solid #e2e8f0; }
+.cal-time-label {
+  height:60px; display:flex; align-items:flex-start;
+  justify-content:center; padding-top:4px;
+  font-size:.67rem; color:#94a3b8;
+}
+.cal-time-hdr { width:64px; min-width:64px; border-left:1px solid rgba(255,255,255,.15); }
+.day-header {
+  text-align:center; padding:.6rem .2rem;
+  font-size:.8rem; font-weight:700;
+  border-left:1px solid rgba(255,255,255,.15); direction:rtl;
+}
+.day-header.today { background:rgba(255,255,255,.2); }
+.cal-loading {
+  display:flex; align-items:center; justify-content:center;
+  height:300px; color:#94a3b8; flex-direction:column; gap:.5rem;
+}
+.form-select.is-invalid,
+.form-control.is-invalid { border-color:#dc2626!important; background-color:#fef2f2!important; }
+.border-danger { border-color:#dc2626!important; }
+
+/* ── Modal display مباشر (بدون Bootstrap JS) ── */
+.modal { display:none; }
+.modal.show { display:block !important; }
+</style>
+
+<div id="js-sched-data"
+     data-get-url="{% url 'accounts:schedule_get' %}"
+     data-add-url="{% url 'accounts:schedule_add' %}"
+     data-edit-url-base="/schedule/edit/"
+     data-delete-url-base="/schedule/delete/"
+     data-role="{{ role }}"
+     data-csrf="{{ csrf_token }}"
+     style="display:none;"></div>
+
+<script>
+(function(){
+'use strict';
+
+var D           = document.getElementById('js-sched-data').dataset;
+var GET_URL     = D.getUrl;
+var ADD_URL     = D.addUrl;
+var EDIT_BASE   = D.editUrlBase;
+var DELETE_BASE = D.deleteUrlBase;
+var ROLE        = D.role;
+var CSRF        = D.csrf;
+
+var currentWeek = 0;
+var calData     = [];
+var mondayDate  = null;
+var DAYS_AR     = ['السبت','الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس'];
+var WEEK_DAYS   = 6;
+var HOURS       = []; for(var h=7;h<=21;h++) HOURS.push(h);
+var CAL_START   = 7, CAL_END = 21, SLOT_H = 60, TIME_COL_W = 64;
+
+// ─── جلب البيانات ─────────────────────────────────────────
+function loadWeek(offset){
+  currentWeek = Math.max(-1, Math.min(1, offset));
+  showLoading();
+  fetch(GET_URL+'?week='+currentWeek, {headers:{'X-Requested-With':'XMLHttpRequest'}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    calData    = d.entries||[];
+    mondayDate = d.monday;
+    renderCalendar(d.monday, d.sunday);
+    updateNavButtons();
+    document.getElementById('weekRangeLabel').textContent =
+      'من '+fmtDate(d.monday)+' إلى '+fmtDate(d.sunday);
+  }).catch(function(){ showLoading(true); });
+}
+
+function showLoading(err){
+  document.getElementById('calBody').innerHTML =
+    '<div class="cal-loading">'+(err
+      ?'<i class="fas fa-exclamation-circle"></i><p>خطأ في التحميل</p>'
+      :'<i class="fas fa-spinner fa-spin fa-2x"></i><p>جارٍ التحميل…</p>'
+    )+'</div>';
+}
+
+function updateNavButtons(){
+  document.getElementById('btnPrev').disabled  = (currentWeek===-1);
+  document.getElementById('btnNext').disabled  = (currentWeek===1);
+}
+
+// ─── رسم التقويم ──────────────────────────────────────────
+function renderCalendar(monday, sunday){
+  var monDt = new Date(monday);
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  // Header
+  var hdr = document.getElementById('calHeader');
+  hdr.innerHTML = '<div class="cal-time-hdr"></div>';
+  for(var d=0;d<WEEK_DAYS;d++){
+    var dt = new Date(monDt); dt.setDate(monDt.getDate()+d);
+    var isT= dt.toDateString()===today.toDateString();
+    var dd = String(dt.getDate()).padStart(2,'0');
+    var mm = String(dt.getMonth()+1).padStart(2,'0');
+    hdr.innerHTML +=
+      '<div class="day-header'+(isT?' today':'')+'" data-date="'+isoDate(dt)+'">'+
+        '<div>'+DAYS_AR[d]+'</div>'+
+        '<div style="font-size:.7rem;opacity:.8;">'+dd+'/'+mm+'</div>'+
+      '</div>';
+  }
+
+  // Body
+  var body   = document.getElementById('calBody');
+  var totalH = SLOT_H*(CAL_END-CAL_START);
+  body.style.minHeight = totalH+'px';
+
+  var grid = '<div class="cal-grid" style="height:'+totalH+'px;position:relative;direction:rtl;">';
+
+  // عمود الوقت أولاً (يمين في RTL)
+  grid += '<div class="cal-time-col" style="width:'+TIME_COL_W+'px;min-width:'+TIME_COL_W+'px;">';
+  HOURS.forEach(function(h){ if(h<CAL_END) grid += '<div class="cal-time-label" style="height:'+SLOT_H+'px;">'+String(h).padStart(2,'0')+':00</div>'; });
+  grid += '</div>';
+
+  // أعمدة الأيام
+  for(var d=0;d<WEEK_DAYS;d++){
+    var dt      = new Date(monDt); dt.setDate(monDt.getDate()+d);
+    var dateStr = isoDate(dt);
+    var isPast  = dt<today && currentWeek<=0;
+    var isRO    = currentWeek===-1;
+    grid += '<div class="cal-day-col'+(isPast?' opacity-50':'')+'" data-date="'+dateStr+'"'+
+            (ROLE==='Teacher'&&!isRO?' ondblclick="window._onDayDblClick(event,\''+dateStr+'\')"':'')+
+            '>';
+    for(var i=0;i<(CAL_END-CAL_START);i++)
+      grid += '<div class="cal-hour-line" style="top:'+(i*SLOT_H)+'px;"></div>';
+    grid += '</div>';
+  }
+  grid += '</div>';
+  body.innerHTML = grid;
+  calData.forEach(function(e){ placeEntry(e, monDt); });
+}
+
+function placeEntry(e, monDt){
+  var dt       = new Date(e.date);
+  var diffDays = Math.round((dt-new Date(isoDate(new Date(monDt))))/86400000);
+  if(diffDays<0||diffDays>5) return;
+  var cols = document.querySelectorAll('.cal-day-col');
+  var col  = cols[diffDays]; if(!col) return;
+
+  var sh = timeToH(e.start_time), eh = timeToH(e.end_time);
+  if(sh<CAL_START) sh=CAL_START; if(eh>CAL_END) eh=CAL_END;
+  var top    = (sh-CAL_START)*SLOT_H;
+  var height = Math.max((eh-sh)*SLOT_H-4,22);
+
+  var div = document.createElement('div');
+  div.className   = 'cal-entry type-'+e.type;
+  div.style.top   = top+'px';
+  div.style.height= height+'px';
+  div.dataset.id  = e.id;
+  div.title       = e.subject+' ('+e.type_display+')';
+  div.innerHTML   =
+    '<div class="fw-bold" style="font-size:.73rem;">'+escH(e.subject)+'</div>'+
+    '<div style="font-size:.67rem;opacity:.8;">'+e.start_time+' - '+e.end_time+'</div>'+
+    (height>40?'<div style="font-size:.66rem;opacity:.7;">'+e.type_display+'</div>':'');
+  div.onclick = function(ev){ ev.stopPropagation(); openDetail(e); };
+  col.appendChild(div);
+}
+
+// ─── نظام Modal — تحكم مباشر بدون Bootstrap Modal API ──────
+// السبب الجذري: Bootstrap.Modal._isTransitioning يمنع show()
+// خلال 300ms بعد الإغلاق بصمت. الحل: لا نستخدم API نهائياً.
+
+var _modalOverlay = null;  // backdrop واحد مشترك
+
+function _getOverlay(){
+  if(!_modalOverlay){
+    _modalOverlay = document.createElement('div');
+    _modalOverlay.id = 'customBackdrop';
+    _modalOverlay.style.cssText =
+      'position:fixed;top:0;left:0;width:100%;height:100%;' +
+      'background:rgba(0,0,0,.45);z-index:1040;display:none;';
+    document.body.appendChild(_modalOverlay);
+  }
+  return _modalOverlay;
+}
+
+function showModal(id){
+  // أغلق أي modal مفتوح أولاً بدون animation
+  document.querySelectorAll('.modal.d-block').forEach(function(m){
+    m.classList.remove('d-block','show');
+    m.style.display = 'none';
+    m.setAttribute('aria-hidden','true');
+    m.removeAttribute('aria-modal');
+  });
+
+  var el = document.getElementById(id);
+  if(!el) return;
+
+  var ov = _getOverlay();
+  ov.style.display = 'block';
+  ov.onclick = function(){ hideModal(id); };
+
+  el.style.display = 'block';
+  el.setAttribute('aria-modal','true');
+  el.removeAttribute('aria-hidden');
+  el.style.zIndex = '1050';
+
+  // trigger reflow ثم أضف show للـ animation
+  void el.offsetHeight;
+  el.classList.add('show');
+
+  // إغلاق بـ Escape
+  document._modalEscHandler && document.removeEventListener('keydown', document._modalEscHandler);
+  document._modalEscHandler = function(e){ if(e.key==='Escape') hideModal(id); };
+  document.addEventListener('keydown', document._modalEscHandler);
+
+  // إغلاق بضغط data-bs-dismiss داخل الـ modal
+  el.querySelectorAll('[data-bs-dismiss="modal"]').forEach(function(btn){
+    btn._dismissHandler && btn.removeEventListener('click', btn._dismissHandler);
+    btn._dismissHandler = function(){ hideModal(id); };
+    btn.addEventListener('click', btn._dismissHandler);
+  });
+}
+
+function hideModal(id){
+  var el = document.getElementById(id);
+  if(!el) return;
+
+  el.classList.remove('show');
+
+  // انتظر animation (150ms) ثم أخفِ
+  setTimeout(function(){
+    el.style.display = 'none';
+    el.setAttribute('aria-hidden','true');
+    el.removeAttribute('aria-modal');
+
+    // أخفِ backdrop إذا لم يكن هناك modal آخر مفتوح
+    var anyOpen = document.querySelectorAll('.modal.show').length > 0;
+    if(!anyOpen && _modalOverlay) _modalOverlay.style.display = 'none';
+
+    // dispatch حدث hidden لمن يستمع عليه
+    el.dispatchEvent(new CustomEvent('hidden.bs.modal'));
+  }, 150);
+}
+
+function _forceCleanModal(id){
+  var el = document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('show');
+  el.style.display = 'none';
+  el.setAttribute('aria-hidden','true');
+  el.removeAttribute('aria-modal');
+  if(_modalOverlay) _modalOverlay.style.display = 'none';
+}
+
+// ─── فتح Modal الإضافة ────────────────────────────────────
+function openAddModal(dateStr, startStr, endStr){
+  document.getElementById('editEntryId').value   = '';
+  document.getElementById('editSubjectId').value = '';
+  document.getElementById('editClassId').value   = '';
+  document.getElementById('entryModalTitle').textContent = 'إضافة موعد';
+  document.getElementById('selSubject').value = '';
+  var _today = isoDate(new Date());
+  document.getElementById('entryDate').min   = _today;   // منع اختيار تاريخ ماضٍ من الـ picker
+  document.getElementById('entryDate').value = dateStr || _today;
+  document.getElementById('startTime').value  = startStr || '08:00';
+  document.getElementById('endTime').value    = endStr   || '09:00';
+  document.getElementById('entryNotes').value = '';
+  if(document.getElementById('entryOnlineLink')) document.getElementById('entryOnlineLink').value = '';
+  document.querySelector('[name="entryType"][value="lesson"]').checked = true;
+  clearConflictAlert();
+  clearFieldErrors();
+  document.getElementById('btnSaveEntry').textContent = 'حفظ';
+  document.getElementById('btnForceEntry').classList.add('d-none');
+  showModal('entryModal');
+}
+
+// ─── فتح Modal التعديل ────────────────────────────────────
+// معرَّفة على window حتى يصلها onclick في innerHTML
+window.openEditModal = function(e){
+  if(!e) return;
+  document.getElementById('editEntryId').value   = e.id;
+  // حفظ المادة والصف في hidden inputs — المصدر الوحيد الموثوق
+  document.getElementById('editSubjectId').value = e.subject_id  || '';
+  document.getElementById('editClassId').value   = e.class_id    || '';
+  document.getElementById('entryModalTitle').textContent = 'تعديل موعد';
+
+  // تحديد المادة في الـ select
+  var opts = document.getElementById('selSubject').options;
+  var found = false;
+  for(var i=0;i<opts.length;i++){
+    if(parseInt(opts[i].value)===parseInt(e.subject_id)){
+      opts[i].selected = true; found = true; break;
+    }
+  }
+  if(!found) document.getElementById('selSubject').value = '';
+
+  var typeRadio = document.querySelector('[name="entryType"][value="'+e.type+'"]');
+  if(typeRadio) typeRadio.checked = true;
+
+  document.getElementById('entryDate').value  = e.date;
+  document.getElementById('startTime').value  = e.start_time;
+  document.getElementById('endTime').value    = e.end_time;
+  document.getElementById('entryNotes').value = e.notes || '';
+  document.getElementById('entryOnlineLink').value = e.online_link || '';
+
+  clearConflictAlert();
+  clearFieldErrors();
+  document.getElementById('btnSaveEntry').textContent = 'تحديث';
+  document.getElementById('btnForceEntry').classList.add('d-none');
+
+  // نغلق detailModal أولاً وننتظر hidden ثم نفتح entryModal
+  var detailEl = document.getElementById('detailModal');
+  if(detailEl && detailEl.classList.contains('show')){
+    detailEl.addEventListener('hidden.bs.modal', function(){
+      showModal('entryModal');
+    }, {once: true});
+    hideModal('detailModal');
+  } else {
+    showModal('entryModal');
+  }
+};
+
+// ─── حفظ (إضافة أو تعديل) ────────────────────────────────
+function doSave(force){
+  var editId     = document.getElementById('editEntryId').value;
+  var subjectSel = document.getElementById('selSubject');
+  var subjectId  = parseInt(subjectSel.value) || 0;
+  var selOpt     = subjectSel.options[subjectSel.selectedIndex];
+  var classId    = (selOpt && selOpt.dataset && selOpt.dataset.classId)
+                   ? parseInt(selOpt.dataset.classId) : 0;
+
+  // عند التعديل: نستعمل القيم المحفوظة إذا لم يُغيَّر الـ select
+  if(editId){
+    if(!subjectId){
+      subjectId = parseInt(document.getElementById('editSubjectId').value) || 0;
+    }
+    // classId: دائماً نستخدم القيمة المحفوظة إذا كانت النتيجة من select صفراً
+    if(!classId){
+      classId = parseInt(document.getElementById('editClassId').value) || 0;
+    }
+  }
+
+  var entryType = (document.querySelector('[name="entryType"]:checked') || {}).value || '';
+  var entryDate = document.getElementById('entryDate').value;
+  var startTime = document.getElementById('startTime').value;
+  var endTime   = document.getElementById('endTime').value;
+  var notes     = document.getElementById('entryNotes').value;
+
+  // Validation
+  var hasErr = false;
+  function mark(id, bad){
+    var el=document.getElementById(id); if(!el) return;
+    el.classList.toggle('is-invalid',bad);
+    el.classList.toggle('border-danger',bad);
+  }
+  mark('selSubject', !subjectId);
+  mark('entryDate',  !entryDate);
+  mark('startTime',  !startTime);
+  mark('endTime',    !endTime);
+
+  if(!subjectId||!entryType||!entryDate||!startTime||!endTime){
+    showConflictAlert('يرجى ملء جميع الحقول المطلوبة.','warning'); hasErr=true;
+  }
+  if(startTime&&endTime&&startTime>=endTime){
+    mark('endTime',true);
+    showConflictAlert('وقت البداية يجب أن يكون قبل وقت النهاية.','warning'); hasErr=true;
+  }
+  if(entryDate && new Date(entryDate).getDay()===5){
+    mark('entryDate',true);
+    showConflictAlert('لا يمكن إضافة مواعيد يوم الجمعة.','danger'); hasErr=true;
+  }
+
+  // منع التاريخ الماضي
+  if(entryDate){
+    var todayISO = (function(){
+      var t=new Date(); t.setHours(0,0,0,0);
+      return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+    })();
+    if(entryDate < todayISO){
+      mark('entryDate',true);
+      showConflictAlert('لا يمكن إضافة موعد بتاريخ ماضٍ. يرجى اختيار تاريخ حالي أو مستقبلي.','danger');
+      hasErr=true;
+    }
+  }
+
+  if(hasErr) return;
+  clearFieldErrors();
+
+  var url     = editId ? (EDIT_BASE+editId+'/') : ADD_URL;
+  var payload = {
+    entry_type: entryType, entry_date: entryDate,
+    start_time: startTime, end_time:   endTime,
+    notes: notes,
+    online_link: document.getElementById('entryOnlineLink').value.trim(),
+    force: force,
+    subject_id: subjectId || undefined,
+    class_id:   classId   || undefined,
+  };
+
+  fetch(url,{
+    method:'POST',
+    headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'},
+    body: JSON.stringify(payload),
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.saved){
+      hideModal('entryModal');
+      loadWeek(currentWeek);
+    } else if(d.blocked){
+      var msg='تعارض مع اختبار! لا يمكن حفظ الموعد.<br>';
+      (d.details||[]).forEach(function(x){ msg+='• '+escH(x.subject)+' '+x.start_time+'–'+(x.end_time||'')+'<br>'; });
+      showConflictAlert(msg,'danger');
+      document.getElementById('btnForceEntry').classList.add('d-none');
+    } else if(d.conflict_type==='lesson'){
+      var msg='تعارض مع حصة أخرى. هل تريد الإضافة رغم ذلك؟<br>';
+      (d.details||[]).forEach(function(x){ msg+='• '+escH(x.subject)+' '+x.start_time+'<br>'; });
+      showConflictAlert(msg,'warning');
+      document.getElementById('btnForceEntry').classList.remove('d-none');
+    } else {
+      showConflictAlert(d.error||'خطأ غير معروف.','danger');
+    }
+  }).catch(function(){ showConflictAlert('خطأ في الاتصال.','danger'); });
+}
+
+// ─── Modal التفاصيل ───────────────────────────────────────
+function openDetail(e){
+  var isRO   = currentWeek===-1;
+  var color  = e.type==='exam'?'#4338ca':'#1d4ed8';
+  document.getElementById('detailModalHeader').style.background =
+    'linear-gradient(120deg,'+color+','+color+'cc)';
+  document.getElementById('detailModalTitle').textContent =
+    (e.type==='exam'?'📝 ':'📖 ')+e.subject;
+
+  document.getElementById('detailModalBody').innerHTML =
+    '<table class="table table-sm small mb-0 mt-2">'+
+      '<tr><td class="fw-bold text-muted">النوع</td><td>'+escH(e.type_display)+'</td></tr>'+
+      '<tr><td class="fw-bold text-muted">الصف</td><td>'+escH(e['class'])+'</td></tr>'+
+      '<tr><td class="fw-bold text-muted">المعلم</td><td>'+escH(e.teacher)+'</td></tr>'+
+      '<tr><td class="fw-bold text-muted">التاريخ</td><td>'+fmtDate(e.date)+'</td></tr>'+
+      '<tr><td class="fw-bold text-muted">الوقت</td><td>'+e.start_time+' – '+e.end_time+'</td></tr>'+
+      (e.notes?'<tr><td class="fw-bold text-muted">ملاحظات</td><td>'+escH(e.notes)+'</td></tr>':'')+(e.online_link?'<tr><td class="fw-bold text-muted">رابط الحصة</td><td><a href="'+escH(e.online_link)+'" target="_blank" rel="noopener" style="color:#1d4ed8;"><i class="fas fa-video"></i> دخول للحصة</a></td></tr>':'')+
+    '</table>';
+
+  var footer = '<button type="button" class="btn btn-secondary btn-sm fw-bold" data-bs-dismiss="modal">إغلاق</button>';
+  if(ROLE==='Teacher' && !isRO){
+    footer +=
+      ' <button class="btn btn-primary btn-sm fw-bold"'+
+      '  onclick="window.openEditModal(window._curDetail)">تعديل</button>'+
+      ' <button class="btn btn-danger btn-sm fw-bold"'+
+      '  onclick="window._askDelete(window._curDetail.id,window._curDetail.subject)">حذف</button>';
+  }
+  document.getElementById('detailModalFooter').innerHTML = footer;
+
+  window._curDetail = e;   // مرجع آمن للـ onclick
+  showModal('detailModal');
+}
+
+// ─── حذف ──────────────────────────────────────────────────
+var _pendingDeleteId = null;
+window._askDelete = function(id, name){
+  _pendingDeleteId = id;
+  document.getElementById('deleteEntrySubject').textContent = name||'هذا الموعد';
+  var detailEl = document.getElementById('detailModal');
+  if(detailEl && detailEl.classList.contains('show')){
+    detailEl.addEventListener('hidden.bs.modal', function(){
+      showModal('deleteEntryModal');
+    }, {once: true});
+    hideModal('detailModal');
+  } else {
+    showModal('deleteEntryModal');
+  }
+};
+
+// ─── Double-click ──────────────────────────────────────────
+window._onDayDblClick = function(ev, dateStr){
+  var rect = ev.currentTarget.getBoundingClientRect();
+  var hour = Math.floor((ev.clientY-rect.top)/SLOT_H)+CAL_START;
+  var hStr = String(hour).padStart(2,'0')+':00';
+  var eStr = String(Math.min(hour+1,CAL_END)).padStart(2,'0')+':00';
+  openAddModal(dateStr, hStr, eStr);
+};
+
+// ─── مساعدات UI ───────────────────────────────────────────
+function showConflictAlert(msg, type){
+  var el=document.getElementById('conflictAlert');
+  el.className='alert alert-'+type+' py-2 px-3 small';
+  el.innerHTML=msg;
+}
+function clearConflictAlert(){
+  var el=document.getElementById('conflictAlert');
+  el.className='alert d-none py-2 px-3 small'; el.innerHTML='';
+}
+function clearFieldErrors(){
+  ['selSubject','entryDate','startTime','endTime'].forEach(function(id){
+    var el=document.getElementById(id); if(!el) return;
+    el.classList.remove('is-invalid','border-danger');
+  });
+}
+
+// ─── مساعدات عامة ─────────────────────────────────────────
+function timeToH(s){ var p=s.split(':'); return parseInt(p[0])+parseInt(p[1])/60; }
+function isoDate(dt){
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+
+         '-'+String(dt.getDate()).padStart(2,'0');
+}
+function fmtDate(s){
+  var d=new Date(s); if(isNaN(d)) return s;
+  return d.toLocaleDateString('ar-SA',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+function escH(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── بدء التشغيل ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function(){
+  loadWeek(0);
+
+  // أزرار التنقل
+  document.getElementById('btnPrev').addEventListener('click',  function(){ if(currentWeek>-1) loadWeek(currentWeek-1); });
+  document.getElementById('btnNext').addEventListener('click',  function(){ if(currentWeek<1)  loadWeek(currentWeek+1); });
+  document.getElementById('btnToday').addEventListener('click', function(){ loadWeek(0); });
+
+  // زر إضافة موعد
+  var btnAdd = document.getElementById('btnAddEntry');
+  if(btnAdd) btnAdd.addEventListener('click', function(){ openAddModal(); });
+
+  // زر حفظ
+  var btnSave = document.getElementById('btnSaveEntry');
+  if(btnSave) btnSave.addEventListener('click', function(){ doSave(false); });
+
+  // زر حفظ رغم التعارض
+  var btnForce = document.getElementById('btnForceEntry');
+  if(btnForce) btnForce.addEventListener('click', function(){ doSave(true); });
+
+  // زر تأكيد الحذف
+  var btnDel = document.getElementById('btnConfirmDelete');
+  if(btnDel) btnDel.addEventListener('click', function(){
+    if(!_pendingDeleteId) return;
+    fetch(DELETE_BASE+_pendingDeleteId+'/',{
+      method:'POST', headers:{'X-CSRFToken':CSRF},
+    })
+    .then(function(r){return r.json();})
+    .then(function(d){
+      hideModal('deleteEntryModal');
+      if(d.deleted) loadWeek(currentWeek);
+      else alert(d.error||'خطأ في الحذف.');
+    })
+    .catch(function(){ alert('خطأ في الاتصال.'); });
+  });
+});
+
+})();
+</script>
+{% endblock %}

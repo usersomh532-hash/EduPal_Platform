@@ -1,0 +1,500 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ lesson.lessontitle }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root{
+  --sky:     #3b82f6;
+  --sky-dk: #1d4ed8;
+  --sky-lt: #eff6ff;
+  --sky-bd: #bfdbfe;
+  --mint:   #10b981;
+  --mint-lt:#ecfdf5;
+  --amber:  #f59e0b;
+  --rose:   #ef4444;
+  --rose-lt:#fef2f2;
+  --ink:    #1e293b;
+  --muted:  #64748b;
+  --border: #e2e8f0;
+  --bg:     #f0f5fb;
+  --card:   #ffffff;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',sans-serif;}
+.lesson-wrap{max-width:860px;margin:0 auto;padding:1.5rem 1.25rem 5rem;}
+
+/* ══ شريط الانتباه ══ */
+#attention-bar{
+  position:sticky;top:0;z-index:100;
+  background:var(--card);border-bottom:2px solid var(--border);
+  padding:.55rem 1.25rem;
+  display:flex;align-items:center;gap:1rem;
+  box-shadow:0 2px 12px rgba(30,64,175,0.07);
+  margin:-1.5rem -1.25rem 1.5rem;
+}
+#attention-bar.attentive{border-bottom-color:var(--mint);}
+#attention-bar.distracted{border-bottom-color:var(--rose);}
+.att-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s;}
+.attentive .att-dot{background:var(--mint);box-shadow:0 0 0 3px rgba(16,185,129,.22);}
+.distracted .att-dot{background:var(--rose);box-shadow:0 0 0 3px rgba(239,68,68,.22);}
+.att-label{font-size:.82rem;font-weight:700;color:var(--muted);}
+.attentive .att-label{color:var(--mint);}
+.distracted .att-label{color:var(--rose);}
+.score-wrap{display:flex;align-items:center;gap:.5rem;flex:1;max-width:180px;}
+.score-bar{flex:1;height:5px;background:var(--border);border-radius:100px;overflow:hidden;}
+.score-fill{height:100%;border-radius:100px;transition:width .5s,background .5s;background:var(--mint);}
+.score-num{font-size:.8rem;font-weight:800;min-width:30px;text-align:left;}
+#stop-btn{
+  margin-right:auto;padding:.32rem .85rem;
+  background:var(--sky-lt);color:var(--sky-dk);
+  border:1.5px solid var(--sky-bd);border-radius:8px;
+  font-size:.8rem;font-weight:700;font-family:'Tajawal',sans-serif;
+  cursor:pointer;transition:background .2s;
+  display:flex;align-items:center;gap:.4rem;
+}
+#stop-btn:hover{background:var(--sky);color:#fff;}
+
+/* ══ Toast ══ */
+#alert-toast{
+  position:fixed;bottom:2rem;right:50%;transform:translateX(50%);
+  background:linear-gradient(135deg,var(--sky-dk),var(--sky));
+  color:#fff;border-radius:50px;padding:.8rem 1.75rem;
+  font-size:.95rem;font-weight:700;
+  box-shadow:0 8px 32px rgba(29,78,216,0.3);
+  display:none;z-index:9999;max-width:90vw;text-align:center;
+}
+#alert-toast.show{display:block;animation:toastBounce .35s ease;}
+@keyframes toastBounce{
+  0%{transform:translateX(50%) translateY(20px);opacity:0;}
+  100%{transform:translateX(50%) translateY(0);opacity:1;}
+}
+
+/* ══ رأس الدرس ══ */
+.lesson-header{
+  background:linear-gradient(135deg,var(--sky-dk),var(--sky));
+  border-radius:1.25rem;padding:1.75rem 2rem;
+  color:#fff;margin-bottom:1.5rem;
+  box-shadow:0 6px 24px rgba(29,78,216,0.2);
+}
+.lesson-header h1{font-size:clamp(1.2rem,2.5vw,1.65rem);font-weight:900;margin-bottom:.5rem;}
+.lesson-meta{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.83rem;opacity:.9;}
+.lesson-meta span{display:flex;align-items:center;gap:.35rem;}
+
+/* ══ الصوت ══ */
+.audio-top-bar{
+  background:linear-gradient(120deg,#0f172a,var(--sky-dk));
+  border-radius:1rem;padding:1rem 1.25rem;margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+}
+.audio-top-bar .audio-icon{
+  width:42px;height:42px;flex-shrink:0;
+  background:rgba(255,255,255,.15);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1.1rem;
+}
+.audio-top-bar .audio-label{color:rgba(255,255,255,.85);font-size:.82rem;font-weight:700;white-space:nowrap;}
+.audio-top-bar audio{flex:1;min-width:180px;accent-color:var(--sky);}
+.audio-top-bar .audio-speeds{display:flex;gap:.4rem;flex-shrink:0;}
+.audio-top-bar .spd-btn{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  color:#fff;border-radius:2rem;padding:.2rem .6rem;font-size:.75rem;cursor:pointer;
+  transition:background .15s;font-family:'Tajawal',sans-serif;
+}
+.audio-top-bar .spd-btn:hover,.audio-top-bar .spd-btn.active{background:rgba(255,255,255,.3);}
+
+/* ══ بطاقات الخيارين ══ */
+.actions-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1.25rem;margin-bottom:1.5rem;
+}
+@media(max-width:540px){.actions-grid{grid-template-columns:1fr;}}
+.action-card{
+  border-radius:1.1rem;padding:1.5rem;
+  display:flex;flex-direction:column;align-items:flex-start;gap:.75rem;
+  border:1.5px solid;text-decoration:none;color:inherit;
+  transition:transform .22s,box-shadow .22s;
+  position:relative;overflow:hidden;
+}
+.action-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,0.1);text-decoration:none;color:inherit;}
+.ac-session{background:var(--sky-lt);border-color:var(--sky-bd);}
+.ac-test{background:#fffbeb;border-color:#fde68a;}
+.ac-test.disabled{background:#f8fafc;border-color:var(--border);opacity:.7;cursor:not-allowed;}
+.ac-icon{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.25rem;flex-shrink:0;
+}
+.ac-session .ac-icon{background:rgba(59,130,246,0.15);color:var(--sky-dk);}
+.ac-test .ac-icon{background:rgba(245,158,11,0.15);color:#b45309;}
+.ac-test.disabled .ac-icon{background:var(--border);color:var(--muted);}
+.ac-title{font-size:.95rem;font-weight:800;color:var(--ink);}
+.ac-desc{font-size:.8rem;color:var(--muted);line-height:1.75;}
+.ac-cta{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-size:.82rem;font-weight:700;padding:.38rem .9rem;
+  border-radius:8px;border:none;cursor:pointer;
+  font-family:'Tajawal',sans-serif;transition:opacity .18s;
+}
+.ac-session .ac-cta{background:var(--sky-dk);color:#fff;}
+.ac-test .ac-cta{background:#b45309;color:#fff;}
+.ac-test.disabled .ac-cta{background:var(--muted);color:#fff;cursor:not-allowed;}
+
+/* ══ محتوى الدرس ══ */
+.lesson-card{
+  background:var(--card);border-radius:1.1rem;
+  border:1.5px solid var(--border);
+  box-shadow:0 2px 12px rgba(30,64,175,0.06);
+  overflow:hidden;margin-bottom:1.25rem;
+}
+.lesson-section-head{
+  background:var(--sky-lt);padding:.85rem 1.5rem;
+  border-bottom:1.5px solid var(--sky-bd);
+  display:flex;align-items:center;gap:.6rem;
+  font-size:.95rem;font-weight:800;color:var(--sky-dk);
+}
+.lesson-section-body{padding:1.5rem;}
+
+/* فقرة + صورة */
+.std-para-block{
+  display:flex;gap:1.25rem;align-items:flex-start;
+  padding:1.25rem;border-radius:12px;
+  background:#fafbfd;border:1.5px solid #e2e8f0;
+  margin-bottom:1rem;transition:box-shadow .2s;
+}
+.std-para-block:hover{box-shadow:0 4px 16px rgba(29,78,216,.08);}
+.std-para-num{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:#2563eb;color:#fff;display:flex;
+  align-items:center;justify-content:center;
+  font-family:'Cairo',sans-serif;font-size:.85rem;font-weight:800;
+}
+.std-para-content{flex:1;}
+.std-para-text{
+  font-family:'Tajawal',sans-serif;font-size:1.05rem;
+  line-height:2;color:#1e293b;direction:rtl;text-align:right;
+}
+.std-para-img{
+  width:140px;height:110px;border-radius:10px;
+  object-fit:cover;border:2px solid #e2e8f0;flex-shrink:0;
+  cursor:zoom-in;transition:transform .2s,box-shadow .2s;
+}
+.std-para-img:hover{transform:scale(1.04);box-shadow:0 6px 20px rgba(0,0,0,.15);}
+@media(max-width:600px){
+  .std-para-block{flex-direction:column;}
+  .std-para-img{width:100%;height:180px;}
+}
+
+/* ══ ملخص الانتباه ══ */
+#session-summary{
+  display:none;background:var(--card);border-radius:1.1rem;
+  border:2px solid var(--mint);padding:1.5rem;margin-top:1.5rem;
+}
+#session-summary h3{font-size:1.05rem;font-weight:800;margin-bottom:1rem;color:var(--ink);}
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.sum-item{text-align:center;}
+.sum-num{font-size:1.75rem;font-weight:900;color:var(--sky-dk);line-height:1;}
+.sum-lbl{font-size:.77rem;color:var(--muted);font-weight:600;margin-top:.25rem;}
+.btn-finish{
+  display:inline-flex;align-items:center;gap:.5rem;
+  margin-top:1.5rem;padding:.75rem 2rem;
+  background:linear-gradient(135deg,var(--sky-dk),var(--sky));
+  color:#fff;border:none;border-radius:12px;
+  font-size:.92rem;font-weight:700;font-family:'Tajawal',sans-serif;
+  cursor:pointer;text-decoration:none;
+  transition:opacity .2s,transform .15s;
+}
+.btn-finish:hover{opacity:.9;transform:translateY(-1px);color:#fff;text-decoration:none;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lesson-wrap" dir="rtl">
+
+  <div id="attention-bar">
+    <div class="att-dot"></div>
+    <span class="att-label" id="att-label">جاري التهيئة…</span>
+    <div class="score-wrap">
+      <div class="score-bar"><div class="score-fill" id="score-fill" style="width:100%"></div></div>
+      <span class="score-num" id="score-num">—</span>
+    </div>
+    <button id="stop-btn" onclick="stopTracking()">
+      <i class="fas fa-stop-circle"></i> إيقاف التتبع
+    </button>
+  </div>
+
+  <div class="lesson-header">
+    <h1>{{ lesson.lessontitle }}</h1>
+    <div class="lesson-meta">
+      <span><i class="fas fa-book"></i> {{ lesson.subjectid.subjectname|default:"—" }}</span>
+      <span><i class="fas fa-chalkboard-teacher"></i> {{ lesson.teacherid.userid.fullname|default:"—" }}</span>
+      <span><i class="fas fa-calendar-alt"></i> {{ lesson.createdat|date:"d M Y" }}</span>
+    </div>
+  </div>
+
+  {% if audio_url %}
+  <div class="audio-top-bar" id="audio-top">
+    <div class="audio-icon"><i class="fas fa-headphones"></i></div>
+    <span class="audio-label">استمع للدرس</span>
+    <audio id="topAudio" controls>
+      <source src="{{ audio_url }}" type="audio/mpeg">
+    </audio>
+    <div class="audio-speeds">
+      <button class="spd-btn" onclick="setSpeed(.75,this)">بطيء</button>
+      <button class="spd-btn active" onclick="setSpeed(1,this)">عادي</button>
+      <button class="spd-btn" onclick="setSpeed(1.25,this)">سريع</button>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="actions-grid">
+    <div class="action-card ac-session">
+      <div class="ac-icon"><i class="fas fa-eye"></i></div>
+      <div>
+        <div class="ac-title">الجلسة التعليمية</div>
+        <div class="ac-desc">تعلّم هذا الدرس مع نظام تتبع الانتباه النشط.</div>
+      </div>
+      <button class="ac-cta" onclick="document.getElementById('lesson-content').scrollIntoView({behavior:'smooth'})">
+        <i class="fas fa-play"></i> عرض الدرس
+      </button>
+    </div>
+
+    {% if lesson_test %}
+    <a href="{% url 'student:take_test' lesson_test.testid %}" class="action-card ac-test">
+      <div class="ac-icon"><i class="fas fa-file-alt"></i></div>
+      <div>
+        <div class="ac-title">اختبار الدرس</div>
+        <div class="ac-desc">{{ lesson_test.testtitle }}</div>
+      </div>
+      <span class="ac-cta"><i class="fas fa-pen"></i> ابدأ الاختبار</span>
+    </a>
+    {% else %}
+    <div class="action-card ac-test disabled">
+      <div class="ac-icon"><i class="fas fa-file-alt"></i></div>
+      <div>
+        <div class="ac-title">اختبار الدرس</div>
+        <div class="ac-desc">لا يوجد اختبار مرتبط بهذا الدرس حالياً.</div>
+      </div>
+      <span class="ac-cta"><i class="fas fa-clock"></i> قريباً</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <div id="lesson-content">
+    {% if lesson.ai_generatedtext %}
+    <div class="lesson-card">
+      <div class="lesson-section-head">
+        <i class="fas fa-align-right"></i> محتوى الدرس
+      </div>
+      <div class="lesson-section-body" id="lesson-paragraphs-container">
+        </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div id="session-summary">
+    <h3><i class="fas fa-chart-line" style="color:var(--mint);margin-left:8px;"></i>ملخص جلسة الانتباه</h3>
+    <div class="sum-grid">
+      <div class="sum-item"><div class="sum-num" id="sum-score">—</div><div class="sum-lbl">متوسط الانتباه</div></div>
+      <div class="sum-item"><div class="sum-num" id="sum-count">—</div><div class="sum-lbl">مرة تشتت</div></div>
+      <div class="sum-item"><div class="sum-num" id="sum-time">—</div><div class="sum-lbl">دقائق الجلسة</div></div>
+    </div>
+    <a href="{% url 'student:student_home' %}" class="btn-finish">
+      <i class="fas fa-check-circle"></i> إنهاء الدرس
+    </a>
+  </div>
+
+</div>
+
+<div id="alert-toast"></div>
+{% endblock %}
+
+{% block extra_js %}
+{{ lesson.ai_generatedtext|default:''|json_script:"dj-lesson-text" }}
+{{ image_list|default:"[]"|json_script:"dj-image-list" }}
+
+<script>
+/* ── بناء الفقرات + الصور بـ JS ── */
+(function buildParagraphs(){
+  var container = document.getElementById('lesson-paragraphs-container');
+  if(!container) return;
+
+  var rawText   = JSON.parse(document.getElementById('dj-lesson-text').textContent || '""');
+  var imageList = JSON.parse(document.getElementById('dj-image-list').textContent  || '[]');
+
+  if(!rawText){ container.innerHTML='<p style="color:#64748b;">لا يوجد محتوى.</p>'; return; }
+
+  var paragraphs = rawText.split(/\n\s*\n/).map(function(p){ return p.trim(); }).filter(Boolean);
+
+  paragraphs.forEach(function(text, i){
+    var imgUrl = imageList[i] || '';
+    var block  = document.createElement('div');
+    block.className = 'std-para-block';
+    var numHtml  = '<div class="std-para-num">' + (i+1) + '</div>';
+    var textHtml = '<div class="std-para-content"><div class="std-para-text">'
+                 + escHtml(text).replace(/\n/g,'<br>') + '</div></div>';
+    var imgHtml  = imgUrl
+      ? '<img src="' + imgUrl + '" class="std-para-img" alt="صورة ' + (i+1)
+        + '" onclick="window.open(this.src,\'_blank\')">'
+      : '';
+    block.innerHTML = numHtml + textHtml + imgHtml;
+    container.appendChild(block);
+  });
+
+  function escHtml(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+})();
+
+/* ── ضبط سرعة الصوت ── */
+function setSpeed(s, btn) {
+  var audio = document.getElementById('topAudio');
+  if(audio) audio.playbackRate = s;
+  btn.closest('.audio-speeds').querySelectorAll('.spd-btn')
+     .forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+/* ── تتبع الانتباه (تم تصحيح تداخل Django و JS) ── */
+// استخدام علامات التنصيص والدوال التحويلية يمنع أخطاء VS Code Property assignment expected
+var LESSON_ID      = parseInt("{{ lesson.pk|escapejs }}") || 0;
+var SESSION_ID     = "lesson_" + LESSON_ID + "_student_0";
+var CSRF_TOKEN     = "{{ csrf_token|escapejs }}";
+var ws             = null;
+var trackingActive = false;
+var alertTimer     = null;
+
+window.addEventListener('load', function(){ requestCameraAndStart(); });
+
+function requestCameraAndStart(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    updateBar('','المتصفح لا يدعم الكاميرا',0);
+    startTrackingWithoutCamera(); return;
+  }
+  navigator.mediaDevices.getUserMedia({video:true})
+    .then(function(stream){
+      stream.getTracks().forEach(function(t){ t.stop(); });
+      startTracking();
+    })
+    .catch(function(err){
+      if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){
+        updateBar('','تم رفض الكاميرا — التتبع معطّل',0);
+        showAlert('⚠️ يمكنك متابعة الدرس بدون تتبع الانتباه.');
+      } else {
+        updateBar('','مشكلة في الكاميرا',0);
+      }
+      startTrackingWithoutCamera();
+    });
+}
+
+function startTrackingWithoutCamera(){
+  trackingActive=false;
+  var bar=document.getElementById('attention-bar');
+  if(bar) bar.style.display='none';
+}
+
+function startTracking(){
+  fetch("{% url 'student:attention_start' %}",{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},
+    body:JSON.stringify({lesson_id: LESSON_ID})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.ok){
+      trackingActive=true;
+      connectWebSocket(data.ws_url);
+      updateBar('attentive','التتبع نشط ✅',100);
+    } else {
+      startTrackingWithoutCamera();
+    }
+  })
+  .catch(function(){
+    startTrackingWithoutCamera();
+  });
+}
+
+function connectWebSocket(wsUrl){
+  ws=new WebSocket(wsUrl);
+  ws.onmessage=function(e){
+    var state=JSON.parse(e.data);
+    if(state.error) return;
+    updateBar(
+      state.is_attentive?'attentive':'distracted',
+      state.is_attentive?'منتبه ✅':'تشتت ⚠️',
+      state.attention_score
+    );
+    if(state.alert_message) showAlert(state.alert_message);
+  };
+  ws.onclose=function(){
+    if(trackingActive) setTimeout(function(){ if(trackingActive) connectWebSocket(wsUrl); },3000);
+  };
+}
+
+function updateBar(cls,label,score){
+  var bar  = document.getElementById('attention-bar');
+  var lbl  = document.getElementById('att-label');
+  var fill = document.getElementById('score-fill');
+  var num  = document.getElementById('score-num');
+  if(!bar) return;
+  bar.className=cls; lbl.textContent=label;
+  num.textContent=score+'%'; fill.style.width=score+'%';
+  if(score>=70) fill.style.background='var(--mint)';
+  else if(score>=40) fill.style.background='var(--amber)';
+  else fill.style.background='var(--rose)';
+}
+
+function showAlert(msg){
+  var toast=document.getElementById('alert-toast');
+  if(!toast) return;
+  toast.textContent=msg; toast.classList.add('show');
+  if(alertTimer) clearTimeout(alertTimer);
+  alertTimer=setTimeout(function(){ toast.classList.remove('show'); },5000);
+}
+
+function stopTracking(){
+  if(!trackingActive) return;
+  trackingActive=false;
+  if(ws) ws.close();
+  var btn=document.getElementById('stop-btn');
+  if(btn){ btn.innerHTML='<i class="fas fa-check"></i> تم الإيقاف'; }
+  
+  fetch("{% url 'student:attention_stop' %}",{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},
+    body:JSON.stringify({session_id:SESSION_ID})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.ok) {
+        showSummary(data.summary);
+        return fetch("{% url 'student:attention_save' %}",{
+          method:'POST',
+          headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},
+          body:JSON.stringify({
+            lesson_id: LESSON_ID,
+            avg_attention: data.summary?data.summary.avg_attention:0,
+            inattention_count: data.summary?data.summary.inattention_count:0,
+            session_minutes: data.summary?data.summary.session_minutes:0,
+          })
+        });
+    }
+  })
+  .catch(function(){});
+}
+
+function showSummary(summary){
+  if(!summary) return;
+  document.getElementById('sum-score').textContent=summary.avg_attention||'0';
+  document.getElementById('sum-count').textContent=summary.inattention_count||'0';
+  document.getElementById('sum-time').textContent=summary.session_minutes||'0';
+  var s=document.getElementById('session-summary');
+  s.style.display='block';
+  s.scrollIntoView({behavior:'smooth'});
+}
+
+window.addEventListener('beforeunload',function(){ if(trackingActive) stopTracking(); });
+</script>
+{% endblock %}

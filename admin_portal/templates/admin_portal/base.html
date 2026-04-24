@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}لوحة الإشراف — EduPal{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap للـ navbar والـ footer -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    :root{
+      /* ── ألوان موحّدة مع navbar وfooter ── */
+      --blue:#5a91e6;--blue-dk:#3b6fd4;--blue-lt:#eff6ff;--blue-bd:#bfdbfe;
+      --sidebar:#1e2a3a;--sb-hover:#263447;--sb-active:#2d4a6e;
+      --sb-txt:#c8d8f0;--sb-muted:#7a96b8;
+      --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;
+      --bg:#f4f7fe;--white:#fff;
+      --green:#10b981;--green-lt:#ecfdf5;
+      --amber:#f59e0b;--amber-lt:#fffbeb;
+      --red:#ef4444;--red-lt:#fef2f2;
+      --r:.875rem;--sh:0 2px 8px rgba(0,0,0,.07);
+      /* ── ألوان navbar Bootstrap متناسقة ── */
+      --navbar-grad:linear-gradient(135deg,#5a91e6 0%,#4a7bc7 100%);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:'Cairo','Tajawal',sans-serif;
+      background:var(--bg);color:var(--ink);
+      display:flex;flex-direction:column;min-height:100vh;
+    }
+
+    /* ══ Layout wrapper ══ */
+    .ap-wrapper{display:flex;flex:1;min-height:0;}
+
+    /* ══ Navbar (أعلى الصفحة — مشترك مع جميع الأدوار) ══ */
+    .ap-navbar{
+      background:var(--navbar-grad);
+      position:sticky;top:0;z-index:200;
+      box-shadow:0 2px 12px rgba(29,78,216,.2);
+    }
+    /* تناسق لون Bootstrap مع ألوان المشرف */
+    .ap-navbar .navbar-brand{font-family:'Cairo',sans-serif;}
+    .ap-navbar .btn-light{
+      color:var(--blue-dk) !important;
+      font-family:'Cairo',sans-serif;
+      font-weight:700;
+    }
+    .ap-navbar .btn-light:hover{
+      background:var(--blue-lt) !important;
+    }
+
+    /* ══ Sidebar ══ */
+    .ap-sidebar{
+      width:250px;flex-shrink:0;background:var(--sidebar);
+      min-height:100%;display:flex;flex-direction:column;
+      position:sticky;top:56px; /* ارتفاع navbar */
+      height:calc(100vh - 56px);
+      overflow-y:auto;
+    }
+    .ap-sb-header{padding:1.5rem 1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);text-align:center;}
+    .ap-sb-logo{width:48px;height:48px;background:var(--blue);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;color:#fff;margin:0 auto .65rem;}
+    .ap-sb-brand{font-size:.85rem;font-weight:800;color:#fff;line-height:1.3;}
+    .ap-sb-sub{font-size:.7rem;color:var(--sb-muted);}
+
+    .ap-sb-user{padding:.85rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:.65rem;}
+    .ap-sb-av{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;flex-shrink:0;}
+    .ap-sb-uname{font-size:.82rem;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .ap-sb-urole{font-size:.68rem;color:var(--sb-muted);}
+
+    .ap-sb-nav{flex:1;padding:.75rem .65rem;overflow-y:auto;}
+    .ap-sb-sec{font-size:.65rem;font-weight:700;letter-spacing:.07em;color:var(--sb-muted);padding:.85rem .5rem .3rem;text-transform:uppercase;}
+    .ap-nav-a{display:flex;align-items:center;gap:.6rem;padding:.58rem .8rem;border-radius:.55rem;color:var(--sb-txt);font-size:.84rem;font-weight:600;text-decoration:none;transition:all .16s;margin-bottom:.18rem;}
+    .ap-nav-a i{width:17px;text-align:center;font-size:.85rem;}
+    .ap-nav-a:hover{background:var(--sb-hover);color:#fff;}
+    .ap-nav-a.active{background:var(--sb-active);color:#fff;}
+    .ap-nav-badge{margin-right:auto;background:rgba(255,255,255,.15);color:#fff;border-radius:100px;font-size:.65rem;padding:.1rem .45rem;font-weight:700;}
+
+    /* ✅ لا logout في sidebar — موجود في navbar */
+
+    /* ══ Main ══ */
+    .ap-main{flex:1;display:flex;flex-direction:column;min-width:0;}
+    .ap-topbar{background:var(--white);border-bottom:1.5px solid var(--border);padding:.8rem 1.5rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:56px;z-index:50;}
+    .ap-topbar h1{font-size:1.05rem;font-weight:800;color:var(--ink);flex:1;}
+    .ap-content{flex:1;padding:1.5rem;overflow-y:auto;}
+
+    /* ══ Stats ══ */
+    .ap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:.85rem;margin-bottom:1.25rem;}
+    .ap-stat{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:1.1rem;display:flex;align-items:flex-start;gap:.75rem;}
+    .ap-stat-ic{width:40px;height:40px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+    .ic-blue{background:var(--blue-lt);color:var(--blue);}
+    .ic-green{background:var(--green-lt);color:var(--green);}
+    .ic-amber{background:var(--amber-lt);color:var(--amber);}
+    .ic-red{background:var(--red-lt);color:var(--red);}
+    .ap-stat-n{font-size:1.45rem;font-weight:900;color:var(--ink);}
+    .ap-stat-l{font-size:.72rem;color:var(--muted);}
+
+    /* ══ Card ══ */
+    .ap-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:1.1rem;}
+    .ap-card-h{padding:.85rem 1.25rem;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#fafbff;}
+    .ap-card-t{font-size:.9rem;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:.45rem;}
+    .ap-card-t i{color:var(--blue);}
+    .ap-card-b{padding:1.25rem;}
+
+    /* ══ Table ══ */
+    .ap-tbl{width:100%;border-collapse:collapse;font-size:.845rem;}
+    .ap-tbl th{background:#f8faff;padding:.65rem .95rem;text-align:right;font-weight:700;font-size:.75rem;color:var(--muted);border-bottom:1.5px solid var(--border);}
+    .ap-tbl td{padding:.7rem .95rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+    .ap-tbl tr:last-child td{border-bottom:none;}
+    .ap-tbl tr:hover td{background:#fafbff;}
+
+    /* ══ Badges ══ */
+    .ap-badge{display:inline-flex;align-items:center;gap:.25rem;border-radius:100px;padding:.18rem .6rem;font-size:.7rem;font-weight:700;}
+    .bg-green{background:var(--green-lt);color:#065f46;}
+    .bg-amber{background:var(--amber-lt);color:#92400e;}
+    .bg-red{background:var(--red-lt);color:#991b1b;}
+    .bg-blue{background:var(--blue-lt);color:var(--blue-dk);}
+    .bg-gray{background:#f1f5f9;color:var(--muted);}
+
+    /* ══ Buttons ══ */
+    .ap-btn{display:inline-flex;align-items:center;gap:.38rem;border-radius:.55rem;font-family:'Cairo',sans-serif;font-size:.82rem;font-weight:700;padding:.45rem 1rem;border:none;cursor:pointer;text-decoration:none;transition:all .17s;white-space:nowrap;}
+    .ap-btn-primary{background:var(--blue);color:#fff;}
+    .ap-btn-primary:hover{background:var(--blue-dk);}
+    .ap-btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);}
+    .ap-btn-ghost:hover{background:var(--bg);color:var(--ink);}
+    .ap-btn-sm{padding:.28rem .65rem;font-size:.76rem;}
+    .ap-btn-preview{background:var(--blue-lt);color:var(--blue-dk);border:1px solid var(--blue-bd);}
+    .ap-btn-preview:hover{background:var(--blue);color:#fff;}
+
+    /* ══ Search ══ */
+    .ap-search{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;}
+    .ap-input{padding:.48rem .85rem;border:1.5px solid var(--border);border-radius:.55rem;font-family:'Cairo',sans-serif;font-size:.85rem;color:var(--ink);outline:none;transition:border-color .2s;}
+    .ap-input:focus{border-color:var(--blue);}
+    .ap-input-flex{flex:1;min-width:180px;}
+    select.ap-input{min-width:160px;}
+
+    /* ══ Alert ══ */
+    .ap-alert{padding:.75rem 1rem;border-radius:.55rem;font-size:.85rem;font-weight:600;margin-bottom:.85rem;display:flex;align-items:center;gap:.4rem;}
+    .ap-alert.success{background:var(--green-lt);color:#065f46;border:1px solid #a7f3d0;}
+    .ap-alert.error{background:var(--red-lt);color:#991b1b;border:1px solid #fca5a5;}
+    .ap-alert.info{background:var(--blue-lt);color:var(--blue-dk);border:1px solid var(--blue-bd);}
+
+    /* ══ Modal ══ */
+    .ap-modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,.52);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+    .ap-modal-bg.open{display:flex;}
+    .ap-modal{background:var(--white);border-radius:1.1rem;max-width:520px;width:94%;box-shadow:0 24px 64px rgba(0,0,0,.22);overflow:hidden;max-height:90vh;display:flex;flex-direction:column;}
+    .ap-modal-head{padding:1rem 1.25rem;background:var(--navbar-grad);display:flex;align-items:center;gap:.75rem;flex-shrink:0;}
+    .ap-modal-av{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.3);flex-shrink:0;}
+    .ap-modal-name{font-size:1rem;font-weight:800;color:#fff;}
+    .ap-modal-role{font-size:.73rem;color:rgba(255,255,255,.7);}
+    .ap-modal-close{margin-right:auto;background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:.85rem;transition:background .15s;display:flex;align-items:center;justify-content:center;}
+    .ap-modal-close:hover{background:rgba(255,255,255,.25);}
+    .ap-modal-body{padding:1.25rem;overflow-y:auto;flex:1;}
+    .ap-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;}
+    .ap-info-item .lbl{font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:.2rem;}
+    .ap-info-item .val{font-size:.88rem;font-weight:600;color:var(--ink);}
+    .ap-modal-sec{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:.6rem 0 .3rem;border-top:1px solid var(--border);margin-top:.6rem;}
+    .ap-modal-foot{padding:.85rem 1.25rem;border-top:1px solid var(--border);background:#fafbff;display:flex;justify-content:flex-end;}
+    .ap-mini-tbl{width:100%;border-collapse:collapse;font-size:.8rem;}
+    .ap-mini-tbl th{background:#f8faff;padding:.4rem .75rem;text-align:right;font-weight:700;font-size:.72rem;color:var(--muted);border-bottom:1px solid var(--border);}
+    .ap-mini-tbl td{padding:.45rem .75rem;border-bottom:1px solid var(--border);}
+    .ap-mini-tbl tr:last-child td{border-bottom:none;}
+
+    /* ══ Empty ══ */
+    .ap-empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);}
+    .ap-empty i{font-size:2rem;display:block;margin-bottom:.6rem;opacity:.35;}
+
+    /* ══ Footer — متناسق مع ألوان المنصة ══ */
+    .ap-footer{
+      background:var(--white);
+      border-top:1.5px solid var(--border);
+      font-family:'Cairo','Tajawal',sans-serif;
+    }
+    .ap-footer h5{color:var(--blue);}
+    .ap-footer h6{color:var(--ink);}
+    .ap-footer .text-muted{color:var(--muted) !important;}
+    .ap-footer .text-secondary{color:var(--sb-muted) !important;}
+    .ap-footer .social-links a{
+      color:var(--sb-muted);
+      transition:color .18s;
+      font-size:1rem;
+    }
+    .ap-footer .social-links a:hover{color:var(--blue);}
+    .ap-footer .btn-primary{
+      background:var(--blue) !important;
+      border-color:var(--blue) !important;
+      font-family:'Cairo',sans-serif;
+      font-weight:700;
+    }
+    .ap-footer .btn-primary:hover{background:var(--blue-dk) !important;}
+    .ap-footer .form-control{
+      font-family:'Cairo',sans-serif;
+      border-color:var(--border);
+    }
+    .ap-footer .form-control:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 .2rem rgba(90,145,230,.18);
+    }
+
+    /* ══ Responsive ══ */
+    @media(max-width:768px){
+      .ap-sidebar{display:none;}
+      .ap-grid{grid-template-columns:repeat(2,1fr);}
+      .ap-topbar{top:56px;}
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ══ Navbar المشترك مع جميع الأدوار ══════════════════════ -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm ap-navbar">
+  <div class="container d-flex justify-content-between align-items-center">
+    <a class="navbar-brand fw-bold d-flex align-items-center mb-0" href="{% url 'accounts:home' %}">
+      <div class="bg-white rounded-circle me-2 d-flex align-items-center justify-content-center"
+           style="width:40px;height:40px;flex-shrink:0;">
+        <i class="fas fa-shield-alt" style="color:var(--blue-dk);"></i>
+      </div>
+      <span style="letter-spacing:1px;font-family:'Cairo',sans-serif;">
+        EduPal <span class="fw-light">الإشراف</span>
+      </span>
+    </a>
+    <button class="navbar-toggler border-0" type="button"
+            data-bs-toggle="collapse" data-bs-target="#apNavbar"
+            aria-controls="apNavbar" aria-expanded="false"
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="apNavbar">
+      <ul class="navbar-nav align-items-center">
+        {% if user.is_authenticated %}
+          <li class="nav-item me-3">
+            <span class="nav-link text-white d-flex align-items-center gap-2">
+              {% if user.avatar %}
+                <img src="{{ user.avatar.url }}"
+                     class="rounded-circle border border-2 border-white"
+                     width="32" height="32"
+                     style="object-fit:cover;"
+                     alt="avatar"
+                     onerror="this.src='https://ui-avatars.com/api/?name={{ user.fullname|urlencode|default:user.username }}&background=fff&color=5a91e6&bold=true&size=32'">
+              {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ user.fullname|urlencode|default:user.username }}&background=fff&color=5a91e6&bold=true&size=32"
+                     class="rounded-circle border border-2 border-white"
+                     width="32" height="32" alt="avatar">
+              {% endif %}
+              أهلاً، <strong>{{ user.fullname|default:user.username }}</strong>
+            </span>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-light btn-sm rounded-pill px-4 fw-bold shadow-sm"
+               href="{% url 'accounts:logout' %}"
+               style="font-family:'Cairo',sans-serif;color:var(--blue-dk)!important;">
+              <i class="fas fa-sign-out-alt me-1"></i> خروج
+            </a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link text-white fw-bold" href="{% url 'accounts:login' %}">تسجيل الدخول</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<!-- ══ Layout الرئيسي ══ -->
+<div class="ap-wrapper">
+
+  <!-- ══ Sidebar ══ -->
+  <aside class="ap-sidebar">
+    <div class="ap-sb-header">
+      <div class="ap-sb-logo"><i class="fas fa-shield-alt"></i></div>
+      <div class="ap-sb-brand">EduPal — الإشراف</div>
+      <div class="ap-sb-sub">لوحة المشرف الإداري</div>
+    </div>
+
+    <div class="ap-sb-user">
+      <div class="ap-sb-av">{{ request.user.fullname|default:request.user.username|first|upper }}</div>
+      <div>
+        <div class="ap-sb-uname">{{ request.user.fullname|default:request.user.username }}</div>
+        <div class="ap-sb-urole">مشرف إداري</div>
+      </div>
+    </div>
+
+    <nav class="ap-sb-nav">
+      <div class="ap-sb-sec">الرئيسية</div>
+      <a href="{% url 'admin_portal:dashboard' %}"
+         class="ap-nav-a {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+        <i class="fas fa-th-large"></i> لوحة التحكم
+      </a>
+
+      <div class="ap-sb-sec">الكوادر</div>
+      <a href="{% url 'admin_portal:teachers_list' %}"
+         class="ap-nav-a {% if 'teacher' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="fas fa-chalkboard-teacher"></i> المعلمون
+      </a>
+      <a href="{% url 'admin_portal:students_list' %}"
+         class="ap-nav-a {% if 'student' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="fas fa-user-graduate"></i> الطلاب
+      </a>
+      <a href="{% url 'admin_portal:parents_list' %}"
+         class="ap-nav-a {% if 'parent' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="fas fa-users"></i> أولياء الأمور
+      </a>
+
+      <div class="ap-sb-sec">التنظيم</div>
+      <a href="{% url 'admin_portal:classes_list' %}"
+         class="ap-nav-a {% if 'class' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="fas fa-door-open"></i> الصفوف
+      </a>
+      <a href="{% url 'admin_portal:directorates_list' %}"
+         class="ap-nav-a {% if 'directorate' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="fas fa-map-marker-alt"></i> المديريات
+      </a>
+
+      <div class="ap-sb-sec">الإدارة</div>
+      <a href="{% url 'admin_portal:sysadmins_list' %}"
+         class="ap-nav-a {% if 'sysadmin' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="fas fa-user-shield"></i> المشرفون الإداريون
+      </a>
+    </nav>
+
+    <!-- ✅ تمّ حذف ap-logout من هنا — الخروج موحّد في navbar -->
+
+  </aside>
+  <!-- ════ End Sidebar ════ -->
+
+  <!-- ══ المحتوى الرئيسي ══ -->
+  <main class="ap-main">
+    <div class="ap-topbar">
+      <h1>{% block page_title %}لوحة التحكم{% endblock %}</h1>
+      <div style="display:flex;gap:.5rem;align-items:center;">{% block topbar_actions %}{% endblock %}</div>
+    </div>
+    <div class="ap-content">
+      {% if messages %}
+        {% for msg in messages %}
+        <div class="ap-alert {% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}error{% else %}info{% endif %}">
+          <i class="fas {% if 'success' in msg.tags %}fa-check-circle{% elif 'error' in msg.tags %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+          {{ msg }}
+        </div>
+        {% endfor %}
+      {% endif %}
+      {% block content %}{% endblock %}
+    </div>
+
+    <!-- ══ Footer ══════════════════════════════════════════════ -->
+    <footer class="ap-footer mt-5 py-5">
+      <div class="container-fluid px-4">
+        <div class="row gy-4">
+          <div class="col-lg-4">
+            <h5 class="fw-bold mb-3">
+              <i class="fas fa-book-reader me-1"></i> EduPal Platform
+            </h5>
+            <p class="text-muted small">
+              منصة تعليمية ذكية تدعم المعلم والطالب وولي الأمر باستخدام
+              أحدث تقنيات الذكاء الاصطناعي وربط البيانات اللحظي عبر PostgreSQL.
+            </p>
+            <div class="social-links mt-2">
+              <a href="#" class="me-3"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="me-3"><i class="fab fa-twitter"></i></a>
+              <a href="#" class="me-3"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+          </div>
+          <div class="col-lg-2 col-6">
+            <h6 class="fw-bold mb-3">المنصة</h6>
+            <ul class="list-unstyled small">
+              <li><a href="#" class="text-decoration-none text-muted">عن EduPal</a></li>
+              <li><a href="#" class="text-decoration-none text-muted">المميزات</a></li>
+              <li><a href="#" class="text-decoration-none text-muted">الأسعار</a></li>
+            </ul>
+          </div>
+          <div class="col-lg-2 col-6">
+            <h6 class="fw-bold mb-3">الدعم</h6>
+            <ul class="list-unstyled small">
+              <li><a href="#" class="text-decoration-none text-muted">مركز المساعدة</a></li>
+              <li><a href="#" class="text-decoration-none text-muted">سياسة الخصوصية</a></li>
+              <li><a href="#" class="text-decoration-none text-muted">شروط الاستخدام</a></li>
+            </ul>
+          </div>
+          <div class="col-lg-4">
+            <h6 class="fw-bold mb-3">اشترك في نشرتنا</h6>
+            <div class="input-group mb-3">
+              <input type="email" class="form-control border-end-0"
+                     placeholder="بريدك الإلكتروني"
+                     style="font-family:'Cairo',sans-serif;">
+              <button class="btn btn-primary px-4" type="button">اشتراك</button>
+            </div>
+          </div>
+        </div>
+        <hr class="my-4 opacity-25">
+        <div class="text-center text-muted small">
+          &copy; 2026 EduPal Platform. جميع الحقوق محفوظة. مدعوم بواسطة PostgreSQL
+        </div>
+      </div>
+    </footer>
+    <!-- ════ End Footer ════ -->
+
+  </main>
+  <!-- ════ End Main ════ -->
+
+</div>
+<!-- ════ End Wrapper ════ -->
+
+<!-- ══ Modal المعاينة المشترك ══════════════════════════════ -->
+<div class="ap-modal-bg" id="previewModal">
+  <div class="ap-modal">
+    <div class="ap-modal-head">
+      <img class="ap-modal-av" id="pvAvatar" src="" alt="">
+      <div>
+        <div class="ap-modal-name" id="pvName">—</div>
+        <div class="ap-modal-role" id="pvRole">—</div>
+      </div>
+      <button class="ap-modal-close" onclick="closePreview()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="ap-modal-body" id="pvBody">
+      <div class="ap-empty"><i class="fas fa-spinner fa-spin"></i>جاري التحميل...</div>
+    </div>
+    <div class="ap-modal-foot">
+      <button class="ap-btn ap-btn-ghost ap-btn-sm" onclick="closePreview()">
+        <i class="fas fa-times"></i> إغلاق
+      </button>
+    </div>
+  </div>
+</div>
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* ══ Modal utilities ══ */
+var CSRF = '{{ csrf_token }}';
+
+function openPreview(){ document.getElementById('previewModal').classList.add('open'); }
+function closePreview(){ document.getElementById('previewModal').classList.remove('open'); }
+document.getElementById('previewModal').addEventListener('click', function(e){
+    if(e.target === this) closePreview();
+});
+
+function setModalHead(name, role, avatar){
+    document.getElementById('pvName').textContent = name;
+    document.getElementById('pvRole').textContent = role;
+    document.getElementById('pvAvatar').src       = avatar;
+}
+function setModalBody(html){
+    document.getElementById('pvBody').innerHTML = html;
+}
+function infoRow(label, value){
+    return '<div class="ap-info-item"><div class="lbl">'+label+'</div><div class="val">'+(value||'—')+'</div></div>';
+}
+function statusBadge(active){
+    return active
+        ? '<span class="ap-badge bg-green"><i class="fas fa-circle" style="font-size:.45rem"></i> نشط</span>'
+        : '<span class="ap-badge bg-red"><i class="fas fa-circle" style="font-size:.45rem"></i> معطّل</span>';
+}
+
+/* ══ معاينة معلم ══ */
+function previewTeacher(id){
+    setModalBody('<div class="ap-empty"><i class="fas fa-spinner fa-spin"></i></div>');
+    openPreview();
+    fetch('/admin-portal/teachers/'+id+'/preview/')
+    .then(r=>r.json()).then(d=>{
+        if(!d.ok){ setModalBody('<div class="ap-empty">خطأ في التحميل</div>'); return; }
+        var t=d.teacher;
+        setModalHead(t.fullname, 'معلم — '+t.specialization, t.avatar_url);
+        var html='<div class="ap-info-grid">';
+        html+=infoRow('اسم المستخدم','<span style="direction:ltr;display:inline-block">'+t.username+'</span>');
+        html+=infoRow('البريد الإلكتروني',t.email);
+        html+=infoRow('رقم الهوية',t.identity);
+        html+=infoRow('التخصص',t.specialization);
+        html+=infoRow('المديرية',t.directorate);
+        html+=infoRow('عدد الدروس',t.lessons+' (منشور: '+t.published+')');
+        html+=infoRow('الحالة',statusBadge(t.is_active));
+        html+='</div>';
+        if(t.classes && t.classes.length){
+            html+='<div class="ap-modal-sec">الصفوف المُسنَدة</div>';
+            html+='<div style="display:flex;flex-wrap:wrap;gap:.35rem;">';
+            t.classes.forEach(function(c){ html+='<span class="ap-badge bg-blue">'+c+'</span>'; });
+            html+='</div>';
+        }
+        setModalBody(html);
+    });
+}
+
+/* ══ معاينة طالب ══ */
+function previewStudent(id){
+    setModalBody('<div class="ap-empty"><i class="fas fa-spinner fa-spin"></i></div>');
+    openPreview();
+    fetch('/admin-portal/students/'+id+'/preview/')
+    .then(r=>r.json()).then(d=>{
+        if(!d.ok){ setModalBody('<div class="ap-empty">خطأ في التحميل</div>'); return; }
+        var s=d.student;
+        setModalHead(s.fullname,'طالب — '+s.class_name,s.avatar_url);
+        var html='<div class="ap-info-grid">';
+        html+=infoRow('اسم المستخدم','<span style="direction:ltr;display:inline-block">'+s.username+'</span>');
+        html+=infoRow('رقم الهوية',s.identity);
+        html+=infoRow('العمر',s.age+' سنة');
+        html+=infoRow('الصف',s.class_name);
+        html+=infoRow('المديرية',s.directorate);
+        html+=infoRow('ولي الأمر',s.parent_name);
+        html+=infoRow('الحالة',statusBadge(s.is_active));
+        html+='</div>';
+        setModalBody(html);
+    });
+}
+
+/* ══ معاينة ولي أمر ══ */
+function previewParent(id){
+    setModalBody('<div class="ap-empty"><i class="fas fa-spinner fa-spin"></i></div>');
+    openPreview();
+    fetch('/admin-portal/parents/'+id+'/preview/')
+    .then(r=>r.json()).then(d=>{
+        if(!d.ok){ setModalBody('<div class="ap-empty">خطأ في التحميل</div>'); return; }
+        var p=d.parent;
+        setModalHead(p.fullname,'ولي أمر',p.avatar_url);
+        var html='<div class="ap-info-grid">';
+        html+=infoRow('اسم المستخدم','<span style="direction:ltr;display:inline-block">'+p.username+'</span>');
+        html+=infoRow('الجنس',p.gender);
+        html+=infoRow('الحالة',statusBadge(p.is_active));
+        html+=infoRow('البريد',p.email);
+        html+='</div>';
+        html+='<div class="ap-modal-sec">معلومات الابن/الابنة</div>';
+        html+='<div class="ap-info-grid">';
+        html+=infoRow('الاسم',p.child_name);
+        html+=infoRow('الصف',p.child_class);
+        html+=infoRow('العمر',p.child_age ? p.child_age+' سنة' : '—');
+        html+='</div>';
+        setModalBody(html);
+    });
+}
+
+/* ══ طلاب صف ══ */
+function showClassStudents(id, name){
+    document.getElementById('pvName').textContent = name;
+    document.getElementById('pvRole').textContent = 'قائمة الطلاب';
+    document.getElementById('pvAvatar').src = 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=eff6ff&color=3b6fd4&bold=true&size=96';
+    setModalBody('<div class="ap-empty"><i class="fas fa-spinner fa-spin"></i></div>');
+    openPreview();
+    fetch('/admin-portal/classes/'+id+'/students/')
+    .then(r=>r.json()).then(d=>{
+        if(!d.ok){ setModalBody('<div class="ap-empty">خطأ</div>'); return; }
+        document.getElementById('pvRole').textContent = d.directorate+' — '+d.teacher;
+        if(!d.students.length){
+            setModalBody('<div class="ap-empty"><i class="fas fa-users-slash"></i>لا يوجد طلاب في هذا الصف</div>');
+            return;
+        }
+        var html='<p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem;">عدد الطلاب: <strong>'+d.count+'</strong></p>';
+        html+='<div style="overflow-x:auto;"><table class="ap-mini-tbl"><thead><tr><th>الاسم</th><th>رقم الهوية</th><th>العمر</th><th>الحالة</th></tr></thead><tbody>';
+        d.students.forEach(function(s){
+            html+='<tr><td><strong>'+s.fullname+'</strong></td><td>'+s.identity+'</td><td>'+s.age+'</td><td>'+statusBadge(s.is_active)+'</td></tr>';
+        });
+        html+='</tbody></table></div>';
+        setModalBody(html);
+    });
+}
+
+/* ══ معلمو مديرية ══ */
+function showDirectorateTeachers(name){
+    document.getElementById('pvName').textContent = name.replace('مديرية تربية وتعليم ','');
+    document.getElementById('pvRole').textContent = 'قائمة المعلمين';
+    document.getElementById('pvAvatar').src = 'https://ui-avatars.com/api/?name=MD&background=1e2a3a&color=c8d8f0&bold=true&size=96';
+    setModalBody('<div class="ap-empty"><i class="fas fa-spinner fa-spin"></i></div>');
+    openPreview();
+    fetch('/admin-portal/directorates/'+encodeURIComponent(name)+'/teachers/')
+    .then(r=>r.json()).then(d=>{
+        if(!d.ok){ setModalBody('<div class="ap-empty">خطأ</div>'); return; }
+        document.getElementById('pvRole').textContent = 'عدد المعلمين: '+d.count;
+        if(!d.teachers.length){
+            setModalBody('<div class="ap-empty"><i class="fas fa-user-slash"></i>لا يوجد معلمون في هذه المديرية</div>');
+            return;
+        }
+        var html='<div style="overflow-x:auto;"><table class="ap-mini-tbl"><thead><tr><th>الاسم</th><th>التخصص</th><th>الدروس</th><th>الحالة</th></tr></thead><tbody>';
+        d.teachers.forEach(function(t){
+            html+='<tr><td><strong><a href="#" onclick="closePreview();setTimeout(function(){previewTeacher('+t.id+')},200);return false;" style="color:var(--blue);text-decoration:none;">'+t.fullname+'</a></strong></td>';
+            html+='<td>'+t.specialization+'</td><td>'+t.lessons+'</td><td>'+statusBadge(t.is_active)+'</td></tr>';
+        });
+        html+='</tbody></table></div>';
+        setModalBody(html);
+    });
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

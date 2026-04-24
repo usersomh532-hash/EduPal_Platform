@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ lesson.lessontitle }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root{
+  --sky:#3b82f6;--sky-dk:#1d4ed8;--sky-lt:#eff6ff;--sky-bd:#bfdbfe;
+  --mint:#10b981;--amber:#f59e0b;--rose:#ef4444;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f0f5fb;--card:#fff;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',sans-serif;}
+
+.lesson-gateway-wrap{
+  max-width:680px;margin:2.5rem auto;padding:0 1.25rem 5rem;
+}
+
+/* ── رأس الدرس ── */
+.lesson-header{
+  background:linear-gradient(135deg,var(--sky-dk),var(--sky));
+  border-radius:1.25rem;padding:1.75rem 2rem;
+  color:#fff;margin-bottom:2rem;
+  box-shadow:0 6px 24px rgba(29,78,216,0.2);
+  position:relative;
+}
+.lesson-header h1{font-size:clamp(1.2rem,2.5vw,1.6rem);font-weight:900;margin-bottom:.5rem;}
+.lesson-meta{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.83rem;opacity:.9;}
+.lesson-meta span{display:flex;align-items:center;gap:.35rem;}
+
+/* ✅ شارة المشاهدة داخل رأس الدرس */
+.watched-badge-header{
+  display:inline-flex;align-items:center;gap:.4rem;
+  background:rgba(16,185,129,0.22);
+  border:1.5px solid rgba(16,185,129,0.45);
+  color:#d1fae5;border-radius:100px;
+  padding:.25rem .85rem;font-size:.8rem;font-weight:700;
+  margin-top:.65rem;
+}
+.watched-badge-header i{color:#6ee7b7;}
+
+/* ── شارة العودة ── */
+.back-link{
+  display:inline-flex;align-items:center;gap:.5rem;
+  color:var(--muted);font-size:.85rem;font-weight:600;
+  text-decoration:none;margin-bottom:1.5rem;
+  transition:color .18s;
+}
+.back-link:hover{color:var(--sky-dk);}
+
+/* ── الخياران ── */
+.gateway-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;
+}
+@media(max-width:520px){.gateway-grid{grid-template-columns:1fr;}}
+
+.gateway-card{
+  border-radius:1.25rem;padding:2rem 1.5rem;
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center;gap:1rem;
+  border:2px solid;text-decoration:none;color:inherit;
+  transition:transform .22s,box-shadow .22s,border-color .22s;
+  cursor:pointer;position:relative;
+}
+.gateway-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 12px 36px rgba(0,0,0,0.12);
+  text-decoration:none;color:inherit;
+}
+
+.gc-session{background:var(--sky-lt);border-color:var(--sky-bd);}
+.gc-session:hover{border-color:var(--sky);}
+
+/* ✅ حالة المشاهدة: حدود خضراء */
+.gc-session.watched{
+  background:#f0fdf4;border-color:#6ee7b7;
+}
+.gc-session.watched:hover{border-color:var(--mint);}
+
+.gc-exam{background:#fffbeb;border-color:#fde68a;}
+.gc-exam:hover{border-color:var(--amber);}
+.gc-exam.disabled{
+  background:#f8fafc;border-color:var(--border);
+  opacity:.65;cursor:not-allowed;pointer-events:none;
+}
+
+.gc-icon{
+  width:64px;height:64px;border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.75rem;flex-shrink:0;
+}
+.gc-session .gc-icon{background:rgba(59,130,246,0.15);color:var(--sky-dk);}
+.gc-session.watched .gc-icon{background:rgba(16,185,129,0.15);color:var(--mint);}
+.gc-exam    .gc-icon{background:rgba(245,158,11,0.15);color:#b45309;}
+.gc-exam.disabled .gc-icon{background:var(--border);color:var(--muted);}
+
+.gc-title{font-size:1.05rem;font-weight:800;color:var(--ink);}
+.gc-desc{font-size:.82rem;color:var(--muted);line-height:1.7;}
+
+.gc-btn{
+  display:inline-flex;align-items:center;gap:.45rem;
+  font-size:.85rem;font-weight:700;padding:.5rem 1.2rem;
+  border-radius:10px;border:none;cursor:pointer;
+  font-family:'Tajawal',sans-serif;transition:opacity .18s;
+  text-decoration:none;
+}
+.gc-session .gc-btn{background:var(--sky-dk);color:#fff;}
+.gc-session.watched .gc-btn{background:var(--mint);color:#fff;}
+.gc-exam    .gc-btn{background:#b45309;color:#fff;}
+.gc-exam.disabled .gc-btn{background:var(--muted);color:#fff;cursor:not-allowed;}
+.gc-btn:hover{opacity:.88;}
+
+/* ✅ شارة المشاهدة على كارد الجلسة */
+.gc-watched-tag{
+  position:absolute;top:12px;left:12px;
+  background:var(--mint);color:#fff;
+  border-radius:100px;padding:.18rem .7rem;
+  font-size:.72rem;font-weight:800;
+  display:flex;align-items:center;gap:.3rem;
+  box-shadow:0 2px 8px rgba(16,185,129,.3);
+}
+.gc-watched-tag i{font-size:.65rem;}
+
+/* ── Session Start Modal ── */
+.sm-overlay{
+  position:fixed;inset:0;background:rgba(15,23,42,.55);
+  z-index:9999;display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.sm-overlay.open{display:flex;}
+.sm-box{
+  background:#fff;border-radius:1.25rem;width:90%;max-width:420px;
+  overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.2);
+  animation:sm-in .25s ease;
+}
+@keyframes sm-in{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.sm-head{
+  background:linear-gradient(120deg,var(--sky-dk),var(--sky));
+  padding:1rem 1.25rem;display:flex;align-items:center;
+  justify-content:space-between;
+}
+.sm-head-title{
+  color:#fff;font-weight:800;font-size:1rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.sm-close{
+  background:none;border:none;color:rgba(255,255,255,.8);
+  font-size:1.2rem;cursor:pointer;padding:.25rem;
+  transition:color .15s;line-height:1;
+}
+.sm-close:hover{color:#fff;}
+.sm-body{padding:1.5rem 1.25rem;}
+.sm-lesson-name{
+  font-size:1.05rem;font-weight:800;color:var(--ink);
+  text-align:center;margin-bottom:1.1rem;
+}
+.sm-tips{
+  background:var(--sky-lt);border:1.5px solid var(--sky-bd);
+  border-radius:.75rem;padding:.9rem 1.1rem;margin-bottom:1.25rem;
+}
+.sm-tips-head{
+  font-size:.82rem;font-weight:800;color:var(--sky-dk);
+  display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem;
+}
+.sm-tips ul{margin:0;padding-right:1.1rem;}
+.sm-tips li{font-size:.83rem;color:var(--muted);margin-bottom:.3rem;line-height:1.6;}
+.sm-tips li:last-child{margin-bottom:0;}
+
+/* ✅ تلميح إعادة المشاهدة في الـ modal */
+.sm-rewatched-note{
+  background:#f0fdf4;border:1.5px solid #6ee7b7;
+  border-radius:.75rem;padding:.75rem 1rem;margin-bottom:1.1rem;
+  font-size:.82rem;color:#065f46;font-weight:600;
+  display:flex;align-items:center;gap:.5rem;
+}
+.sm-foot{
+  display:flex;gap:.75rem;padding:0 1.25rem 1.25rem;
+  justify-content:center;
+}
+.sm-btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.6rem 1.4rem;border-radius:.65rem;border:none;
+  font-family:'Tajawal',sans-serif;font-size:.9rem;
+  font-weight:800;cursor:pointer;transition:all .18s;
+  text-decoration:none;
+}
+.sm-btn-primary{background:var(--sky-dk);color:#fff;box-shadow:0 4px 12px rgba(29,78,216,.3);}
+.sm-btn-primary:hover{background:#1e3a8a;color:#fff;}
+.sm-btn-primary.rewatched{background:var(--mint);box-shadow:0 4px 12px rgba(16,185,129,.3);}
+.sm-btn-primary.rewatched:hover{background:#059669;color:#fff;}
+.sm-btn-ghost{background:var(--border);color:var(--muted);}
+.sm-btn-ghost:hover{background:#d1d5db;color:var(--ink);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lesson-gateway-wrap" dir="rtl">
+
+  <a href="{% url 'student:student_home' %}" class="back-link">
+    <i class="fas fa-chevron-right"></i>
+    العودة إلى المكتبة
+  </a>
+
+  <!-- رأس الدرس مع شارة المشاهدة -->
+  <div class="lesson-header">
+    <h1>{{ lesson.lessontitle }}</h1>
+    <div class="lesson-meta">
+      <span><i class="fas fa-book"></i> {{ lesson.subjectid.subjectname|default:"—" }}</span>
+      <span><i class="fas fa-chalkboard-teacher"></i> {{ lesson.teacherid.userid.fullname|default:"—" }}</span>
+      <span><i class="fas fa-calendar-alt"></i> {{ lesson.createdat|date:"d M Y" }}</span>
+    </div>
+    {% if is_watched %}
+    <!-- ✅ شارة المشاهدة في رأس الدرس -->
+    <div class="watched-badge-header">
+      <i class="fas fa-check-circle"></i>
+      شاهدت هذا الدرس
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="gateway-grid">
+
+    <!-- بطاقة الجلسة -->
+    <div class="gateway-card gc-session {% if is_watched %}watched{% endif %}" onclick="openSessionModal()">
+
+      <!-- ✅ شارة صغيرة على الكارد -->
+      {% if is_watched %}
+      <div class="gc-watched-tag">
+        <i class="fas fa-check-circle"></i>
+        تمت المشاهدة
+      </div>
+      {% endif %}
+
+      <div class="gc-icon">
+        {% if is_watched %}
+        <i class="fas fa-redo"></i>
+        {% else %}
+        <i class="fas fa-eye"></i>
+        {% endif %}
+      </div>
+      <div class="gc-title">الجلسة التعليمية</div>
+      <div class="gc-desc">
+        {% if is_watched %}
+        أتممت هذا الدرس — يمكنك مشاهدته مجدداً لتعزيز الفهم.
+        {% else %}
+        المحتوى الكامل للدرس: نص، صور،
+        وتسجيل صوتي ومساعد ذكي مع تتبع الانتباه.
+        {% endif %}
+      </div>
+      <span class="gc-btn">
+        {% if is_watched %}
+        <i class="fas fa-redo"></i> أعد المشاهدة
+        {% else %}
+        <i class="fas fa-play"></i> ابدأ التعلم
+        {% endif %}
+      </span>
+    </div>
+
+    <!-- بطاقة الاختبار -->
+    {% if lesson_test %}
+    <a href="{% url 'student:take_test' lesson_test.testid %}" class="gateway-card gc-exam">
+      <div class="gc-icon"><i class="fas fa-file-alt"></i></div>
+      <div class="gc-title">اختبار الدرس</div>
+      <div class="gc-desc">{{ lesson_test.testtitle }}</div>
+      <span class="gc-btn">
+        <i class="fas fa-pen"></i> ابدأ الاختبار
+      </span>
+    </a>
+    {% else %}
+    <div class="gateway-card gc-exam disabled">
+      <div class="gc-icon"><i class="fas fa-file-alt"></i></div>
+      <div class="gc-title">اختبار الدرس</div>
+      <div class="gc-desc">لا يوجد اختبار مرتبط بهذا الدرس حالياً.</div>
+      <span class="gc-btn">
+        <i class="fas fa-clock"></i> قريباً
+      </span>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- ══ Session Start Modal ══ -->
+<div class="sm-overlay" id="sessionModal">
+  <div class="sm-box">
+    <div class="sm-head">
+      <div class="sm-head-title">
+        <i class="fas fa-play-circle"></i>
+        {% if is_watched %}إعادة الجلسة التعليمية{% else %}بدء الجلسة التعليمية{% endif %}
+      </div>
+      <button class="sm-close" onclick="closeSessionModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="sm-body">
+      <div class="sm-lesson-name">{{ lesson.lessontitle }}</div>
+
+      {% if is_watched %}
+      <!-- ✅ تلميح إعادة المشاهدة -->
+      <div class="sm-rewatched-note">
+        <i class="fas fa-check-circle" style="font-size:1rem;flex-shrink:0;"></i>
+        لقد شاهدت هذا الدرس مسبقاً — إعادة المشاهدة تُرسّخ الفهم!
+      </div>
+      {% endif %}
+
+      <div class="sm-tips">
+        <div class="sm-tips-head">
+          <i class="fas fa-info-circle"></i>
+          نظام تتبع الانتباه
+        </div>
+        <ul>
+          <li>سيبدأ التتبع تلقائياً مع الدرس</li>
+          <li>تأكد من إضاءة المكان جيداً</li>
+          <li>تأكد من عمل الكاميرا</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sm-foot">
+      <button class="sm-btn sm-btn-ghost" onclick="closeSessionModal()">
+        لاحقاً
+      </button>
+      <a href="{% url 'student:lesson_session' lesson.pk %}"
+         class="sm-btn sm-btn-primary {% if is_watched %}rewatched{% endif %}">
+        {% if is_watched %}
+        <i class="fas fa-redo"></i> أعد المشاهدة
+        {% else %}
+        <i class="fas fa-play"></i> ابدأ الآن
+        {% endif %}
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function openSessionModal()  { document.getElementById('sessionModal').classList.add('open'); }
+function closeSessionModal() { document.getElementById('sessionModal').classList.remove('open'); }
+document.getElementById('sessionModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSessionModal();
+});
+</script>
+{% endblock %}

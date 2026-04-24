@@ -1,0 +1,1984 @@
+WARNING 2026-03-12 12:18:59,129 utils Pollinations response not an image: text/html
+WARNING 2026-03-12 12:18:59,249 utils Pollinations response not an image: text/html
+WARNING 2026-03-12 12:18:59,421 utils Pollinations response not an image: text/html
+WARNING 2026-03-12 12:36:22,112 utils Pollinations response not an image: text/html
+WARNING 2026-03-12 12:36:22,252 utils Pollinations response not an image: text/html
+WARNING 2026-03-12 12:36:22,378 utils Pollinations response not an image: text/html
+WARNING 2026-04-03 11:59:25,794 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-03 12:00:18,664 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-03 12:01:14,197 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-03 12:02:02,139 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-03 16:42:36,432 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-03 16:46:29,297 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-05 15:15:03,088 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-05 15:51:25,804 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-05 16:21:37,675 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-05 16:23:51,398 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-05 18:25:54,629 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-05 19:26:02,916 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-05 19:31:11,554 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+ERROR 2026-04-05 23:13:00,310 views simplify_lesson error: process_lesson_with_ai() got an unexpected keyword argument 'teacher_prompts'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 388, in simplify_lesson
+    simplified_text, audio_path, _ = process_lesson_with_ai(
+TypeError: process_lesson_with_ai() got an unexpected keyword argument 'teacher_prompts'
+
+WARNING 2026-04-05 23:13:41,899 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-09 23:41:57,148 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-09 23:42:20,099 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-09 23:52:59,968 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-10 00:10:31,812 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-10 00:10:39,725 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-10 00:11:22,308 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+WARNING 2026-04-10 00:11:37,270 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+ERROR 2026-04-10 15:07:47,723 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-10 15:07:48,953 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+WARNING 2026-04-10 15:07:48,979 utils [utils] Gemini failed ó using cleaned original text
+ERROR 2026-04-10 15:11:31,116 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-10 15:11:34,339 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+WARNING 2026-04-10 15:11:34,387 utils [utils] Gemini failed ó using cleaned original text
+ERROR 2026-04-10 15:21:17,317 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-10 15:21:17,820 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available model
+ERROR 2026-04-10 15:21:18,189 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-10 15:21:18,644 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-10 15:21:18,644 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-10 15:21:20,322 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-10 15:37:22,021 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-10 15:37:22,439 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-10 15:38:00,737 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-10 15:41:04,741 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-10 15:43:10,508 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-10 16:11:41,119 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-10 16:11:41,466 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-10 16:11:59,776 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-10 16:11:59,776 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-10 16:12:01,829 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-10 20:09:47,527 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-10 20:09:48,029 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-10 20:10:23,706 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-11 15:57:23,706 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:02:08,578 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:02:08,864 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-11 16:02:40,378 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:02:40,404 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 16:04:31,237 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:04:31,508 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available model
+ERROR 2026-04-11 16:04:31,747 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:04:32,028 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:04:32,029 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-11 16:04:33,400 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:04:33,413 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+WARNING 2026-04-11 16:05:00,218 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+ERROR 2026-04-11 16:05:02,316 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+WARNING 2026-04-11 16:06:37,438 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+ERROR 2026-04-11 16:06:39,364 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+WARNING 2026-04-11 16:06:53,902 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+ERROR 2026-04-11 16:06:55,727 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 16:07:14,448 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:07:14,675 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available model
+ERROR 2026-04-11 16:07:14,896 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:07:15,152 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:07:15,153 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-11 16:07:16,722 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:07:16,731 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 16:07:32,476 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:07:32,735 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available model
+ERROR 2026-04-11 16:07:32,987 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:07:33,230 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:07:33,231 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-11 16:07:35,088 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:07:35,095 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 16:07:49,513 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:07:49,827 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-11 16:08:15,209 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:08:15,218 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 16:10:46,252 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:10:46,523 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-11 16:11:14,363 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:11:14,369 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+WARNING 2026-04-11 16:13:25,014 encryption decrypt_api_key failed (key may be unencrypted or corrupted): 
+ERROR 2026-04-11 16:13:27,059 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 16:14:19,419 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:14:19,652 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available model
+ERROR 2026-04-11 16:14:19,877 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:14:20,130 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:14:20,131 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-11 16:14:21,802 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:14:21,823 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 16:15:02,450 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:15:02,727 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available model
+ERROR 2026-04-11 16:15:02,982 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:15:03,247 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:15:03,248 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-11 16:15:04,646 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:15:04,663 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 16:15:46,681 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:15:46,947 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available model
+ERROR 2026-04-11 16:15:47,188 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:15:47,447 utils [utils] REST HTTP 429 model=gemini-2.0-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-11 16:15:47,448 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-11 16:15:49,051 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:15:49,057 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 16:23:24,297 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:23:24,557 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-11 16:24:06,865 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:24:06,883 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 16:29:27,613 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 16:29:27,850 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-11 16:29:58,237 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 16:29:58,242 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 17:44:35,120 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 17:44:35,369 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-11 17:45:02,849 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 17:45:02,856 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 414, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 20:04:37,803 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 20:04:38,052 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-11 20:05:10,835 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 20:05:10,961 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 413, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 20:06:22,172 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 20:06:22,438 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-11 20:06:24,457 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-11 20:06:24,459 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-11 20:06:34,371 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-11 20:06:34,391 views simplify_lesson error: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+Traceback (most recent call last):
+  File "C:\Users\Shaheen\adhd_learning_system\learning\views.py", line 413, in simplify_lesson
+    lesson = Lessoncontent.objects.create(
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\query.py", line 677, in create
+    obj = self.model(**kwargs)
+  File "C:\Users\Shaheen\adhd_learning_system\venv310\lib\site-packages\django\db\models\base.py", line 567, in __init__
+    raise TypeError(
+TypeError: Lessoncontent() got unexpected keyword arguments: 'ai_timingpath'
+
+ERROR 2026-04-11 20:22:31,497 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-11 20:22:31,760 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-11 20:23:05,246 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 09:44:06,679 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 09:51:17,197 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 10:03:19,107 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 10:08:28,060 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 10:09:42,720 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 15:29:46,543 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 15:29:50,949 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 15:29:53,689 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 15:29:57,754 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 15:30:28,863 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 20:28:11,311 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 20:28:50,561 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-12 20:30:07,611 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-13 16:49:20,529 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-13 16:49:37,294 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-13 17:01:09,518 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-14 12:02:03,528 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-14 12:02:03,935 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-14 12:02:06,062 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-14 12:02:06,064 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-14 12:02:14,552 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-14 21:48:15,059 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-14 21:48:15,322 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-14 21:48:39,242 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-15 09:05:24,649 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-15 09:05:25,175 utils [utils] REST HTTP 400 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"system_instruction\": Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViolations": [
+          {
+ 
+ERROR 2026-04-15 15:33:30,632 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-15 15:33:31,113 utils [utils] REST HTTP 400 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"system_instruction\": Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViolations": [
+          {
+ 
+ERROR 2026-04-15 15:45:15,724 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-15 15:45:16,979 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-15 15:45:33,721 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-15 15:45:33,721 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-15 15:45:51,022 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-15 15:49:46,453 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-15 15:49:48,326 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-15 15:50:28,947 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-15 15:52:22,795 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-15 15:52:23,247 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-15 15:52:51,455 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-15 16:21:51,941 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-15 16:21:52,540 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-15 16:22:22,515 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-15 16:29:36,717 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-15 16:29:36,994 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-15 16:30:12,519 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-15 21:47:39,449 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-15 21:49:04,167 utils [utils] No WordBoundary from any voice ó word highlighting uses fallback
+WARNING 2026-04-15 21:51:24,501 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-15 21:53:16,672 utils [utils] No WordBoundary from any voice ó word highlighting uses fallback
+WARNING 2026-04-15 21:54:34,619 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-15 21:55:17,950 utils [utils] No WordBoundary from any voice ó word highlighting uses fallback
+WARNING 2026-04-15 21:59:24,202 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-15 22:01:12,561 utils [utils] No WordBoundary from any voice ó word highlighting uses fallback
+ERROR 2026-04-16 11:29:36,155 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-16 11:29:43,232 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-16 11:29:43,234 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 11:29:45,018 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 11:30:54,776 utils [utils] No WordBoundary from any voice ó building approximate timing
+WARNING 2026-04-16 11:38:23,644 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 11:39:56,092 utils [utils] No WordBoundary from any voice ó word highlighting uses fallback
+ERROR 2026-04-16 11:46:32,656 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-16 11:46:37,670 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-16 11:46:37,670 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 11:46:39,710 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 11:46:54,215 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 11:52:52,057 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 11:52:52,455 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 11:52:54,140 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-16 11:52:54,140 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 11:52:55,930 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 11:53:37,105 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 11:58:31,100 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-16 11:58:36,931 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-16 11:58:36,931 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 11:58:38,844 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 11:58:43,189 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 12:00:55,581 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-16 12:00:57,323 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-16 12:00:57,323 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 12:00:59,169 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 12:01:04,266 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 12:02:48,365 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 12:02:48,839 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 12:02:56,523 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-16 12:02:56,523 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 12:02:58,026 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-16 12:07:32,895 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-16 12:07:36,383 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-16 12:07:36,383 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 12:07:38,130 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 12:07:42,562 utils [utils] No WordBoundary from any voice ó word highlighting uses fallback
+ERROR 2026-04-16 12:09:08,863 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-16 12:09:12,646 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-16 12:09:12,646 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 12:09:14,596 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 12:09:18,749 utils [utils] No WordBoundary from any voice ó word highlighting uses fallback
+ERROR 2026-04-16 12:26:31,152 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 12:26:31,555 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 12:26:36,215 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-16 12:26:36,221 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 12:26:38,261 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 12:26:42,348 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 12:59:24,774 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 12:59:25,396 utils [utils] REST HTTP 400 model=gemini-1.5-flash: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"system_instruction\": Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViolations": [
+          {
+ 
+ERROR 2026-04-16 12:59:25,821 utils [utils] REST HTTP 400 model=gemini-1.5-pro: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"system_instruction\": Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViolations": [
+          {
+ 
+ERROR 2026-04-16 12:59:25,823 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 12:59:27,363 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 12:59:32,098 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 13:08:01,396 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 13:08:01,401 utils [utils] Simplification failed: local variable 'text' referenced before assignment
+WARNING 2026-04-16 13:08:03,174 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 13:08:07,614 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 13:12:28,255 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 13:12:28,660 utils [utils] REST HTTP 400 model=gemini-1.5-flash: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViola
+ERROR 2026-04-16 13:12:29,196 utils [utils] REST HTTP 400 model=gemini-1.5-pro: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViola
+ERROR 2026-04-16 13:12:29,202 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 13:12:30,710 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 13:12:37,679 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 13:20:06,095 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 13:20:07,324 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 13:20:07,731 utils [utils] REST HTTP 404 model=gemini-1.5-pro: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 13:20:07,731 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 13:20:09,470 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 13:20:23,605 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 13:23:19,176 utils [utils] SDK error model='models/gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 13:23:19,472 utils [utils] REST HTTP 404 model=models/gemini-1.5-flash: 
+ERROR 2026-04-16 13:23:20,621 utils [utils] REST HTTP 404 model=models/gemini-1.5-pro: 
+ERROR 2026-04-16 13:23:20,624 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 13:23:22,437 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 13:23:36,616 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 13:27:22,832 utils [utils] SDK error model='models/gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 13:27:23,244 utils [utils] REST HTTP 404 model=models/gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 13:27:23,716 utils [utils] REST HTTP 404 model=models/gemini-1.5-pro: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 13:27:23,721 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 13:27:35,243 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 13:27:40,084 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 14:23:37,888 utils [utils] SDK error model='models/gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 14:23:38,498 utils [utils] REST HTTP 404 model=models/gemini-1.5-flash: 
+WARNING 2026-04-16 14:24:04,700 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 14:26:57,260 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 14:32:44,407 utils [utils] SDK error model='models/gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 14:32:44,696 utils [utils] REST HTTP 404 model=models/gemini-1.5-flash: 
+WARNING 2026-04-16 14:33:16,283 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-16 14:34:41,295 utils [utils] No WordBoundary from any voice ó building approximate timing
+ERROR 2026-04-16 15:09:13,923 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-16 15:12:47,219 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 15:12:47,473 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 15:12:47,877 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:12:48,124 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:12:48,389 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:12:48,389 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 15:14:00,586 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 59.779862223s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '59s'}]}}
+ERROR 2026-04-16 15:14:00,871 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:14:01,117 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:14:01,362 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:14:01,363 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 15:15:03,097 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 57.266472857s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '57s'}]}}
+ERROR 2026-04-16 15:15:03,488 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:15:03,738 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:15:04,003 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:15:04,005 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 15:34:42,273 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 15:34:42,540 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 15:34:42,976 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:34:43,218 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:34:43,220 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 15:34:52,727 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-16 15:51:54,564 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 5.785474222s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '5s'}]}}
+ERROR 2026-04-16 15:51:54,929 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:51:55,204 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:51:55,444 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 15:51:55,444 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:00:07,989 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 52.380565719s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '52s'}]}}
+ERROR 2026-04-16 16:00:08,304 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:00:08,615 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:00:08,896 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:00:08,896 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 16:00:10,712 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-16 16:01:41,666 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 18.691899411s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '18s'}]}}
+ERROR 2026-04-16 16:01:41,948 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:01:42,257 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:01:42,497 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:01:42,497 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:03:43,648 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 16:03:43,879 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 16:03:44,336 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:03:44,580 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:03:44,580 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 16:03:46,095 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-16 16:04:54,970 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 5.404996792s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '5s'}]}}
+ERROR 2026-04-16 16:04:55,274 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:04:55,532 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:04:55,796 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:04:55,798 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:07:57,535 utils [utils] SDK error model='gemini-1.5-flash': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 16:07:57,814 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 16:07:58,226 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:07:58,497 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:07:58,763 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:07:58,763 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:10:50,707 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 9.667731811s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '9s'}]}}
+ERROR 2026-04-16 16:10:51,115 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:10:51,379 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 16:10:51,615 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:10:51,615 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:12:34,832 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 16:12:35,103 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 16:12:35,532 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:12:35,798 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:12:35,798 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 16:12:37,517 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-16 16:22:13,262 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 47.083128314s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+ERROR 2026-04-16 16:22:13,532 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:22:13,800 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:22:14,058 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:22:14,059 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:25:43,598 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 16.775072729s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16s'}]}}
+ERROR 2026-04-16 16:25:43,901 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:25:44,186 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:25:44,436 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:25:44,436 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:29:20,409 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 40.184947194s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '40s'}]}}
+ERROR 2026-04-16 16:29:25,375 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:29:25,790 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:29:26,297 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:29:26,300 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:34:33,715 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 26.648604044s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '26s'}]}}
+ERROR 2026-04-16 16:34:34,132 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:34:34,523 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:34:34,939 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:34:34,939 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:50:05,048 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 55.329263627s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '55s'}]}}
+ERROR 2026-04-16 16:50:05,468 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:50:05,772 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:50:06,098 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:50:06,098 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:53:45,220 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 15.151631522s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '15s'}]}}
+ERROR 2026-04-16 16:53:45,727 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:53:46,037 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:53:46,259 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:53:46,259 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 16:55:37,550 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 22.903912058s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '22s'}]}}
+ERROR 2026-04-16 16:55:37,858 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:55:38,178 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:55:38,512 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 16:55:38,514 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 17:02:32,691 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 27.770659039s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '27s'}]}}
+ERROR 2026-04-16 17:02:33,112 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 17:02:33,621 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 17:02:33,947 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 17:02:33,951 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 17:26:56,923 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 3.531314314s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '3s'}]}}
+ERROR 2026-04-16 17:26:57,439 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 17:26:57,741 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 17:26:58,009 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 17:26:58,011 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 18:12:08,974 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 51.503018513s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '51s'}]}}
+ERROR 2026-04-16 18:12:09,486 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 18:12:10,000 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 18:12:10,439 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 18:12:10,447 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 18:13:25,776 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-16 18:13:26,185 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 18:13:26,693 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 18:13:27,017 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 18:13:27,027 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-16 18:13:28,576 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-16 18:18:46,629 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 13.794617961s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '13s'}]}}
+ERROR 2026-04-16 18:18:47,112 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 18:18:47,488 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 18:18:47,744 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 18:18:48,008 utils [utils] REST HTTP 404 model=gemini-1.5-flash-8b: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-8b is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 18:18:48,013 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 19:06:56,320 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 4.232653091s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '4s'}]}}
+ERROR 2026-04-16 19:06:56,730 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 19:06:56,980 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 19:06:57,233 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 19:06:57,233 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-16 21:33:49,812 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-16 21:33:50,266 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 21:33:50,586 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 21:33:50,923 utils [utils] REST HTTP 429 model=gemini-2.0-flash-lite: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-16 21:33:51,179 utils [utils] REST HTTP 404 model=gemini-1.5-flash-latest: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 21:33:51,478 utils [utils] REST HTTP 404 model=gemini-1.5-pro-latest: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-pro-latest is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-16 21:33:52,435 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-17 09:35:22,990 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 09:35:23,326 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 09:35:32,354 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 09:35:32,406 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 09:35:34,428 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 09:39:54,107 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 09:39:54,429 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 09:39:54,953 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 09:39:55,282 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 09:39:55,291 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 09:40:34,258 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-17 10:38:51,906 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-17 10:40:33,465 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 11:03:48,021 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 11:03:50,214 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 11:03:50,215 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+ERROR 2026-04-17 11:05:25,156 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 11:05:27,494 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 11:05:27,496 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 11:05:28,902 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 11:10:45,293 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 11:10:48,386 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 11:10:48,389 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 11:10:50,652 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 11:13:52,000 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 11:13:53,732 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 11:13:53,734 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 11:13:55,577 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 11:21:15,864 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 11:21:16,127 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-17 11:21:49,472 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 11:31:21,721 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 11:31:21,982 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 11:31:25,233 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 11:31:25,233 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 11:31:26,700 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 11:39:41,906 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 11:39:42,166 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+WARNING 2026-04-17 11:40:09,309 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-17 11:46:22,902 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 12:04:18,149 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 12:04:29,867 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 12:04:29,867 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 12:04:38,606 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 12:13:54,412 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 13:55:57,622 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 13:55:58,898 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 13:55:58,900 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 13:56:00,780 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 14:08:24,288 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 14:08:24,696 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 14:08:25,107 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 14:08:25,519 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 14:08:25,521 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 14:08:27,142 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 15:15:21,719 utils [utils] SDK error model=gemini-2.5-flash: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 39.325288605s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '39s'}]}}
+ERROR 2026-04-17 15:15:22,116 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 15:15:24,476 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 15:15:26,938 utils [utils] REST HTTP 404 model=gemini-1.5-pro: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 15:15:26,938 utils [utils] Simplification failed: Gemini ·„ Ì⁄œ ‰’«
+WARNING 2026-04-17 15:15:28,560 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 15:52:02,638 utils [utils] SDK error model=gemini-1.5-flash: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 15:52:02,938 utils [utils] REST HTTP 400 model=gemini-1.5-flash: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"system_instruction\": Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViolations": [
+          {
+ 
+ERROR 2026-04-17 15:52:05,406 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 15:52:07,857 utils [utils] REST HTTP 400 model=gemini-1.5-pro: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"system_instruction\": Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViolations": [
+          {
+ 
+ERROR 2026-04-17 15:52:07,857 utils [utils] Simplification failed: Gemini ·„ Ì⁄œ ‰’«
+WARNING 2026-04-17 15:52:09,916 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 16:01:24,518 utils [utils] SDK error model=gemini-1.5-flash: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 16:01:24,791 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 16:01:27,254 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 16:01:29,635 utils [utils] REST HTTP 404 model=gemini-1.5-pro: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 16:01:29,638 utils [utils] Simplification failed: Gemini ·„ Ì⁄œ ‰’«
+WARNING 2026-04-17 16:01:32,173 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 16:05:31,715 utils [utils] SDK error model=gemini-1.5-flash: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 16:05:32,122 utils [utils] REST HTTP 404 for gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models an
+ERROR 2026-04-17 16:05:34,577 utils [utils] REST HTTP 429 for gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-a
+ERROR 2026-04-17 16:05:36,935 utils [utils] REST HTTP 404 for gemini-1.5-pro: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and 
+ERROR 2026-04-17 16:05:36,938 utils [utils] Simplification failed: Gemini ·„ Ì⁄œ ‰’«
+WARNING 2026-04-17 16:05:38,435 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 16:11:36,675 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 16:11:37,080 utils [utils] REST Error 404 for gemini-1.5-flash-002
+ERROR 2026-04-17 16:11:38,511 utils [utils] REST Error 404 for gemini-1.5-flash-001
+ERROR 2026-04-17 16:11:39,774 utils [utils] REST Error 404 for gemini-1.5-pro-001
+ERROR 2026-04-17 16:11:41,274 utils [utils] REST Error 429 for gemini-2.5-flash
+ERROR 2026-04-17 16:11:41,282 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 16:11:43,298 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 16:21:57,865 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 3.127560812s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '3s'}]}}
+ERROR 2026-04-17 16:21:58,294 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 16:21:58,662 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 16:21:59,071 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 16:21:59,071 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 16:22:00,937 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 16:37:33,093 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 27.968024466s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '27s'}]}}
+ERROR 2026-04-17 16:37:34,679 utils [utils] REST HTTP 400 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"system_instruction\": Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+    
+ERROR 2026-04-17 16:37:35,025 utils [utils] REST HTTP 400 model=gemini-1.5-flash-8b: {
+  "error": {
+    "code": 400,
+    "message": "Invalid JSON payload received. Unknown name \"system_instruction\": Cannot find field.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+    
+ERROR 2026-04-17 16:37:52,429 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 8.602941486s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '8s'}]}}
+ERROR 2026-04-17 16:37:52,837 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 16:37:53,143 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 16:37:53,358 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 16:37:53,358 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 16:37:54,796 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 16:39:20,503 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 40.556721171s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '40s'}]}}
+ERROR 2026-04-17 16:39:20,913 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 16:39:21,233 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 16:39:21,598 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 16:39:21,605 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 16:39:23,190 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 17:12:58,844 utils [utils] SDK error model='gemini-2.5-flash': 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'API key expired. Please renew the API key.', 'status': 'INVALID_ARGUMENT', 'details': [{'@type': 'type.googleapis.com/google.rpc.ErrorInfo', 'reason': 'API_KEY_INVALID', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.LocalizedMessage', 'locale': 'en-US', 'message': 'API key expired. Please renew the API key.'}]}}
+ERROR 2026-04-17 17:12:59,361 utils [utils] REST HTTP 400 model=gemini-2.5-flash: {
+  "error": {
+    "code": 400,
+    "message": "API key expired. Please renew the API key.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "API_KEY_INVALID",
+        "domain": "googleapis.com",
+        "metad
+ERROR 2026-04-17 17:12:59,853 utils [utils] REST HTTP 400 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 400,
+    "message": "API key expired. Please renew the API key.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "API_KEY_INVALID",
+        "domain": "googleapis.com",
+        "metad
+ERROR 2026-04-17 17:13:00,268 utils [utils] REST HTTP 400 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 400,
+    "message": "API key expired. Please renew the API key.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "API_KEY_INVALID",
+        "domain": "googleapis.com",
+        "metad
+ERROR 2026-04-17 17:13:00,268 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 17:13:02,085 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 17:17:09,203 utils [utils] SDK error model='gemini-2.5-flash': 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'API key expired. Please renew the API key.', 'status': 'INVALID_ARGUMENT', 'details': [{'@type': 'type.googleapis.com/google.rpc.ErrorInfo', 'reason': 'API_KEY_INVALID', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.LocalizedMessage', 'locale': 'en-US', 'message': 'API key expired. Please renew the API key.'}]}}
+ERROR 2026-04-17 17:17:09,611 utils [utils] REST HTTP 400 model=gemini-2.5-flash: {
+  "error": {
+    "code": 400,
+    "message": "API key expired. Please renew the API key.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "API_KEY_INVALID",
+        "domain": "googleapis.com",
+        "metad
+ERROR 2026-04-17 17:17:09,945 utils [utils] REST HTTP 400 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 400,
+    "message": "API key expired. Please renew the API key.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "API_KEY_INVALID",
+        "domain": "googleapis.com",
+        "metad
+ERROR 2026-04-17 17:17:10,230 utils [utils] REST HTTP 400 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 400,
+    "message": "API key expired. Please renew the API key.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "API_KEY_INVALID",
+        "domain": "googleapis.com",
+        "metad
+ERROR 2026-04-17 17:17:10,230 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 17:17:12,073 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 17:21:59,106 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 17:21:59,512 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 17:22:08,865 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 17:22:08,867 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 17:22:10,584 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 17:29:09,299 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 17:29:09,707 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available model
+ERROR 2026-04-17 17:29:11,446 utils [utils] REST HTTP 404 model=gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models an
+ERROR 2026-04-17 17:29:13,287 utils [utils] REST HTTP 404 model=gemini-1.5-pro: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and 
+ERROR 2026-04-17 17:29:15,129 utils [utils] REST HTTP 404 model=gemini-2.0-flash-exp: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-2.0-flash-exp is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available m
+ERROR 2026-04-17 17:29:19,844 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 17:29:19,848 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 17:29:21,217 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 17:56:39,299 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 17:56:39,673 utils [utils] REST Error 404 for gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available model
+ERROR 2026-04-17 17:56:41,033 utils [utils] REST Error 404 for gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models an
+ERROR 2026-04-17 17:56:42,284 utils [utils] REST Error 404 for gemini-1.5-pro: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and 
+ERROR 2026-04-17 17:56:43,565 utils [utils] REST Error 404 for gemini-2.0-flash-exp: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-2.0-flash-exp is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available m
+ERROR 2026-04-17 17:56:45,945 utils [utils] REST Error 503 for gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 17:56:45,946 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 17:56:47,471 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 17:59:23,448 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 17:59:23,857 utils [utils] REST 404 for gemini-1.5-flash: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version
+ERROR 2026-04-17 17:59:25,137 utils [utils] REST 404 for gemini-1.5-pro: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-pro is not found for API version v
+ERROR 2026-04-17 17:59:26,407 utils [utils] REST 404 for gemini-2.0-flash-exp: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-2.0-flash-exp is not found for API ver
+ERROR 2026-04-17 17:59:26,409 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 17:59:39,564 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 18:02:01,963 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 18:02:06,685 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 18:02:08,315 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 18:05:25,846 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 18:05:26,172 utils [utils] HTTP 404 for gemini-1.5-flash-002
+ERROR 2026-04-17 18:05:27,612 utils [utils] HTTP 404 for gemini-1.5-flash
+ERROR 2026-04-17 18:05:28,882 utils [utils] HTTP 404 for gemini-1.5-pro
+ERROR 2026-04-17 18:05:28,885 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 18:05:30,532 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 18:18:54,930 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 18:18:55,191 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 18:19:03,033 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 18:19:03,034 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 18:19:04,511 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 18:24:43,163 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 18:24:45,058 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 18:24:45,064 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 18:24:46,673 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 18:30:21,046 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 18:30:22,936 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 18:30:22,936 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 18:30:24,513 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 18:39:47,017 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+WARNING 2026-04-17 18:39:48,122 utils [utils] «·”Ì—›— „‘€Ê· (503) ··„ÊœÌ· gemini-2.5-flash. „Õ«Ê·… 1/3. «‰ Ÿ«— 2À...
+WARNING 2026-04-17 18:39:52,116 utils [utils] «·”Ì—›— „‘€Ê· (503) ··„ÊœÌ· gemini-2.5-flash. „Õ«Ê·… 2/3. «‰ Ÿ«— 4À...
+ERROR 2026-04-17 18:39:59,154 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 18:39:59,370 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 18:39:59,604 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 18:39:59,604 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 18:40:01,881 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 19:31:50,625 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 19:31:51,594 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 19:31:51,597 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 19:31:59,283 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 19:36:16,220 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+WARNING 2026-04-17 19:36:17,186 utils [utils] v1beta busy, trying next...
+ERROR 2026-04-17 19:36:19,386 utils [utils] REST HTTP 400 on v1
+ERROR 2026-04-17 19:36:19,620 utils [utils] REST HTTP 404 on v1beta
+ERROR 2026-04-17 19:36:19,847 utils [utils] REST HTTP 429 on v1beta
+ERROR 2026-04-17 19:36:20,055 utils [utils] REST HTTP 400 on v1
+ERROR 2026-04-17 19:36:20,060 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 19:36:21,585 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 19:38:02,531 utils [utils] SDK error model='gemini-1.5-flash-002': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 19:38:02,782 utils [utils] REST HTTP 404 on v1beta
+WARNING 2026-04-17 19:38:07,039 utils [utils] v1beta busy, trying next...
+ERROR 2026-04-17 19:38:09,239 utils [utils] REST HTTP 400 on v1
+ERROR 2026-04-17 19:38:09,460 utils [utils] REST HTTP 429 on v1beta
+ERROR 2026-04-17 19:38:09,674 utils [utils] REST HTTP 400 on v1
+ERROR 2026-04-17 19:38:09,676 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 19:38:11,223 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 19:47:35,378 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+ERROR 2026-04-17 19:47:41,199 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 19:47:41,201 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 19:47:42,973 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 19:59:05,587 utils [utils] SDK error model='gemini-1.5-flash-8b': 404 NOT_FOUND. {'error': {'code': 404, 'message': 'models/gemini-1.5-flash-8b is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}
+ERROR 2026-04-17 19:59:05,855 utils [utils] REST HTTP 404 model=gemini-1.5-flash-8b: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-8b is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 19:59:06,116 utils [utils] REST HTTP 503 model=gemini-2.5-flash: {
+  "error": {
+    "code": 503,
+    "message": "The service is currently unavailable.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+ERROR 2026-04-17 19:59:06,118 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 19:59:07,574 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-17 20:16:31,192 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-17 20:31:25,693 utils [utils] SDK error model='gemini-2.5-flash': 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 35.409491077s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '35s'}]}}
+ERROR 2026-04-17 20:31:25,988 utils [utils] REST HTTP 429 model=gemini-2.5-flash: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 20:31:26,225 utils [utils] REST HTTP 404 model=gemini-1.5-flash-002: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash-002 is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+ERROR 2026-04-17 20:31:26,444 utils [utils] REST HTTP 429 model=gemini-2.0-flash-001: {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+ERROR 2026-04-17 20:31:26,445 utils [utils] Simplification failed: Gemini ·„ Ìı⁄ˆœ ‰’«
+WARNING 2026-04-17 20:31:28,343 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-18 00:21:37,974 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-18 00:26:57,923 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-18 14:01:07,644 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-19 12:58:42,848 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-19 13:33:09,706 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-19 15:45:03,069 utils [utils] ar-EG-SalmaNeural: No WordBoundary ó trying fallback voices
+WARNING 2026-04-19 15:46:35,175 utils [utils] No WordBoundary from any voice ó word highlighting unavailable
+WARNING 2026-04-19 17:15:55,682 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-19 17:31:59,329 utils [utils] No WordBoundary events ó word highlighting unavailable
+WARNING 2026-04-19 17:43:13,834 utils [utils] No WordBoundary events ó word highlighting unavailable
+ERROR 2026-04-19 18:18:03,506 utils [utils] SDK error model='gemini-2.5-flash': 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+WARNING 2026-04-19 18:18:49,219 utils [utils] No WordBoundary ó building fallback timing from MP3 duration

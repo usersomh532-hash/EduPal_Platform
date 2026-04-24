@@ -1,0 +1,788 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}المراسلات{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+:root{
+  --blue:#1d4ed8;--blue-dk:#1e3a8a;--blue-lt:#eff4ff;--blue-pale:#dbeafe;
+  --blue-md:#3b82f6;--blue-soft:#bfdbfe;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f0f4fb;--card:#fff;
+  --sh:0 2px 12px rgba(29,78,216,.09);
+}
+*{box-sizing:border-box;}
+body{font-family:'Cairo',sans-serif;direction:rtl;}
+
+/* ── Shell ── */
+.msg-shell{
+  display:flex;height:calc(100vh - 58px);
+  overflow:hidden;background:var(--bg);
+}
+
+/* ══ لوحة المحادثات ══ */
+.conv-panel{
+  width:300px;min-width:260px;flex-shrink:0;
+  background:var(--card);border-left:1.5px solid var(--border);
+  display:flex;flex-direction:column;
+}
+.conv-panel-head{
+  padding:.85rem 1rem;
+  background:linear-gradient(135deg,var(--blue-dk),var(--blue));
+  color:#fff;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.conv-panel-head h2{font-size:.93rem;font-weight:800;margin:0;}
+.unread-pill{
+  background:rgba(255,255,255,.25);color:#fff;
+  border-radius:100px;padding:1px 8px;font-size:.7rem;font-weight:700;
+}
+.conv-search-box{padding:.55rem .85rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+.conv-search-box input{
+  width:100%;padding:.42rem .75rem;font-size:.82rem;
+  border:1.5px solid var(--border);border-radius:8px;
+  font-family:'Cairo',sans-serif;background:var(--bg);transition:border .2s;
+}
+.conv-search-box input:focus{outline:none;border-color:var(--blue);background:#fff;}
+
+.conv-list{flex:1;overflow-y:auto;}
+.conv-item{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.75rem .85rem;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .15s;text-decoration:none;color:var(--ink);
+}
+.conv-item:hover{background:var(--blue-lt);}
+.conv-item.active{background:var(--blue-lt);border-right:3px solid var(--blue);}
+.c-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.c-info{flex:1;min-width:0;}
+.c-name{font-size:.86rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.c-preview{font-size:.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.1rem;}
+.c-meta{display:flex;flex-direction:column;align-items:flex-end;gap:.2rem;flex-shrink:0;}
+.c-time{font-size:.68rem;color:var(--muted);}
+.c-badge{
+  background:var(--blue);color:#fff;border-radius:100px;
+  padding:1px 7px;font-size:.67rem;font-weight:700;
+}
+.new-conv-btn{
+  margin:.7rem;padding:.52rem;border-radius:10px;flex-shrink:0;
+  background:var(--blue);color:#fff;border:none;
+  font-family:'Cairo',sans-serif;font-weight:700;font-size:.84rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.35rem;
+  transition:opacity .2s;
+}
+.new-conv-btn:hover{opacity:.87;}
+
+/* ══ نافذة الدردشة ══ */
+.chat-panel{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);}
+
+.chat-head{
+  padding:.8rem 1.2rem;background:var(--card);
+  border-bottom:1.5px solid var(--border);
+  display:flex;align-items:center;gap:.8rem;flex-shrink:0;
+}
+.chat-head-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;}
+.chat-head-info{flex:1;}
+.chat-head-name{font-size:.93rem;font-weight:800;color:var(--ink);}
+.role-chip{
+  display:inline-block;font-size:.69rem;padding:1px 7px;
+  border-radius:100px;font-weight:700;margin-top:.15rem;
+}
+.chip-teacher{background:var(--blue-dk);color:#fff;}
+.chip-student{background:var(--blue-md);color:#fff;}
+.chip-parent {background:var(--blue-soft);color:var(--blue-dk);}
+
+/* حالة الاتصال */
+.online-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:#22c55e;display:inline-block;margin-left:.35rem;
+}
+
+.chat-messages{
+  flex:1;overflow-y:auto;
+  padding:1rem 1.2rem;
+  display:flex;flex-direction:column;gap:.6rem;
+}
+
+/* فاصل اليوم */
+.day-divider{
+  display:flex;align-items:center;gap:.5rem;
+  font-size:.7rem;color:var(--muted);font-weight:600;margin:.3rem 0;
+}
+.day-divider::before,.day-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* فقاعات */
+.msg-row{display:flex;align-items:flex-end;gap:.4rem;}
+.msg-row.mine{flex-direction:row-reverse;}
+/* الغلاف الذي يحدد العرض الأقصى */
+.msg-bubble-wrap{
+  max-width:65%;
+  display:flex;
+  flex-direction:column;
+}
+.msg-row.mine .msg-bubble-wrap{align-items:flex-end;}
+.msg-row:not(.mine) .msg-bubble-wrap{align-items:flex-start;}
+/* الفقاعة نفسها تأخذ عرض محتواها فقط */
+.msg-bubble{
+  display:block;
+  padding:.55rem .9rem;border-radius:16px;
+  font-size:.875rem;line-height:1.65;
+  word-break:break-word;overflow-wrap:break-word;
+  white-space:pre-wrap;
+}
+.msg-row:not(.mine) .msg-bubble{
+  background:var(--card);border:1.5px solid var(--border);
+  border-bottom-right-radius:4px;color:var(--ink);
+}
+.msg-row.mine .msg-bubble{
+  background:var(--blue);color:#fff;
+  border-bottom-left-radius:4px;
+}
+.msg-meta{font-size:.67rem;color:var(--muted);padding-bottom:.1rem;white-space:nowrap;}
+.msg-row.mine .msg-meta{text-align:left;}
+.msg-read{color:var(--blue-md);font-size:.7rem;}
+.msg-avatar-sm{width:26px;height:26px;border-radius:50%;flex-shrink:0;}
+
+/* ── زر حذف الرسالة ── */
+.msg-delete-btn{
+  display:none;
+  background:none;border:none;cursor:pointer;
+  color:#94a3b8;font-size:.78rem;padding:2px 5px;
+  border-radius:6px;transition:color .15s,background .15s;
+  align-self:flex-end;margin-bottom:.25rem;flex-shrink:0;
+}
+.msg-delete-btn:hover{color:#ef4444;background:#fee2e2;}
+.msg-row.mine:hover .msg-delete-btn{display:flex;align-items:center;}
+
+/* شريط الكتابة */
+.chat-input-bar{
+  padding:.65rem .9rem;background:var(--card);
+  border-top:1.5px solid var(--border);
+  display:flex;gap:.45rem;align-items:flex-end;flex-shrink:0;
+}
+.chat-textarea{
+  flex:1;padding:.5rem .8rem;resize:none;max-height:110px;
+  border:1.5px solid var(--border);border-radius:10px;
+  font-size:.88rem;font-family:'Cairo',sans-serif;
+  background:var(--bg);line-height:1.5;transition:border .2s;
+}
+.chat-textarea:focus{outline:none;border-color:var(--blue);background:#fff;}
+.send-btn{
+  padding:.52rem .95rem;background:var(--blue);color:#fff;
+  border:none;border-radius:10px;font-size:1rem;flex-shrink:0;
+  cursor:pointer;transition:opacity .2s,transform .1s;
+}
+.send-btn:hover{opacity:.87;transform:scale(1.05);}
+.send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+/* حالة فارغة */
+.empty-state{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  color:var(--muted);gap:.65rem;text-align:center;
+}
+.empty-state i{font-size:3.5rem;opacity:.15;color:var(--blue);}
+.empty-state p{font-size:.9rem;font-weight:600;margin:0;}
+
+/* ── Modal البحث والاتصالات ── */
+.search-results{max-height:320px;overflow-y:auto;}
+.contact-row{
+  display:flex;align-items:center;gap:.7rem;
+  padding:.6rem 1rem;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .15s;
+}
+.contact-row:hover{background:var(--blue-lt);}
+.contact-row:last-child{border-bottom:none;}
+.contact-row-name{font-size:.86rem;font-weight:700;color:var(--ink);}
+.contact-row-role{font-size:.72rem;color:var(--muted);}
+.no-results{text-align:center;padding:1.5rem;color:var(--muted);font-size:.83rem;}
+
+/* Typing indicator */
+.typing-indicator{
+  display:none;padding:.25rem .9rem;
+  font-size:.75rem;color:var(--muted);font-style:italic;
+}
+
+@media(max-width:600px){
+  .conv-panel{width:62px;min-width:unset;}
+  .conv-panel-head h2,.conv-search-box,.c-info,.c-meta,.new-conv-btn span{display:none;}
+  .new-conv-btn{margin:.4rem;border-radius:50%;width:42px;height:42px;padding:0;}
+  .conv-item{justify-content:center;padding:.6rem .4rem;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── بيانات Django في data-attributes ── #}
+<div id="js-data"
+     data-send-url="{% url 'accounts:messaging_send' %}"
+     data-poll-url="{% url 'accounts:messaging_poll' 0 %}"
+     data-search-url="{% url 'accounts:messaging_search' %}"
+     data-inbox-url="{% url 'accounts:messaging_inbox' %}"
+     data-csrf="{{ csrf_token }}"
+     data-my-id="{{ request.user.pk }}"
+     data-my-name="{{ request.user.fullname }}"
+     data-conv-id="{% if active_conv %}{{ active_conv.pk }}{% endif %}"
+     data-last-msg-id="{% if active_messages %}{{ active_messages|last|stringformat:'s'|slice:':100' }}{% endif %}"
+     style="display:none;"></div>
+
+<div class="msg-shell" dir="rtl">
+
+  <!-- ══ لوحة المحادثات ══ -->
+  <div class="conv-panel">
+
+    <div class="conv-panel-head">
+      <h2><i class="fas fa-comments me-2"></i>المراسلات</h2>
+      {% if total_unread %}
+        <span class="unread-pill">{{ total_unread }}</span>
+      {% endif %}
+    </div>
+
+    <div class="conv-search-box">
+      <input type="text" id="convSearch" placeholder="🔍 ابحث في المحادثات...">
+    </div>
+
+    <div class="conv-list" id="convList">
+      {% for item in conv_list %}
+      <a href="?conv={{ item.conv.pk }}"
+         class="conv-item {% if active_conv and active_conv.pk == item.conv.pk %}active{% endif %}"
+         data-conv="{{ item.conv.pk }}"
+         data-name="{{ item.other.fullname }}">
+        {% if item.other.avatar %}
+        <img src="{{ item.other.avatar.url }}" class="c-avatar" alt="">
+        {% else %}
+        <img src="https://ui-avatars.com/api/?name={{ item.other.fullname|urlencode }}&background=dbeafe&color=1e3a8a&bold=true&size=38"
+             class="c-avatar" alt="">
+        {% endif %}
+        <div class="c-info">
+          <div class="c-name">{{ item.other.fullname }}</div>
+          <div class="c-preview" id="prev-{{ item.conv.pk }}">
+            {% if item.last %}{{ item.last.body|truncatechars:30 }}{% else %}ابدأ المحادثة...{% endif %}
+          </div>
+        </div>
+        <div class="c-meta">
+          {% if item.last %}
+            <span class="c-time" id="ctime-{{ item.conv.pk }}">{{ item.last.sent_at|date:"H:i" }}</span>
+          {% endif %}
+          {% if item.unread %}
+            <span class="c-badge" id="cbadge-{{ item.conv.pk }}">{{ item.unread }}</span>
+          {% endif %}
+        </div>
+      </a>
+      {% empty %}
+      <div class="no-results" style="padding:2rem;">
+        <i class="fas fa-comment-slash d-block mb-2" style="font-size:1.8rem;opacity:.15;color:var(--blue);"></i>
+        لا توجد محادثات
+      </div>
+      {% endfor %}
+    </div>
+
+    <button class="new-conv-btn" onclick="openNewConv()">
+      <i class="fas fa-plus"></i>
+      <span>محادثة جديدة</span>
+    </button>
+
+  </div>
+
+  <!-- ══ نافذة الدردشة ══ -->
+  <div class="chat-panel">
+
+    {% if active_conv and active_other %}
+
+      <div class="chat-head">
+        {% if active_other.avatar %}
+        <img src="{{ active_other.avatar.url }}" class="chat-head-avatar" alt="">
+        {% else %}
+        <img src="https://ui-avatars.com/api/?name={{ active_other.fullname|urlencode }}&background=dbeafe&color=1e3a8a&bold=true&size=38"
+             class="chat-head-avatar" alt="">
+        {% endif %}
+        <div class="chat-head-info">
+          <div class="chat-head-name">
+            {{ active_other.fullname }}
+            <span class="online-dot" title="متصل"></span>
+          </div>
+          <span class="role-chip
+            {% if active_other.userrole == 'Teacher' %}chip-teacher
+            {% elif active_other.userrole == 'Student' %}chip-student
+            {% else %}chip-parent{% endif %}">
+            {% if active_other.userrole == 'Teacher' %}معلم
+            {% elif active_other.userrole == 'Student' %}طالب
+            {% else %}ولي أمر{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        {% for msg in active_messages %}
+          {# فاصل اليوم #}
+          {% if forloop.first %}
+            <div class="day-divider">{{ msg.sent_at|date:"d/m/Y" }}</div>
+          {% endif %}
+
+          <div class="msg-row {% if msg.sender_id == request.user.pk %}mine{% endif %}"
+               id="msg-{{ msg.pk }}">
+            {% if msg.sender_id != request.user.pk %}
+              {% if msg.sender.avatar %}
+              <img src="{{ msg.sender.avatar.url }}" class="msg-avatar-sm" alt="">
+              {% else %}
+              <img src="https://ui-avatars.com/api/?name={{ msg.sender.fullname|urlencode }}&background=dbeafe&color=1e3a8a&bold=true&size=26"
+                   class="msg-avatar-sm" alt="">
+              {% endif %}
+            {% endif %}
+            {% if msg.sender_id == request.user.pk %}
+            <button class="msg-delete-btn" data-msgid="{{ msg.pk }}" onclick="deleteMsg(this.dataset.msgid, this)" title="حذف">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+            {% endif %}
+            <div class="msg-bubble-wrap">
+              <div class="msg-bubble">{{ msg.body }}</div>
+              <div class="msg-meta">
+                {{ msg.sent_at|date:"H:i" }}
+                {% if msg.sender_id == request.user.pk %}
+                  {% if msg.is_read %}
+                    <span class="msg-read ms-1"><i class="fas fa-check-double"></i></span>
+                  {% else %}
+                    <span class="ms-1" style="opacity:.4;"><i class="fas fa-check"></i></span>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div style="text-align:center;color:var(--muted);font-size:.85rem;margin-top:3rem;">
+            <i class="fas fa-hand-wave d-block mb-2" style="font-size:2rem;opacity:.15;"></i>
+            ابدأ المحادثة الآن 👋
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="typing-indicator" id="typingIndicator">
+        <i class="fas fa-ellipsis-h me-1"></i> يكتب...
+      </div>
+
+      <div class="chat-input-bar">
+        <textarea id="msgInput" class="chat-textarea" rows="1"
+                  placeholder="اكتب رسالتك... (Enter للإرسال)"
+                  maxlength="2000"
+                  oninput="autoResize(this)"
+                  onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="إرسال">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+
+    {% else %}
+
+      <div class="empty-state">
+        <i class="fas fa-comments"></i>
+        <p>اختر محادثة من القائمة</p>
+        <p style="font-size:.8rem;opacity:.6;">أو ابدأ محادثة جديدة</p>
+      </div>
+
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- ══ Modal: محادثة جديدة (بحث) ══ -->
+<div class="modal fade" id="newConvModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+    <div class="modal-content" style="border-radius:16px;font-family:'Cairo',sans-serif;overflow:hidden;">
+
+      <div class="modal-header" style="background:linear-gradient(135deg,var(--blue-dk),var(--blue));border:none;padding:.85rem 1.2rem;">
+        <h5 class="modal-title fw-bold text-white" style="font-size:.93rem;">
+          <i class="fas fa-user-plus me-2"></i>محادثة جديدة
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border);">
+        <input type="text" id="contactSearchInput"
+               style="width:100%;padding:.45rem .8rem;border:1.5px solid var(--border);
+                      border-radius:9px;font-size:.85rem;font-family:'Cairo',sans-serif;
+                      background:var(--bg);transition:border .2s;"
+               placeholder="🔍 ابحث باسم المستخدم..."
+               oninput="searchContacts(this.value)"
+               onfocus="this.style.borderColor='var(--blue)';this.style.background='#fff';"
+               onblur="this.style.borderColor='var(--border)';">
+      </div>
+
+      <div class="search-results" id="searchResults">
+        <div class="no-results" id="searchHint">
+          <i class="fas fa-search d-block mb-2" style="font-size:1.5rem;opacity:.15;"></i>
+          ابدأ الكتابة للبحث
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal: تأكيد حذف الرسالة ══ -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:320px;">
+    <div class="modal-content border-0 shadow" style="border-radius:16px;font-family:'Cairo',sans-serif;">
+      <div class="modal-body text-center p-4">
+        <div style="width:52px;height:52px;background:#fee2e2;border-radius:50%;
+                    display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+          <i class="fas fa-trash-alt" style="color:#ef4444;font-size:1.2rem;"></i>
+        </div>
+        <h6 class="fw-bold mb-1" style="font-size:.95rem;">حذف الرسالة</h6>
+        <p class="text-muted mb-0" style="font-size:.83rem;">هل أنت متأكد من حذف هذه الرسالة؟<br>لا يمكن التراجع عن هذا الإجراء.</p>
+      </div>
+      <div class="modal-footer border-0 pt-0 pb-3 d-flex gap-2 justify-content-center">
+        <button type="button" class="btn btn-light px-4 fw-bold"
+                style="border-radius:10px;font-family:'Cairo',sans-serif;"
+                data-bs-dismiss="modal">إلغاء</button>
+        <button type="button" class="btn btn-danger px-4 fw-bold"
+                style="border-radius:10px;font-family:'Cairo',sans-serif;"
+                id="confirmDeleteBtn">حذف</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── قراءة البيانات ──
+var _d         = document.getElementById('js-data').dataset;
+var SEND_URL   = _d.sendUrl;
+var POLL_BASE  = _d.pollUrl.replace('/0/', '/');
+var SEARCH_URL = _d.searchUrl;
+var INBOX_URL  = _d.inboxUrl;
+var CSRF       = _d.csrf;
+var MY_ID      = parseInt(_d.myId, 10);
+var MY_NAME    = _d.myName;
+var CONV_ID    = _d.convId ? parseInt(_d.convId, 10) : null;
+
+// lastMsgId — آخر id في الصفحة
+var lastMsgId = 0;
+document.querySelectorAll('#chatMessages [id^="msg-"]').forEach(function(el) {
+  var n = parseInt(el.id.replace('msg-',''), 10);
+  if (n > lastMsgId) lastMsgId = n;
+});
+
+// ── Scroll لأسفل ──
+function scrollBottom() {
+  var c = document.getElementById('chatMessages');
+  if (c) c.scrollTop = c.scrollHeight;
+}
+scrollBottom();
+
+// ── Auto-resize textarea ──
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+}
+
+// ── Enter يرسل ──
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+// ══════════════════════════════
+// إرسال رسالة
+// ══════════════════════════════
+function sendMessage() {
+  var input = document.getElementById('msgInput');
+  var body  = input.value.trim();
+  if (!body || !CONV_ID) return;
+
+  var btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+
+  fetch(SEND_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ conv_id: CONV_ID, body: body })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false;
+    if (!d.ok) { showToast(d.error || 'حدث خطأ', 'danger'); return; }
+    input.value = '';
+    input.style.height = 'auto';
+    appendBubble(d.msg, true);
+    lastMsgId = d.msg.id;
+    updateConvPreview(CONV_ID, d.msg.body, d.msg.sent_at);
+  })
+  .catch(function() {
+    btn.disabled = false;
+    showToast('تعذّر الإرسال', 'danger');
+  });
+}
+
+// ══════════════════════════════
+// إضافة فقاعة رسالة
+// ══════════════════════════════
+function appendBubble(msg, isMine) {
+  var c = document.getElementById('chatMessages');
+  if (!c) return;
+
+  // حذف رسالة "ابدأ المحادثة" إن وجدت
+  var empty = c.querySelector('[style*="margin-top:3rem"]');
+  if (empty) empty.remove();
+
+  // FIX: استخدم avatar_url من الـ API إن توفرت، وإلا ui-avatars
+  var senderAvatar = msg.sender_avatar ||
+    'https://ui-avatars.com/api/?name=' + encodeURIComponent(msg.sender) +
+    '&background=dbeafe&color=1e3a8a&bold=true&size=26';
+  var avatarHtml = isMine ? '' :
+    '<img src="' + senderAvatar + '" class="msg-avatar-sm" alt="" ' +
+    'onerror="this.src=\'https://ui-avatars.com/api/?name=' + encodeURIComponent(msg.sender) + '&background=dbeafe&color=1e3a8a&bold=true&size=26\'">';
+
+  var tickHtml = isMine ?
+    '<span style="opacity:.4;margin-right:.2rem;"><i class="fas fa-check"></i></span>' : '';
+
+  var row = document.createElement('div');
+  row.className = 'msg-row' + (isMine ? ' mine' : '');
+  row.id = 'msg-' + msg.id;
+  var deleteBtnHtml = isMine ?
+    '<button class="msg-delete-btn" onclick="deleteMsg(' + msg.id + ', this)" title="حذف">' +
+      '<i class=\'fas fa-trash-alt\'></i>' +
+    '</button>' : '';
+
+  row.innerHTML =
+    avatarHtml +
+    deleteBtnHtml +
+    '<div class="msg-bubble-wrap">' +
+      '<div class="msg-bubble">' + escHtml(msg.body) + '</div>' +
+      '<div class="msg-meta">' + msg.sent_at + tickHtml + '</div>' +
+    '</div>';
+
+  c.appendChild(row);
+  scrollBottom();
+}
+
+// ══════════════════════════════
+// حذف رسالة
+// ══════════════════════════════
+var _pendingDeleteId = null;
+
+function deleteMsg(msgId, btn) {
+  _pendingDeleteId = msgId;
+  var modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+  modal.show();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (!_pendingDeleteId) return;
+    var msgId = _pendingDeleteId;
+    _pendingDeleteId = null;
+
+    // إغلاق الـ modal
+    var modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+    if (modal) modal.hide();
+
+    var DELETE_URL = '/messages/delete/' + msgId + '/';
+    fetch(DELETE_URL, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF, 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok) {
+        var row = document.getElementById('msg-' + msgId);
+        if (row) {
+          row.style.transition = 'opacity .3s';
+          row.style.opacity = '0';
+          setTimeout(function() { row.remove(); }, 300);
+        }
+      } else {
+        showToast(d.error || 'تعذّر الحذف', 'danger');
+      }
+    })
+    .catch(function() { showToast('تعذّر الاتصال', 'danger'); });
+  });
+});
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════
+// تحديث preview في القائمة
+// ══════════════════════════════
+function updateConvPreview(convId, body, time) {
+  var prev  = document.getElementById('prev-'   + convId);
+  var ctime = document.getElementById('ctime-'  + convId);
+  var badge = document.getElementById('cbadge-' + convId);
+  if (prev)  prev.textContent  = body.substring(0, 30);
+  if (ctime) ctime.textContent = time;
+  if (badge) badge.style.display = 'none';
+}
+
+// ══════════════════════════════
+// Polling — رسائل جديدة كل 3 ثواني
+// ══════════════════════════════
+var _pollTimer = null;
+
+function startPolling() {
+  if (!CONV_ID) return;
+  _pollTimer = setInterval(function() {
+    fetch(POLL_BASE + CONV_ID + '/?after=' + lastMsgId, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.messages || !d.messages.length) return;
+      d.messages.forEach(function(m) {
+        if (document.getElementById('msg-' + m.id)) return; // موجود مسبقاً
+        appendBubble(m, m.sender_id === MY_ID);
+        lastMsgId = m.id;
+        if (m.sender_id !== MY_ID) {
+          updateConvPreview(CONV_ID, m.body, m.sent_at);
+          playNotifSound();
+        }
+      });
+    })
+    .catch(function() {});
+  }, 3000);
+}
+startPolling();
+
+// صوت إشعار بسيط
+function playNotifSound() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
+  } catch(e) {}
+}
+
+window.addEventListener('beforeunload', function() {
+  if (_pollTimer) clearInterval(_pollTimer);
+});
+
+// ══════════════════════════════
+// بحث في قائمة المحادثات
+// ══════════════════════════════
+document.getElementById('convSearch').addEventListener('input', function() {
+  var q = this.value.toLowerCase().trim();
+  document.querySelectorAll('#convList .conv-item').forEach(function(el) {
+    var name = (el.dataset.name || '').toLowerCase();
+    el.style.display = (!q || name.includes(q)) ? '' : 'none';
+  });
+});
+
+// ══════════════════════════════
+// Modal: محادثة جديدة + بحث
+// ══════════════════════════════
+var _searchTimer = null;
+
+function openNewConv() {
+  var modal = new bootstrap.Modal(document.getElementById('newConvModal'));
+  modal.show();
+  setTimeout(function() {
+    var inp = document.getElementById('contactSearchInput');
+    if (inp) { inp.value = ''; inp.focus(); }
+    document.getElementById('searchResults').innerHTML =
+      '<div class="no-results" id="searchHint">' +
+      '<i class="fas fa-search d-block mb-2" style="font-size:1.5rem;opacity:.15;"></i>' +
+      'ابدأ الكتابة للبحث</div>';
+  }, 300);
+}
+
+function searchContacts(q) {
+  clearTimeout(_searchTimer);
+  q = q.trim();
+
+  if (q.length < 1) {
+    document.getElementById('searchResults').innerHTML =
+      '<div class="no-results">' +
+      '<i class="fas fa-search d-block mb-2" style="font-size:1.5rem;opacity:.15;"></i>' +
+      'ابدأ الكتابة للبحث</div>';
+    return;
+  }
+
+  document.getElementById('searchResults').innerHTML =
+    '<div class="no-results"><i class="fas fa-spinner fa-spin me-1"></i>جاري البحث...</div>';
+
+  _searchTimer = setTimeout(function() {
+    fetch(SEARCH_URL + '?q=' + encodeURIComponent(q), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) { renderSearchResults(d.results); })
+    .catch(function() {
+      document.getElementById('searchResults').innerHTML =
+        '<div class="no-results">حدث خطأ في البحث</div>';
+    });
+  }, 350);
+}
+
+function renderSearchResults(results) {
+  var box = document.getElementById('searchResults');
+  if (!results.length) {
+    box.innerHTML = '<div class="no-results">' +
+      '<i class="fas fa-user-slash d-block mb-2" style="font-size:1.5rem;opacity:.15;"></i>' +
+      'لا توجد نتائج</div>';
+    return;
+  }
+
+  var chipClass = { 'Teacher': 'chip-teacher', 'Student': 'chip-student', 'Parent': 'chip-parent' };
+  var html = results.map(function(c) {
+    return '<div class="contact-row" onclick="startConvWith(' + c.id + ')">' +
+      '<img src="' + (c.avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(c.name) + '&background=dbeafe&color=1e3a8a&bold=true&size=36')) + '" ' +
+      'style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;" ' +
+      'onerror="this.src=\'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)+'&background=dbeafe&color=1e3a8a&bold=true&size=36\'" alt="">' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div class="contact-row-name">' + escHtml(c.name) + '</div>' +
+        '<div class="contact-row-role">' + escHtml(c.role) + '</div>' +
+      '</div>' +
+      '<span class="role-chip ' + (chipClass[c.role_key] || '') + '">' + escHtml(c.role) + '</span>' +
+    '</div>';
+  }).join('');
+  box.innerHTML = html;
+}
+
+function startConvWith(recipientId) {
+  var modal = bootstrap.Modal.getInstance(document.getElementById('newConvModal'));
+  if (modal) modal.hide();
+
+  fetch(SEND_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ recipient_id: recipientId, body: null })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.ok) {
+      window.location.href = INBOX_URL + '?conv=' + d.conv_id;
+    } else {
+      showToast(d.error || 'حدث خطأ', 'danger');
+    }
+  })
+  .catch(function() { showToast('تعذّر الاتصال', 'danger'); });
+}
+
+// ══════════════════════════════
+// Toast إشعار
+// ══════════════════════════════
+function showToast(msg, type) {
+  var t = document.createElement('div');
+  t.style.cssText =
+    'position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);' +
+    'background:' + (type === 'danger' ? '#dc2626' : '#1d4ed8') + ';' +
+    'color:#fff;padding:.55rem 1.2rem;border-radius:10px;font-size:.85rem;' +
+    'font-family:Cairo,sans-serif;font-weight:600;z-index:9999;' +
+    'box-shadow:0 4px 16px rgba(0,0,0,.18);';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 3000);
+}
+</script>
+{% endblock %}

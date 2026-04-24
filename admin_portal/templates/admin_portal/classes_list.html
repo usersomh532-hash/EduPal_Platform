@@ -1,0 +1,155 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}الصفوف{% endblock %}
+{% block page_title %}قائمة الصفوف{% endblock %}
+{% block topbar_actions %}<span style="font-size:.8rem;color:var(--muted);">الصفوف: <strong>{{ total }}</strong></span>{% endblock %}
+
+{% block content %}
+<div class="ap-card" style="margin-bottom:1rem;">
+  <div class="ap-card-b">
+    <form method="GET" class="ap-search">
+      <select class="ap-input" name="directorate">
+        <option value="">كل المديريات</option>
+        {% for d in directorates %}
+        <option value="{{ d }}" {% if selected_dir == d %}selected{% endif %}>{{ d|slice:"19:" }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="ap-btn ap-btn-primary">
+        <i class="fas fa-search"></i> فلتر
+      </button>
+      {% if selected_dir %}
+      <a href="{% url 'admin_portal:classes_list' %}" class="ap-btn ap-btn-ghost">
+        <i class="fas fa-times"></i>
+      </a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="ap-card">
+  <div style="overflow-x:auto;">
+    <table class="ap-tbl">
+      <thead>
+        <tr>
+          <th>اسم الصف</th>
+          <!-- ✅ معلمو الصف بدلاً من "المعلم المسؤول" -->
+          <th>معلمو الصف</th>
+          {% if selected_dir %}
+          <!-- عمود المديرية يظهر فقط إذا لم يُحدَّد فلتر مديرية -->
+          {% else %}
+          <th>المديرية</th>
+          {% endif %}
+          <th>عدد الطلاب</th>
+          <th>الطلاب</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in classes %}
+        <tr>
+          <td><strong>{{ c.classname }}</strong></td>
+
+          <!-- ✅ معلمو الصف: كل من يُدرّس في هذا الصف -->
+          <td>
+            {% if c.teacher_names %}
+              {% for name in c.teacher_names %}
+                <span style="
+                  display:inline-block;
+                  background:var(--blue-lt,#eff6ff);
+                  color:var(--blue-dk,#1e3a8a);
+                  border:1px solid var(--blue-bd,#bfdbfe);
+                  border-radius:100px;
+                  padding:.15rem .65rem;
+                  font-size:.76rem;
+                  font-weight:700;
+                  margin:.1rem .1rem;
+                ">{{ name }}</span>
+              {% endfor %}
+            {% else %}
+              <span style="color:var(--muted);">—</span>
+            {% endif %}
+          </td>
+
+          <!-- عمود المديرية: فقط عند عرض الكل -->
+          {% if not selected_dir %}
+          <td style="font-size:.78rem;color:var(--muted);">
+            {{ c.directorate|default:"—" }}
+          </td>
+          {% endif %}
+
+          <td>
+            <span class="ap-badge bg-blue">{{ c.student_count }} طالب</span>
+          </td>
+          <td>
+            <button class="ap-btn ap-btn-preview ap-btn-sm"
+                    onclick="showClassStudents('{{ c.classid }}', '{{ c.classname }}')">
+              <i class="fas fa-users"></i> عرض الطلاب
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5">
+            <div class="ap-empty">
+              <i class="fas fa-door-open"></i>
+              {% if selected_dir %}
+                لا توجد صفوف في هذه المديرية
+              {% else %}
+                لا توجد صفوف
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+    var CLASS_STUDENTS_URL = "{% url 'admin_portal:class_students_list' 0 %}";
+
+    function showClassStudents(classId, className) {
+        var overlay = document.getElementById('studentPreviewOverlay');
+        var body    = document.getElementById('studentPreviewBody');
+
+        if (!overlay || !body) return;
+
+        body.innerHTML = '<div class="sp-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br>جارٍ تحميل طلاب ' + className + '...</div>';
+        overlay.classList.add('open');
+
+        var url = CLASS_STUDENTS_URL.replace('0', classId);
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.ok) {
+                    var html = '<h5 style="margin-bottom:.75rem;">طلاب ' + className + '</h5>';
+                    if (d.students && d.students.length > 0) {
+                        html += '<ul class="ap-list" style="padding:0;list-style:none;margin:0;">';
+                        d.students.forEach(function(s) {
+                            html += '<li style="padding:.4rem 0;border-bottom:1px solid var(--border,#e2e8f0);font-size:.88rem;">'
+                                  + '<i class="fas fa-user-graduate" style="color:var(--blue,#3b82f6);margin-left:6px;"></i>'
+                                  + s.fullname
+                                  + '</li>';
+                        });
+                        html += '</ul>';
+                    } else {
+                        html += '<div style="color:var(--muted);text-align:center;padding:1rem;">لا يوجد طلاب في هذا الصف</div>';
+                    }
+                    body.innerHTML = html;
+                } else {
+                    body.innerHTML = '<div class="sp-error">' + (d.error || 'خطأ في جلب البيانات') + '</div>';
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                body.innerHTML = '<div class="sp-error">خطأ في الاتصال بالسيرفر</div>';
+            });
+    }
+
+    function closeStudentPreview(e) {
+        if (!e || e.target.id === 'studentPreviewOverlay' || e.target.closest('.sp-close')) {
+            document.getElementById('studentPreviewOverlay').classList.remove('open');
+        }
+    }
+</script>
+{% endblock %}

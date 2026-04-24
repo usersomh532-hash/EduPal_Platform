@@ -1,0 +1,75 @@
+{% extends 'admin_portal/base.html' %}
+{% block title %}إنشاء مشرف إداري{% endblock %}
+{% block page_title %}إنشاء حساب مشرف إداري جديد{% endblock %}
+
+{% block content %}
+<div style="max-width:500px;">
+  <div class="ap-alert info">
+    <i class="fas fa-info-circle"></i>
+    هذه الصفحة للمشرف التقني فقط. الحساب الجديد سيصل لـ <strong>/admin-portal/</strong> عبر صفحة الدخول الرئيسية.
+  </div>
+
+  {% if error %}
+  <div class="ap-alert error">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ error }}
+  </div>
+  {% endif %}
+
+  {% if success %}
+  <div class="ap-alert success" style="background:var(--green-lt); color:var(--green); border:1px solid var(--green); padding:.8rem; border-radius:.5rem; margin-bottom:1rem;">
+    <i class="fas fa-check-circle"></i>
+    تم إنشاء حساب المشرف بنجاح!
+  </div>
+  {% endif %}
+
+  <div class="ap-card">
+    <div class="ap-card-h"><div class="ap-card-t"><i class="fas fa-user-shield"></i>بيانات المشرف الجديد</div></div>
+    <div class="ap-card-b">
+      <form method="POST">
+        {% csrf_token %}
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;font-size:.83rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;">الاسم الكامل *</label>
+          <input type="text" name="fullname" class="ap-input" style="width:100%;" required placeholder="مثال: أحمد محمد">
+        </div>
+        
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;font-size:.83rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;">اسم المستخدم *</label>
+          <input type="text" name="username" class="ap-input" style="width:100%;" required pattern="[a-z0-9]+" title="الرجاء استخدام حروف صغيرة وأرقام فقط">
+          <div style="font-size:.73rem;color:var(--muted);margin-top:.25rem;">حروف صغيرة وأرقام فقط (بدون مسافات)</div>
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;font-size:.83rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;">البريد الإلكتروني</label>
+          <input type="email" name="email" class="ap-input" style="width:100%;" placeholder="admin@example.com">
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;font-size:.83rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;">كلمة المرور *</label>
+          <input type="password" name="password" class="ap-input" style="width:100%;" required minlength="8">
+        </div>
+
+        <div style="margin-bottom:1.5rem;">
+          <label style="display:block;font-size:.83rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;">تأكيد كلمة المرور *</label>
+          <input type="password" name="confirm_password" class="ap-input" style="width:100%;" required>
+        </div>
+
+        <div style="display:flex;gap:.65rem;">
+          <button type="submit" class="ap-btn ap-btn-primary"><i class="fas fa-plus"></i> إنشاء الحساب</button>
+          <a href="{% url 'admin_portal:admin_list' %}" class="ap-btn ap-btn-ghost">إلغاء</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+    // الحفاظ على دالة الإغلاق فارغة لضمان عدم تعطل القالب الأساسي
+    function closeStudentPreview(e) {
+        var overlay = document.getElementById('studentPreviewOverlay');
+        if (overlay && (!e || e.target.id === 'studentPreviewOverlay' || e.target.closest('.sp-close'))) {
+            overlay.classList.remove('open');
+        }
+    }
+</script>
+{% endblock %}
