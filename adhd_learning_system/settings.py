@@ -81,22 +81,16 @@ WSGI_APPLICATION = 'adhd_learning_system.wsgi.application'
 # ── قاعدة البيانات ───────────────────────────────────────────
 DATABASES = {
     'default': dj_database_url.config(
-        # هذا السطر يقرأ قاعدة البيانات السحابية من Render تلقائياً
-        default=os.environ.get('DATABASE_URL'),
+        default=os.environ.get('DATABASE_URL'), # سيبحث عن الرابط السحابي أولاً
         conn_max_age=600,
-        conn_health_checks=True,
     )
 }
 
-# في حال كنتِ تعملين محلياً ولم يجد السيرفر قاعدة بيانات سحابية، سيعود لاستخدام الإعدادات اليدوية:
-if not DATABASES['default']:
+# إذا كنتِ على جهازك (لا يوجد رابط سحابي)، استخدمي SQLite لتجنب مشاكل كلمة المرور
+if not os.environ.get('DATABASE_URL'):
     DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ADHD_Learning_System',
-        'USER': 'postgres',
-        'PASSWORD': 'your_password_here', # ضعي كلمة مرورك المحلية هنا
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 
 # ── كلمات المرور ─────────────────────────────────────────────
