@@ -349,7 +349,7 @@ function firstAttentionName(full){
 
 function distractionBannerText(s){
     var fn = firstAttentionName(s.student_name || '') || 'صديقي';
-    var level = s.distraction_level || 'none';
+    var level = String(s.distraction_level || 'none').toLowerCase();
     if (level === 'high') {
         return fn + '، انتباهك بعيد جداً الآن — لنساعدك على العودة للدرس.';
     }
@@ -397,13 +397,17 @@ function clearDistractionBanner(){
 function updateDistractionBanner(s){
     var el = document.getElementById('distraction-banner');
     if (!el) return;
-    if (s.is_attentive){
+    var level = String(s.distraction_level || 'none').toLowerCase();
+    var focusStatus = String(s.focus_status || '').toLowerCase();
+    var shouldShow = !s.is_attentive || level !== 'none' || focusStatus !== 'focused' || !!s.alert_message;
+    if (!shouldShow) {
         clearDistractionBanner();
         return;
     }
-    el.textContent = distractionBannerText(s);
+
+    el.textContent = s.alert_message || distractionBannerText(s);
     el.style.display = 'block';
-    var level = s.distraction_level || 'low';
+
     if (level === 'high') {
         el.className = 'significant';
     } else if (level === 'medium') {
@@ -411,6 +415,10 @@ function updateDistractionBanner(s){
     } else {
         el.className = 'drift';
     }
+}
+
+function distractionToastMessage(s){
+    return s.alert_message || distractionBannerText(s);
 }
 
 function processAttentionState(s) {
@@ -429,10 +437,10 @@ function processAttentionState(s) {
         _attentionState.level = level;
         feedbackForDistractionLevel(level, s, duration);
 
-        var toastLevel = s.distraction_level || 'low';
-        if (_attentionState.lastToastLevel !== toastLevel) {
+        var toastLevel = String(s.distraction_level || 'none').toLowerCase();
+        if (toastLevel !== 'none' && _attentionState.lastToastLevel !== toastLevel) {
             _attentionState.lastToastLevel = toastLevel;
-            var toastMsg = s.alert_message || distractionToastMessage(s);
+            var toastMsg = distractionToastMessage(s);
             if (toastMsg) {
                 showDistractionToast(toastMsg, toastLevel !== 'low');
             }

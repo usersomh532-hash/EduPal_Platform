@@ -425,21 +425,19 @@ function clearDistractionBanner(){
 function updateDistractionBanner(s){
   var el = document.getElementById('distraction-banner');
   if (!el) return;
-  if (s.is_attentive){
-    clearDistractionBanner();
-    return;
-  }
-  var warn = !!s.is_warning_distraction;
-  var sig = !!s.is_significant_distraction;
+  var level = String(s.distraction_level || 'none').toLowerCase();
+  var focusStatus = String(s.focus_status || '').toLowerCase();
+  var warning = !!s.is_warning_distraction;
+  var significant = !!s.is_significant_distraction;
   var score = typeof s.attention_score === 'number' ? s.attention_score : parseInt(s.attention_score, 10) || 0;
-  var show = warn || sig || score < 70;
-  if (!show){
+  var shouldShow = !s.is_attentive || level !== 'none' || focusStatus !== 'focused' || warning || significant || score < 70;
+  if (!shouldShow){
     clearDistractionBanner();
     return;
   }
   el.textContent = distractionBannerText(s);
   el.style.display = 'block';
-  el.className = sig ? 'significant' : (warn ? 'warning' : 'drift');
+  el.className = significant ? 'significant' : (warning ? 'warning' : 'drift');
 }
 
 window.addEventListener('load', function(){ requestCameraAndStart(); });
