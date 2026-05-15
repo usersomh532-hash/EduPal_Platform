@@ -1,7 +1,6 @@
 {# student_app/templates/student_app/chatbot_widget.html #}
 {# يُدرَج داخل lesson_session.html بـ: {% include 'student_app/chatbot_widget.html' %} #}
 
-<!-- ══ شات بوت: زر + نافذة ══════════════════════════════════ -->
 <style>
 /* زر الفتح العائم */
 #chat-fab{
@@ -112,7 +111,7 @@
 /* منطقة الإدخال */
 .chat-input-area{
   padding:.65rem .85rem;border-top:1.5px solid #e2e8f0;
-  display:flex;align-items:flex-end;gap:.5rem;flex-shrink:0;background:#fff;
+  display:flex;align-items:flex-end;gap:.4rem;flex-shrink:0;background:#fff;
 }
 #chat-input{
   flex:1;resize:none;border:1.5px solid #e2e8f0;border-radius:.75rem;
@@ -122,32 +121,47 @@
   transition:border-color .18s;
 }
 #chat-input:focus{border-color:#3b82f6;}
-#chat-send{
+
+/* أزرار الإجراءات */
+.chat-btn{
   width:36px;height:36px;border-radius:10px;flex-shrink:0;
-  background:#1d4ed8;color:#fff;border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:.95rem;
-  transition:background .18s,opacity .18s;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:none;transition:all 0.2s;
+}
+#chat-send{
+  background:#1d4ed8;color:#fff;font-size:.95rem;
 }
 #chat-send:hover{background:#3b82f6;}
 #chat-send:disabled{opacity:.45;cursor:not-allowed;}
+
+/* زر الميكروفون */
+#chat-mic-btn {
+  background: #f1f5f9; color: #64748b;
+}
+#chat-mic-btn.active {
+  background: #fee2e2; color: #ef4444;
+  animation: micPulse 1.5s infinite;
+}
+@keyframes micPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
 </style>
 
-<!-- ✅ حاوية البيانات — تُقرأ من JS بأمان بدون متغيرات عالمية -->
 <div id="chat-config"
-     data-chat-url="{% url 'student:lesson_chat' lesson_id=lesson.lessonid %}"
-     data-csrf="{{ csrf_token }}"
-     data-limit="{{ student.daily_chat_limit|default:20 }}"
-     data-used="{{ student.chats_today|default:0 }}"
-     data-lesson-title="{{ lesson.lessontitle|default:'الدرس'|truncatechars:40 }}"
-     style="display:none;"></div>
+      data-chat-url="{% url 'student:lesson_chat' lesson_id=lesson.lessonid %}"
+      data-csrf="{{ csrf_token }}"
+      data-limit="{{ student.daily_chat_limit|default:20 }}"
+      data-used="{{ student.chats_today|default:0 }}"
+      data-lesson-title="{{ lesson.lessontitle|default:'الدرس'|truncatechars:40 }}"
+      style="display:none;"></div>
 
-<!-- زر الفتح -->
 <button id="chat-fab" onclick="toggleChat()" title="اسأل المساعد الذكي">
   <i class="fas fa-robot"></i>
   <span class="fab-badge" id="fab-badge"></span>
 </button>
 
-<!-- نافذة الشات -->
 <div id="chat-panel">
   <div class="chat-head">
     <div class="chat-head-icon"><i class="fas fa-robot"></i></div>
@@ -167,10 +181,225 @@
   </div>
 
   <div class="chat-input-area">
+    <button id="chat-mic-btn" class="chat-btn" onclick="toggleSpeech()" title="تحدث لسؤال المساعد">
+      <i class="fas fa-microphone"></i>
+    </button>
+    
     <textarea id="chat-input" placeholder="اسأل عن الدرس..." rows="1"
       onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
-    <button id="chat-send" onclick="sendChat()" title="إرسال">
+    
+    <button id="chat-send" class="chat-btn" onclick="sendChat()" title="إرسال">
       <i class="fas fa-paper-plane"></i>
     </button>
   </div>
 </div>
+
+<script>
+(function(){
+  'use strict';
+
+  var _cfg = document.getElementById('chat-config');
+  var _chatUrl = _cfg ? _cfg.dataset.chatUrl : '';
+  var _csrf = _cfg ? _cfg.dataset.csrf : '';
+  var _chatLimit = _cfg ? parseInt(_cfg.dataset.limit || '20') : 20;
+  var _chatUsed = _cfg ? parseInt(_cfg.dataset.used || '0') : 0;
+  
+  var chatOpen = false;
+  var chatLoading = false;
+  var chatRemaining = _chatLimit - _chatUsed;
+  var chatHistory = [];
+
+  // --- نظام التعرف على الكلام (Speech Recognition) ---
+  var recognition = null;
+  var isRecognizing = false;
+
+  function initSpeech() {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) return;
+    
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ar-SA';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.onstart = function() {
+      isRecognizing = true;
+      document.getElementById('chat-mic-btn').classList.add('active');
+    };
+
+    recognition.onresult = function(event) {
+      var transcript = "";
+      for (var i = event.resultIndex; i < event.results.length; ++i) {
+        transcript += event.results[i][0].transcript;
+      }
+      var inp = document.getElementById('chat-input');
+      if (inp) {
+        inp.value = transcript;
+        window.autoResize(inp);
+      }
+    };
+
+    recognition.onerror = function(event) {
+      console.error("Speech Error:", event.error);
+      if (event.error === 'not-allowed') {
+          alert("يرجى السماح بالوصول للميكروفون من إعدادات المتصفح (أيقونة القفل بجانب الرابط).");
+      }
+      stopSpeechUI();
+    };
+
+    recognition.onend = function() {
+      stopSpeechUI();
+    };
+  }
+
+  window.toggleSpeech = function() {
+    if (!recognition) initSpeech();
+    if (!recognition) {
+      alert("متصفحك لا يدعم التعرف على الصوت.");
+      return;
+    }
+
+    if (isRecognizing) {
+      recognition.stop();
+    } else {
+      try {
+        recognition.start();
+      } catch (e) {
+        console.error("Mic start error:", e);
+      }
+    }
+  };
+
+  function stopSpeechUI() {
+    isRecognizing = false;
+    var btn = document.getElementById('chat-mic-btn');
+    if(btn) btn.classList.remove('active');
+  }
+
+  // --- وظائف الشات الأساسية ---
+  window.toggleChat = function() {
+    chatOpen = !chatOpen;
+    var panel = document.getElementById('chat-panel');
+    var fab = document.getElementById('chat-fab');
+    if(!panel) return;
+    
+    panel.classList.toggle('open', chatOpen);
+    fab.innerHTML = chatOpen ? '<i class="fas fa-times"></i>' : '<i class="fas fa-robot"></i>';
+    
+    if (chatOpen) {
+      setTimeout(() => {
+        var inp = document.getElementById('chat-input');
+        if(inp) inp.focus();
+      }, 300);
+      scrollChat();
+    } else if (isRecognizing) {
+      recognition.stop();
+    }
+  };
+
+  window.sendChat = function() {
+    if (chatLoading) return;
+    if (isRecognizing) recognition.stop();
+
+    var inp = document.getElementById('chat-input');
+    var msg = (inp ? inp.value : '').trim();
+    if (!msg) return;
+
+    if (chatRemaining <= 0) {
+      appendMsg('bot', '🌟 لقد استهلكت محاولاتك اليوم، نراك غداً بنشاط جديد!');
+      return;
+    }
+
+    inp.value = '';
+    inp.style.height = 'auto';
+    appendMsg('user', msg);
+
+    chatLoading = true;
+    var sendBtn = document.getElementById('chat-send');
+    if(sendBtn) sendBtn.disabled = true;
+    
+    var tid = 'typing_' + Date.now();
+    showTyping(tid);
+
+    fetch(_chatUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': _csrf,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ message: msg, history: chatHistory.slice(-6) })
+    })
+    .then(r => r.json())
+    .then(data => {
+      removeTyping(tid);
+      chatLoading = false;
+      if(sendBtn) sendBtn.disabled = false;
+
+      if (data.ok) {
+        appendMsg('bot', data.reply);
+        chatHistory.push({role:'user', parts:[{text:msg}]});
+        chatHistory.push({role:'model', parts:[{text:data.reply}]});
+        if (data.remaining !== undefined) updateQuotaUI(data.remaining);
+      } else {
+        appendMsg('bot', data.reply || 'حدث خطأ ما.', true);
+      }
+    })
+    .catch(() => {
+      removeTyping(tid);
+      chatLoading = false;
+      if(sendBtn) sendBtn.disabled = false;
+      appendMsg('bot', '📡 خطأ في الاتصال.', true);
+    });
+  };
+
+  function updateQuotaUI(rem) {
+    if (rem !== undefined) chatRemaining = rem;
+    var badge = document.getElementById('chat-quota-badge');
+    if(badge) badge.textContent = Math.max(0, chatRemaining) + ' رسالة متبقية';
+  }
+
+  function appendMsg(type, text, isErr) {
+    var m = document.getElementById('chat-messages');
+    if(!m) return;
+    var d = document.createElement('div');
+    d.className = 'chat-msg ' + type + (isErr ? ' error-msg' : '');
+    d.innerText = text;
+    m.appendChild(d);
+    scrollChat();
+  }
+
+  function showTyping(id) {
+    var m = document.getElementById('chat-messages');
+    if(!m) return;
+    var d = document.createElement('div');
+    d.className = 'chat-msg bot'; d.id = id;
+    d.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+    m.appendChild(d);
+    scrollChat();
+  }
+
+  function removeTyping(id) { var e = document.getElementById(id); if(e) e.remove(); }
+  
+  function scrollChat() {
+    var m = document.getElementById('chat-messages');
+    if(m) m.scrollTo({ top: m.scrollHeight, behavior: 'smooth' });
+  }
+
+  window.handleChatKey = function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.sendChat(); }
+  };
+
+  window.autoResize = function(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var title = document.getElementById('chat-lesson-title');
+    if(title) title.textContent = _cfg.dataset.lessonTitle;
+    updateQuotaUI();
+    initSpeech(); // تهيئة النظام عند التحميل
+  });
+})();
+</script>

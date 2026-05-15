@@ -108,7 +108,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT      = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL        = '/media/'
 MEDIA_ROOT       = os.path.join(BASE_DIR, 'media')
-
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── Cache — لـ Rate Limiting و Sessions ──────────────────────
@@ -156,16 +156,16 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
 # ── إعدادات الأمان في الإنتاج (DEBUG=False) ──────────────────
 if not DEBUG:
-    SECURE_SSL_REDIRECT            = True
-    SESSION_COOKIE_SECURE          = True
-    CSRF_COOKIE_SECURE             = True
+    SECURE_SSL_REDIRECT            = False
+    SESSION_COOKIE_SECURE          = False
+    CSRF_COOKIE_SECURE             = False
     SECURE_HSTS_SECONDS            = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD            = True
     SECURE_CONTENT_TYPE_NOSNIFF    = True
-    X_FRAME_OPTIONS                = 'DENY'
+    X_FRAME_OPTIONS                = 'SAMEORIGIN'
     SECURE_BROWSER_XSS_FILTER      = True
-
+    SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
 # ── إخفاء SessionInterrupted من الـ logs (غير ضار — يحدث عند polling بعد logout) ──
 import logging as _logging
 
@@ -177,6 +177,11 @@ class _IgnoreSessionInterrupted(_logging.Filter):
 
 _logging.getLogger('django.request').addFilter(_IgnoreSessionInterrupted())
 
+SECURE_PERMISSIONS_POLICY = {
+    "microphone": ["self"],
+    "camera": ["self"],
+    "display-capture": ["self"],
+}
 # ── Logging ──────────────────────────────────────────────────
 LOGGING = {
     'version': 1,

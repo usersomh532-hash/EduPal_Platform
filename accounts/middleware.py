@@ -104,7 +104,8 @@ class SecurityHeadersMiddleware:
         "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
         "img-src 'self' data: blob: https:; "
-        "media-src 'self'; "
+        # أضفنا blob: هنا لأن معالجة الصوت في المتصفح غالباً ما تحتاجها
+        "media-src 'self' blob:; " 
         "connect-src 'self' ws://localhost:5050 ws://127.0.0.1:5050; "
         "frame-ancestors 'none';"
     )
@@ -118,9 +119,12 @@ class SecurityHeadersMiddleware:
         response['X-Frame-Options']        = 'DENY'
         response['X-XSS-Protection']       = '1; mode=block'
         response['Referrer-Policy']        = 'strict-origin-when-cross-origin'
+        
+        # التعديل الجوهري هنا: غيرنا () إلى (self) للميكروفون
         response['Permissions-Policy']     = (
-            'geolocation=(), microphone=(), camera=(self), payment=(), usb=()'
+            'geolocation=(), microphone=(self), camera=(self), payment=(), usb=()'
         )
+        
         if 'text/html' in response.get('Content-Type', ''):
             response['Content-Security-Policy'] = self._CSP
         return response
