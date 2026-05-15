@@ -40,11 +40,16 @@ def _serialize_attempt(ta, override_map, max_score_map):
     """
     test    = ta.testid
     student = ta.studentid
-    try:
+
+    subject = None
+    cls     = None
+    if test.lessonid and getattr(test.lessonid, 'subjectid', None):
         subject = test.lessonid.subjectid
-        cls     = subject.classid
-    except Exception:
-        subject = cls = None
+    elif getattr(test, 'subjectid', None):
+        subject = test.subjectid
+
+    if subject and getattr(subject, 'classid', None):
+        cls = subject.classid
 
     # FIX: القراءة من الـ map المُعدَّة مسبقاً بدلاً من query لكل محاولة
     max_score = max_score_map.get(test.pk, 0)
@@ -186,6 +191,7 @@ def grades_api_attempts(request):
               'studentid__userid',
               'studentid__classid',
               'testid__lessonid__subjectid__classid',
+              'testid__subjectid__classid',
           )
           .prefetch_related(
               Prefetch(
@@ -303,12 +309,18 @@ def grades_api_override(request):
         },
     )
 
+    subject_name = ''
+    if attempt.testid.lessonid and getattr(attempt.testid.lessonid, 'subjectid', None):
+        subject_name = attempt.testid.lessonid.subjectid.subjectname
+    elif getattr(attempt.testid, 'subjectid', None):
+        subject_name = attempt.testid.subjectid.subjectname
+
     _notify_grade_update(
         attempt.studentid,
         test_title   = attempt.testid.testtitle,
         score        = float(adjusted_score),
         max_score    = max_score,
-        subject_name = attempt.testid.lessonid.subjectid.subjectname if attempt.testid.lessonid and attempt.testid.lessonid.subjectid else '',
+        subject_name = subject_name,
     )
 
     return JsonResponse({
