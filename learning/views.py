@@ -355,7 +355,7 @@ def ai_video_tools(request):
     if teacher:
         lessons = list(
             Lessoncontent.objects
-            .filter(teacherid=teacher)
+            .filter(teacherid=teacher, status=STATUS_PUBLISHED)
             .select_related('subjectid', 'subjectid__classid')
             .order_by('-createdat')
         )
