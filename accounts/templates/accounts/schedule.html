@@ -3,6 +3,34 @@
 
 {% block title %}جدول المهام{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Responsive Design for Schedule */
+@media(max-width:991.98px){
+  .container-fluid{padding:1.25rem 1rem;}
+}
+
+@media(max-width:768px){
+  .container-fluid{padding:1rem .875rem;}
+  .d-flex.align-items-center.justify-content-between{flex-direction:column;align-items:flex-start;gap:1rem;}
+  .d-flex.align-items-center.gap-2{flex-wrap:wrap;}
+  .btn-sm{padding:.4rem .8rem;font-size:.8rem;}
+}
+
+@media(max-width:600px){
+  .container-fluid{padding:.875rem .75rem;}
+  h3{font-size:1.15rem;}
+  .btn-sm{padding:.35rem .7rem;font-size:.75rem;}
+}
+
+@media(max-width:480px){
+  .container-fluid{padding:.75rem .625rem;}
+  h3{font-size:1.05rem;}
+  .btn-sm{padding:.3rem .65rem;font-size:.7rem;}
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4 px-3" dir="rtl" style="font-family:'Cairo',sans-serif;max-width:1300px;">
 

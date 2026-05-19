@@ -74,8 +74,70 @@ body { background: var(--bg); font-family: 'Cairo', 'Tajawal', sans-serif; color
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
-@media(max-width: 900px) { .tools-grid { grid-template-columns: repeat(2, 1fr); } }
-@media(max-width: 520px)  { .tools-grid { grid-template-columns: 1fr; } }
+
+/* Responsive Design */
+@media(max-width: 991.98px) {
+  .dash-wrap{padding:1.75rem 1.25rem 4.5rem;}
+  .hero{padding:2rem 2.25rem;gap:1.75rem;}
+  .hero-icon{width:60px;height:60px;font-size:1.5rem;}
+  .hero-text h1{font-size:1.7rem;}
+  .hero-text p{font-size:.92rem;}
+  .hero-kpis{gap:2rem;}
+  .kpi-num{font-size:2.1rem;}
+  .tools-grid{grid-template-columns:repeat(2,1fr);gap:1.25rem;}
+  .tool-card{padding:1.75rem 1.5rem 1.4rem;}
+  .tc-icon{width:52px;height:52px;font-size:1.3rem;}
+}
+
+@media(max-width: 768px) {
+  .dash-wrap{padding:1.5rem 1rem 4rem;}
+  .hero{flex-direction:column;text-align:center;padding:1.75rem 1.5rem;gap:1.5rem;}
+  .hero-icon{width:56px;height:56px;font-size:1.4rem;}
+  .hero-text h1{font-size:1.5rem;}
+  .hero-text p{font-size:.88rem;}
+  .hero-kpis{margin-right:0;gap:1.5rem;justify-content:center;}
+  .kpi-num{font-size:1.9rem;}
+  .kpi-lbl{font-size:.72rem;}
+  .tools-grid{grid-template-columns:1fr;gap:1rem;}
+  .tool-card{padding:1.5rem 1.25rem 1.2rem;}
+  .tc-icon{width:48px;height:48px;font-size:1.2rem;}
+  .tc-title{font-size:.95rem;}
+  .tc-desc{font-size:.84rem;}
+  .tc-cta{font-size:.82rem;padding:.42rem .9rem;}
+}
+
+@media(max-width: 600px) {
+  .dash-wrap{padding:1.25rem .875rem 3.5rem;}
+  .hero{padding:1.5rem 1.25rem;border-radius:16px;}
+  .hero-icon{width:52px;height:52px;font-size:1.3rem;}
+  .hero-text h1{font-size:1.35rem;}
+  .hero-text p{font-size:.85rem;}
+  .hero-kpis{gap:1.25rem;}
+  .kpi-num{font-size:1.7rem;}
+  .sec-lbl{font-size:.88rem;}
+  .tool-card{padding:1.25rem 1.1rem 1rem;border-radius:12px;}
+  .tc-icon{width:44px;height:44px;font-size:1.1rem;border-radius:12px;}
+  .tc-title{font-size:.9rem;}
+  .tc-desc{font-size:.8rem;}
+  .tc-cta{font-size:.78rem;padding:.38rem .85rem;border-radius:7px;}
+}
+
+@media(max-width: 480px) {
+  .dash-wrap{padding:1rem .75rem 3rem;}
+  .hero{padding:1.25rem 1rem;gap:1.25rem;}
+  .hero-icon{width:48px;height:48px;font-size:1.2rem;border-radius:14px;}
+  .hero-text h1{font-size:1.25rem;}
+  .hero-text p{font-size:.82rem;}
+  .hero-kpis{gap:1rem;}
+  .kpi-num{font-size:1.5rem;}
+  .kpi-lbl{font-size:.68rem;}
+  .sec-lbl{font-size:.85rem;padding-right:.65rem;}
+  .tool-card{padding:1.1rem 1rem .9rem;}
+  .tc-icon{width:40px;height:40px;font-size:1rem;}
+  .tc-title{font-size:.85rem;}
+  .tc-desc{font-size:.78rem;}
+  .tc-cta{font-size:.75rem;padding:.35rem .8rem;}
+}
 
 .tool-card {
   background: var(--white); border: 1.5px solid var(--border);

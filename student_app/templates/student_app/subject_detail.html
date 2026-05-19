@@ -130,6 +130,47 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
 }
 .no-lessons i{font-size:2.5rem;opacity:.2;display:block;margin-bottom:.75rem;}
 
+/* Responsive Design */
+@media(max-width:768px){
+  .sd-wrap{padding:1.5rem 1rem 4rem;}
+  .sd-header{padding:1.5rem 1.75rem;gap:1rem;}
+  .sd-header-emoji{font-size:2.4rem;}
+  .sd-header h1{font-size:1.4rem;}
+  .sd-header-meta{gap:.85rem;font-size:.78rem;}
+  .lessons-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;}
+  .lesson-card-thumb{height:80px;}
+  .lesson-card-thumb .thumb-fallback i{font-size:1.8rem;}
+}
+
+@media(max-width:600px){
+  .sd-wrap{padding:1.25rem .875rem 3.5rem;}
+  .sd-header{flex-direction:column;align-items:flex-start;padding:1.25rem 1.5rem;}
+  .sd-header-emoji{font-size:2.2rem;}
+  .sd-header h1{font-size:1.3rem;}
+  .sd-header-meta{font-size:.75rem;}
+  .back-link{width:100%;justify-content:center;margin-bottom:.75rem;}
+  .lessons-grid{grid-template-columns:1fr;gap:.9rem;}
+  .lesson-card-thumb{height:75px;}
+  .lesson-card-body{padding:.8rem .9rem;}
+  .lesson-card-title{font-size:.85rem;}
+  .lesson-card-foot{padding:.5rem .9rem;}
+}
+
+@media(max-width:480px){
+  .sd-wrap{padding:1rem .75rem 3rem;}
+  .sd-header{padding:1.1rem 1.25rem;border-radius:1.1rem;}
+  .sd-header-emoji{font-size:2rem;}
+  .sd-header h1{font-size:1.2rem;}
+  .sec-head{font-size:.88rem;}
+  .lesson-card{border-radius:12px;}
+  .lesson-card-thumb{height:70px;}
+  .lesson-card-thumb .thumb-fallback i{font-size:1.6rem;}
+  .lesson-card-body{padding:.7rem .85rem;}
+  .lesson-card-title{font-size:.82rem;}
+  .lesson-card-meta{font-size:.7rem;}
+  .lesson-start-btn{font-size:.7rem;padding:.25rem .7rem;}
+}
+
 /* ══ كارد الاختبارات العامة ══ */
 .exams-card{
   background:var(--card);border-radius:var(--r);

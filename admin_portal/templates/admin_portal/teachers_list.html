@@ -3,6 +3,21 @@
 {% block page_title %}قائمة المعلمين{% endblock %}
 {% block topbar_actions %}<span style="font-size:.8rem;color:var(--muted);">النتائج: <strong>{{ total }}</strong></span>{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Responsive Design for List Tables */
+@media(max-width:768px){
+  .ap-search{flex-direction:column;align-items:stretch;}
+  .ap-input-flex{min-width:auto;}
+  select.ap-input{min-width:auto;}
+}
+@media(max-width:600px){
+  .ap-search{gap:.5rem;}
+  .ap-btn{width:100%;justify-content:center;}
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="ap-card" style="margin-bottom:1rem;">
   <div class="ap-card-b">

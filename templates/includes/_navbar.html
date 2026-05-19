@@ -56,3 +56,35 @@
         </div>
     </div>
 </nav>
+
+<style>
+/* Responsive Design for Navbar */
+@media(max-width:991.98px){
+  .navbar-brand div{width:36px;height:36px;}
+  .navbar-brand span{font-size:1rem;}
+}
+
+@media(max-width:768px){
+  .navbar-brand div{width:34px;height:34px;}
+  .navbar-brand span{font-size:.95rem;}
+  .navbar-nav{gap:.5rem;}
+  .nav-link{font-size:.9rem;padding:.5rem .75rem;}
+  .btn-sm{padding:.4rem 1rem;font-size:.85rem;}
+}
+
+@media(max-width:600px){
+  .navbar-brand div{width:32px;height:32px;}
+  .navbar-brand span{font-size:.9rem;}
+  .nav-link{font-size:.85rem;padding:.4rem .65rem;}
+  .btn-sm{padding:.35rem .85rem;font-size:.8rem;}
+  .rounded-circle.border-2{width:28px;height:28px;}
+}
+
+@media(max-width:480px){
+  .navbar-brand div{width:30px;height:30px;}
+  .navbar-brand span{font-size:.85rem;}
+  .nav-link{font-size:.8rem;padding:.35rem .6rem;}
+  .btn-sm{padding:.3rem .75rem;font-size:.75rem;}
+  .rounded-circle.border-2{width:26px;height:26px;}
+}
+</style>

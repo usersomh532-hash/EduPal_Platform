@@ -199,10 +199,63 @@
     }
 
     /* ══ Responsive ══ */
+    @media(max-width:991.98px){
+      .ap-sidebar{width:220px;}
+      .ap-grid{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));}
+      .ap-content{padding:1.25rem;}
+      .ap-card-h{padding:.75rem 1rem;}
+      .ap-card-b{padding:1.1rem;}
+    }
+
     @media(max-width:768px){
       .ap-sidebar{display:none;}
-      .ap-grid{grid-template-columns:repeat(2,1fr);}
-      .ap-topbar{top:56px;}
+      .ap-grid{grid-template-columns:repeat(2,1fr);gap:.75rem;}
+      .ap-topbar{top:56px;padding:.65rem 1rem;}
+      .ap-topbar h1{font-size:.95rem;}
+      .ap-content{padding:1rem;}
+      .ap-card{margin-bottom:.9rem;}
+      .ap-card-h{padding:.65rem .9rem;}
+      .ap-card-t{font-size:.85rem;}
+      .ap-card-b{padding:1rem .9rem;}
+      .ap-stat{padding:.9rem;}
+      .ap-stat-ic{width:36px;height:36px;font-size:.9rem;}
+      .ap-stat-n{font-size:1.3rem;}
+      .ap-tbl th{padding:.55rem .75rem;font-size:.7rem;}
+      .ap-tbl td{padding:.6rem .75rem;font-size:.8rem;}
+    }
+
+    @media(max-width:600px){
+      .ap-grid{grid-template-columns:1fr;}
+      .ap-stat{padding:.85rem;}
+      .ap-stat-ic{width:34px;height:34px;font-size:.85rem;}
+      .ap-stat-n{font-size:1.2rem;}
+      .ap-stat-l{font-size:.68rem;}
+      .ap-card{border-radius:12px;}
+      .ap-card-h{padding:.6rem .85rem;}
+      .ap-card-t{font-size:.82rem;}
+      .ap-card-b{padding:.9rem .85rem;}
+      .ap-tbl th,.ap-tbl td{font-size:.75rem;padding:.5rem .65rem;}
+      .ap-btn{font-size:.78rem;padding:.4rem .85rem;}
+      .ap-input{font-size:.8rem;padding:.42rem .75rem;}
+    }
+
+    @media(max-width:480px){
+      .ap-content{padding:.875rem .75rem;}
+      .ap-topbar h1{font-size:.88rem;}
+      .ap-card{border-radius:11px;}
+      .ap-card-h{padding:.55rem .75rem;}
+      .ap-card-t{font-size:.78rem;}
+      .ap-card-b{padding:.85rem .75rem;}
+      .ap-stat{padding:.75rem;gap:.6rem;}
+      .ap-stat-ic{width:32px;height:32px;font-size:.8rem;border-radius:8px;}
+      .ap-stat-n{font-size:1.1rem;}
+      .ap-stat-l{font-size:.65rem;}
+      .ap-tbl th,.ap-tbl td{font-size:.72rem;padding:.45rem .6rem;}
+      .ap-btn-sm{padding:.25rem .55rem;font-size:.72rem;}
+      .ap-modal{width:96%;max-height:95vh;}
+      .ap-modal-head{padding:.85rem 1rem;}
+      .ap-modal-body{padding:1rem .85rem;}
+      .ap-info-grid{grid-template-columns:1fr;gap:.65rem;}
     }
   </style>
   {% block extra_css %}{% endblock %}

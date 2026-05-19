@@ -175,9 +175,107 @@
         border: 3px solid #5a91e6;
         border-radius: 50%;
     }
+
+    /* Responsive Design */
+    @media (max-width: 991.98px) {
+        .sidebar-wrapper {
+            position: fixed;
+            right: -280px;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+        .sidebar-wrapper.show {
+            right: 0;
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .sidebar-overlay.show {
+            display: block;
+        }
+        .sidebar-toggle {
+            position: fixed;
+            top: 80px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #5a91e6 0%, #4a7bc7 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 1001;
+            box-shadow: 0 4px 12px rgba(90, 145, 230, 0.4);
+            transition: all 0.3s ease;
+        }
+        .sidebar-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(90, 145, 230, 0.5);
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .sidebar-wrapper {
+            width: 260px;
+            right: -260px;
+        }
+        .user-avatar-container img {
+            width: 60px !important;
+            height: 60px !important;
+        }
+        .user-name {
+            font-size: 1rem;
+        }
+        .user-role-label {
+            font-size: 0.8rem;
+        }
+        .nav-link {
+            padding: 10px 14px;
+            font-size: 0.9rem;
+        }
+    }
 </style>
 
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<button class="sidebar-toggle d-lg-none" id="sidebarToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
 <script>
+/* ── التحكم في السايدبار للشاشات الصغيرة ── */
+(function() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    var toggle = document.getElementById('sidebarToggle');
+
+    if (toggle && sidebar && overlay) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        });
+
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+
+        // إغلاق السايدبار عند تغيير حجم الشاشة
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 992) {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+            }
+        });
+    }
+})();
+
 /* ── polling الإشعارات في السايدبار — كل 20 ثانية ── */
 (function pollNotifBadge(){
     fetch("{% url 'accounts:notifications_unread' %}", {

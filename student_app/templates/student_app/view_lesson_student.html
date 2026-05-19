@@ -54,7 +54,41 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
 .gateway-grid{
   display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;
 }
-@media(max-width:520px){.gateway-grid{grid-template-columns:1fr;}}
+
+/* Responsive Design */
+@media(max-width:768px){
+  .lesson-gateway-wrap{padding:0 1rem 4rem;margin:2rem auto;}
+  .lesson-header{padding:1.5rem 1.75rem;border-radius:1.15rem;}
+  .lesson-header h1{font-size:1.35rem;}
+  .lesson-meta{gap:1rem;font-size:.78rem;}
+  .gateway-grid{gap:1.25rem;}
+  .gateway-card{padding:1.75rem 1.25rem;}
+  .gc-icon{width:56px;height:56px;font-size:1.5rem;}
+}
+
+@media(max-width:600px){
+  .lesson-gateway-wrap{padding:0 .875rem 3.5rem;margin:1.5rem auto;}
+  .lesson-header{padding:1.25rem 1.5rem;border-radius:1.1rem;}
+  .lesson-header h1{font-size:1.25rem;}
+  .lesson-meta{gap:.85rem;font-size:.75rem;}
+  .gateway-grid{grid-template-columns:1fr;gap:1rem;}
+  .gateway-card{padding:1.5rem 1.2rem;}
+  .gc-icon{width:52px;height:52px;font-size:1.4rem;}
+  .watched-badge-header{font-size:.75rem;padding:.22rem .75rem;}
+}
+
+@media(max-width:480px){
+  .lesson-gateway-wrap{padding:0 .75rem 3rem;margin:1.25rem auto;}
+  .lesson-header{padding:1.1rem 1.25rem;border-radius:1rem;}
+  .lesson-header h1{font-size:1.15rem;}
+  .lesson-meta{gap:.75rem;font-size:.72rem;}
+  .gateway-card{padding:1.25rem 1rem;border-radius:1.1rem;}
+  .gc-icon{width:48px;height:48px;font-size:1.3rem;border-radius:14px;}
+  .gc-title{font-size:1rem;}
+  .gc-desc{font-size:.78rem;}
+  .gc-btn{font-size:.8rem;padding:.45rem 1rem;}
+  .watched-badge-header{font-size:.72rem;padding:.2rem .7rem;}
+}
 
 .gateway-card{
   border-radius:1.25rem;padding:2rem 1.5rem;
@@ -74,10 +108,10 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
 .gc-session:hover{border-color:var(--sky);}
 
 /* ✅ حالة المشاهدة: حدود خضراء */
-.gc-session.watched{
-  background:#f0fdf4;border-color:#6ee7b7;
-}
+.gc-session.watched{background:#f0fdf4;border-color:#6ee7b7;}
 .gc-session.watched:hover{border-color:var(--mint);}
+.gc-video.watched{background:#f0fdf4;border-color:#6ee7b7;}
+.gc-video.watched:hover{border-color:var(--mint);}
 
 .gc-exam{background:#fffbeb;border-color:#fde68a;}
 .gc-exam:hover{border-color:var(--amber);}
@@ -96,6 +130,7 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
 .gc-exam    .gc-icon{background:rgba(245,158,11,0.15);color:#b45309;}
 .gc-exam.disabled .gc-icon{background:var(--border);color:var(--muted);}
 .gc-video   .gc-icon{background:rgba(59,130,246,0.1);color:#2563eb;}
+.gc-video.watched .gc-icon{background:rgba(16,185,129,0.15);color:var(--mint);}
 .gc-video:hover{border-color:#2563eb;}
 .gc-video.disabled{background:#f8fafc;border-color:var(--border);opacity:.68;cursor:not-allowed;pointer-events:none;}
 .gc-video.disabled .gc-icon{background:var(--border);color:var(--muted);}
@@ -118,6 +153,8 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
 .gc-session.watched .gc-btn{background:var(--mint);color:#fff;}
 .gc-exam    .gc-btn{background:#b45309;color:#fff;}
 .gc-exam.disabled .gc-btn{background:var(--muted);color:#fff;cursor:not-allowed;}
+.gc-video   .gc-btn{background:#2563eb;color:#fff;}
+.gc-video.watched .gc-btn{background:var(--mint);color:#fff;}
 .gc-btn:hover{opacity:.88;}
 
 /* ✅ شارة المشاهدة على كارد الجلسة */
@@ -219,11 +256,17 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
       <span><i class="fas fa-chalkboard-teacher"></i> {{ lesson.teacherid.userid.fullname|default:"—" }}</span>
       <span><i class="fas fa-calendar-alt"></i> {{ lesson.createdat|date:"d M Y" }}</span>
     </div>
-    {% if is_watched %}
-    <!-- ✅ شارة المشاهدة في رأس الدرس -->
+    {% if is_completed %}
+    <!-- ✅ شارة اكتمال الدرس في رأس الدرس -->
     <div class="watched-badge-header">
       <i class="fas fa-check-circle"></i>
-      شاهدت هذا الدرس
+      درس منجز
+    </div>
+    {% elif is_watched %}
+    <!-- ✅ شارة المشاهدة في رأس الدرس -->
+    <div class="watched-badge-header">
+      <i class="fas fa-eye"></i>
+      شاهدت الجلسة التعليمية
     </div>
     {% endif %}
   </div>
@@ -289,11 +332,35 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
 
     <!-- بطاقة الفيديو التعليمي -->
     {% if has_video %}
-    <a href="{% url 'student:lesson_video' lesson.pk %}" class="gateway-card gc-video">
-      <div class="gc-icon"><i class="fas fa-video"></i></div>
+    <a href="{% url 'student:lesson_video' lesson.pk %}" class="gateway-card gc-video {% if video_watched %}watched{% endif %}">
+      {% if video_watched %}
+      <div class="gc-watched-tag">
+        <i class="fas fa-check-circle"></i>
+        تمت المشاهدة
+      </div>
+      {% endif %}
+      <div class="gc-icon">
+        {% if video_watched %}
+        <i class="fas fa-redo"></i>
+        {% else %}
+        <i class="fas fa-video"></i>
+        {% endif %}
+      </div>
       <div class="gc-title">الفيديو التعليمي</div>
-      <div class="gc-desc">شاهد شرح الفيديو الخاص بالدرس الذي رفعه المعلم.</div>
-      <span class="gc-btn"><i class="fas fa-play-circle"></i> مشاهدة الفيديو</span>
+      <div class="gc-desc">
+        {% if video_watched %}
+        شاهدت الفيديو — يمكنك مشاهدته مجدداً.
+        {% else %}
+        شاهد شرح الفيديو الخاص بالدرس الذي رفعه المعلم.
+        {% endif %}
+      </div>
+      <span class="gc-btn">
+        {% if video_watched %}
+        <i class="fas fa-redo"></i> أعد المشاهدة
+        {% else %}
+        <i class="fas fa-play-circle"></i> مشاهدة الفيديو
+        {% endif %}
+      </span>
     </a>
     {% else %}
     <div class="gateway-card gc-video disabled">

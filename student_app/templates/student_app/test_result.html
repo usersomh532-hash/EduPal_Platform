@@ -109,6 +109,58 @@ body { background: var(--bg); color: var(--ink); direction: rtl; font-family: 'T
 .tr-btn-primary:hover { opacity: .88; color: #fff; }
 .tr-btn-ghost { background: var(--border); color: var(--ink); }
 .tr-btn-ghost:hover { background: #d1d5db; }
+
+/* Responsive Design */
+@media(max-width:768px){
+  .tr-wrap{padding:1.25rem 1rem 4rem;}
+  .score-card{padding:2rem 1.5rem;border-radius:1.1rem;}
+  .score-circle{width:110px;height:110px;}
+  .score-num{font-size:2rem;}
+  .score-title{font-size:1.3rem;}
+  .score-sub{font-size:.85rem;}
+  .score-pct-bar{max-width:280px;}
+  .info-row{gap:.85rem;}
+  .info-chip{padding:.55rem 1rem;font-size:.8rem;min-width:120px;}
+  .q-card{padding:1.1rem 1.25rem;border-radius:14px;}
+  .q-num{width:26px;height:26px;font-size:.75rem;}
+  .q-text{font-size:.92rem;}
+  .q-badge{font-size:.7rem;padding:.18rem .6rem;}
+  .tr-btn{padding:.65rem 1.35rem;font-size:.88rem;}
+}
+
+@media(max-width:600px){
+  .tr-wrap{padding:1rem .875rem 3.5rem;}
+  .score-card{padding:1.75rem 1.25rem;border-radius:1rem;}
+  .score-circle{width:100px;height:100px;border-width:4px;}
+  .score-num{font-size:1.8rem;}
+  .score-title{font-size:1.2rem;}
+  .score-sub{font-size:.8rem;}
+  .score-pct-bar{max-width:240px;height:6px;}
+  .info-row{flex-direction:column;gap:.75rem;}
+  .info-chip{padding:.5rem .9rem;font-size:.78rem;min-width:auto;}
+  .q-card{padding:1rem 1.1rem;border-radius:12px;}
+  .q-header{gap:.5rem;}
+  .q-num{width:24px;height:24px;font-size:.7rem;}
+  .q-text{font-size:.88rem;}
+  .q-badge{font-size:.68rem;padding:.15rem .55rem;}
+  .ans-row{font-size:.8rem;}
+  .tr-actions{gap:.6rem;}
+  .tr-btn{padding:.6rem 1.2rem;font-size:.85rem;border-radius:10px;}
+}
+
+@media(max-width:480px){
+  .tr-wrap{padding:.875rem .75rem 3rem;}
+  .score-card{padding:1.5rem 1.1rem;border-radius:14px;}
+  .score-circle{width:90px;height:90px;}
+  .score-num{font-size:1.6rem;}
+  .score-title{font-size:1.1rem;}
+  .score-sub{font-size:.78rem;}
+  .score-pct-bar{max-width:200px;height:5px;}
+  .q-card{padding:.9rem 1rem;border-radius:11px;}
+  .q-num{width:22px;height:22px;font-size:.65rem;}
+  .q-text{font-size:.85rem;}
+  .tr-btn{padding:.55rem 1.1rem;font-size:.8rem;}
+}
 </style>
 {% endblock %}
 

@@ -142,11 +142,14 @@ def _calc_lesson_status(student, lesson, lesson_test):
     ✅ تحسب حالة إنجاز الطالب للدرس الواحد.
 
     Returns dict:
-      is_watched    : bool — وجود جلسة مشاهدة (صالحة أو منتهية)
-      is_stale_watch: bool — الجلسة موجودة لكن قبل آخر تعديل للدرس
-      test_done     : bool — أكمل الاختبار إن وُجد
-      is_completed  : bool — جلسة صالحة + اختبار مكتمل
+      is_watched      : bool — وجود جلسة مشاهدة (صالحة أو منتهية)
+      is_stale_watch  : bool — الجلسة موجودة لكن قبل آخر تعديل للدرس
+      video_watched   : bool — مشاهدة الفيديو
+      test_done       : bool — أكمل الاختبار إن وُجد
+      is_completed    : bool — جلسة صالحة + فيديو + اختبار مكتمل
     """
+    from learning.models import LessonWatchRecord
+
     sessions = (
         Learningsession.objects
         .filter(studentid=student, lessonid=lesson)
@@ -161,6 +164,11 @@ def _calc_lesson_status(student, lesson, lesson_test):
         sess_starttime = getattr(latest, 'starttime', None)
         is_stale_watch = not _is_valid_watch_local(sess_starttime, lesson)
 
+    # التحقق من مشاهدة الفيديو
+    video_watched = LessonWatchRecord.objects.filter(
+        student=student, lesson=lesson
+    ).exists()
+
     if lesson_test:
         test_done = Testattempt.objects.filter(
             studentid=student, testid=lesson_test
@@ -168,11 +176,12 @@ def _calc_lesson_status(student, lesson, lesson_test):
     else:
         test_done = True
 
-    is_completed = (is_watched and not is_stale_watch and test_done)
+    is_completed = (is_watched and not is_stale_watch and video_watched and test_done)
 
     return {
         'is_watched':     is_watched,
         'is_stale_watch': is_stale_watch,
+        'video_watched':  video_watched,
         'test_done':      test_done,
         'is_completed':   is_completed,
     }
@@ -752,6 +761,7 @@ def view_lesson_student(request, lesson_id):
         'student':        student,
         'is_watched':     status['is_watched'],
         'is_stale_watch': status['is_stale_watch'],
+        'video_watched':  status['video_watched'],
         'test_done':      status['test_done'],
         'is_completed':   status['is_completed'],
         'video_url':      video_url,

@@ -135,6 +135,69 @@
         }
         .role-hint { text-align: center; font-size: .78rem; color: #94a3b8; margin-bottom: 18px; min-height: 18px; }
         #role-error { display: none; color: #dc2626; font-size: .78rem; text-align: center; margin-bottom: 12px; font-weight: 600; }
+
+        /* Responsive Design */
+        @media(max-width:991.98px){
+            .main-content{padding:35px 18px;}
+            .main-wrapper{max-width:900px;border-radius:26px;}
+            .signup-container{padding:35px;max-width:450px;}
+            .signup-image-section{padding:35px;}
+        }
+
+        @media(max-width:768px){
+            .signup-image-section{display:none;}
+            .main-wrapper{max-width:500px;border-radius:22px;}
+            .signup-container{padding:30px 25px;}
+            .intro-banner{padding:18px 0 15px;}
+            .intro-banner h3{font-size:1.25rem;}
+            .intro-banner p{font-size:.88rem;}
+            .intro-features{gap:22px;margin-top:12px;}
+            .intro-features span{font-size:.78rem;}
+            .role-selector{gap:8px;margin-bottom:18px;}
+            .role-btn{max-width:105px;padding:10px 6px 8px;}
+            .role-btn i{font-size:1.25rem;}
+            .role-btn span{font-size:.78rem;}
+        }
+
+        @media(max-width:600px){
+            .main-content{padding:30px 15px;}
+            .main-wrapper{max-width:100%;border-radius:18px;}
+            .signup-container{padding:25px 20px;}
+            .brand-logo h2{font-size:1.5rem;}
+            .btn-primary{padding:10px;font-size:.9rem;}
+            .form-control,.django-field input,.django-field select{padding:10px;font-size:.9rem;}
+            .form-label{font-size:.85rem;}
+            .intro-banner{padding:15px 0 12px;}
+            .intro-banner h3{font-size:1.15rem;}
+            .intro-banner p{font-size:.85rem;}
+            .intro-features{gap:18px;margin-top:10px;}
+            .intro-features span{font-size:.75rem;}
+            .role-selector{gap:6px;margin-bottom:15px;}
+            .role-btn{max-width:95px;padding:8px 5px 7px;border-radius:10px;}
+            .role-btn i{font-size:1.15rem;}
+            .role-btn span{font-size:.72rem;}
+            .role-btn.active::after{width:18px;height:18px;top:-6px;right:-6px;font-size:.65rem;}
+        }
+
+        @media(max-width:480px){
+            .main-content{padding:25px 12px;}
+            .main-wrapper{border-radius:16px;}
+            .signup-container{padding:22px 18px;}
+            .brand-logo{margin-bottom:20px;}
+            .brand-logo h2{font-size:1.35rem;}
+            .btn-primary{padding:9px;font-size:.85rem;border-radius:9px;}
+            .form-control,.django-field input,.django-field select{padding:9px;font-size:.85rem;border-radius:9px;}
+            .intro-banner{padding:12px 0 10px;}
+            .intro-banner h3{font-size:1.05rem;}
+            .intro-banner p{font-size:.8rem;}
+            .intro-features{gap:15px;margin-top:8px;}
+            .intro-features span{font-size:.7rem;}
+            .role-selector{gap:5px;margin-bottom:12px;}
+            .role-btn{max-width:85px;padding:7px 4px 6px;border-radius:9px;}
+            .role-btn i{font-size:1.05rem;}
+            .role-btn span{font-size:.68rem;}
+            .role-hint{font-size:.72rem;margin-bottom:14px;}
+        }
     </style>
 </head>
 <body>

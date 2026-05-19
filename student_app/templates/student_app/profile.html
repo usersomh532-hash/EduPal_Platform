@@ -48,6 +48,29 @@
 
 .profile-wrap   { max-width: 900px; margin: 0 auto; padding: 2rem 1rem 4rem; }
 
+/* Responsive Design */
+@media(max-width:768px){
+  .profile-wrap{padding:1.5rem 1rem 3.5rem;}
+  .hero-card{padding:2rem 1.5rem;gap:1.5rem;}
+  .avatar-img{width:90px;height:90px;font-size:2.3rem;}
+}
+
+@media(max-width:600px){
+  .profile-wrap{padding:1.25rem .875rem 3rem;}
+  .hero-card{flex-direction:column;text-align:center;padding:1.75rem 1.25rem;gap:1.25rem;}
+  .avatar-img{width:80px;height:80px;font-size:2rem;}
+  .avatar-edit{bottom:2px;left:2px;width:26px;height:26px;}
+  .avatar-edit i{font-size:.75rem;}
+}
+
+@media(max-width:480px){
+  .profile-wrap{padding:1rem .75rem 2.5rem;}
+  .hero-card{padding:1.5rem 1rem;border-radius:1.25rem;}
+  .avatar-img{width:70px;height:70px;font-size:1.8rem;}
+  .avatar-edit{width:24px;height:24px;}
+  .avatar-edit i{font-size:.7rem;}
+}
+
 
 
 /* ══ Hero Card ════════════════════════════════════════════════ */

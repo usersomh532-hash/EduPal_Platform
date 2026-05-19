@@ -450,16 +450,98 @@ body{background:var(--bg);font-family:'Cairo','Tajawal',sans-serif;color:var(--i
 @keyframes progress-anim{to{width:95%;}}
 .ul-overlay-time{font-family:'Tajawal',sans-serif;font-size:.8rem;color:var(--muted);margin:0;}
 
-@media(max-width:768px){.ul-guide-cols{grid-template-columns:1fr;}}
+@media(max-width:991.98px){
+  .ul-wrap{padding:1.5rem 1rem 4rem;}
+  .ul-hero{padding:1.5rem 1.75rem;}
+  .ul-hero-icon{width:56px;height:56px;font-size:1.4rem;}
+  .ul-hero-title{font-size:1.35rem;}
+  .ul-hero-sub{font-size:.88rem;}
+  .ul-card{padding:1.25rem 1.5rem;}
+  .ul-card-head{padding:1rem 0;margin-bottom:1rem;}
+  .ul-card-title{font-size:1rem;}
+  .ul-row{gap:1rem;}
+}
+
+@media(max-width:768px){
+  .ul-guide-cols{grid-template-columns:1fr;}
+  .ul-hero{padding:1.25rem 1.5rem;gap:.9rem;}
+  .ul-hero-icon{width:48px;height:48px;font-size:1.2rem;}
+  .ul-hero-title{font-size:1.2rem;}
+  .ul-hero-sub{font-size:.82rem;}
+  .ul-back-btn{font-size:.85rem;padding:.4rem .85rem;}
+  .ul-steps{padding:.85rem .75rem;gap:.5rem;}
+  .ul-step-num{width:28px;height:28px;font-size:.85rem;}
+  .ul-step span{font-size:.75rem;}
+  .ul-card{padding:1.1rem 1.25rem;border-radius:1rem;}
+  .ul-card-head{gap:.7rem;}
+  .ul-card-num{width:32px;height:32px;font-size:.85rem;}
+  .ul-card-title{font-size:.95rem;}
+  .ul-card-sub{font-size:.78rem;}
+  .ul-row{gap:.85rem;}
+  .ul-field{padding:0;}
+  .ul-lbl{font-size:.82rem;}
+  .ul-input,.ul-select{padding:.5rem .8rem;font-size:.88rem;}
+  .ul-hint{font-size:.75rem;}
+  .ul-img-grid{grid-template-columns:repeat(4,1fr);gap:.7rem;}
+  .ul-zone-label{font-size:.72rem;}
+  .ul-zone-hint{font-size:.65rem;}
+  .ul-generate-inner{gap:1.5rem;}
+  .ul-generate-btn{padding:.95rem 1.5rem;min-width:160px;}
+  .ul-generate-btn span:first-of-type{font-size:.95rem;}
+  .ul-overlay-card{padding:2rem 2.25rem;}
+}
+
 @media(max-width:640px){
-  .ul-hero{flex-direction:column;align-items:flex-start;}
-  .ul-steps{gap:0;padding:1rem;}
+  .ul-hero{flex-direction:column;align-items:flex-start;padding:1.1rem 1.25rem;}
+  .ul-hero-icon{width:44px;height:44px;font-size:1.1rem;}
+  .ul-hero-title{font-size:1.1rem;}
+  .ul-hero-sub{font-size:.78rem;}
+  .ul-steps{gap:0;padding:.75rem .65rem;}
   .ul-step span{display:none;}
-  .ul-row{grid-template-columns:1fr;}
-  .ul-img-grid{grid-template-columns:repeat(3,1fr);}
-  .ul-generate-inner{flex-direction:column;}
-  .ul-generate-btn{width:100%;}
-  .ul-overlay-steps{flex-wrap:wrap;}
+  .ul-step-line{width:20px;}
+  .ul-row{grid-template-columns:1fr;gap:.75rem;}
+  .ul-img-grid{grid-template-columns:repeat(3,1fr);gap:.6rem;}
+  .ul-generate-inner{flex-direction:column;gap:1rem;}
+  .ul-generate-btn{width:100%;padding:.85rem 1.25rem;}
+  .ul-generate-btn i{font-size:1.3rem;}
+  .ul-generate-btn span:first-of-type{font-size:.9rem;}
+  .ul-overlay-steps{flex-wrap:wrap;gap:.5rem;}
+  .ul-overlay-card{padding:1.75rem 1.5rem;}
+  .ul-overlay-spinner{width:70px;height:70px;}
+  .ul-overlay-title{font-size:1.15rem;}
+  .ul-overlay-sub{font-size:.85rem;}
+}
+
+@media(max-width:480px){
+  .ul-wrap{padding:1rem .75rem 3rem;}
+  .ul-hero{padding:1rem 1.1rem;border-radius:14px;}
+  .ul-hero-icon{width:40px;height:40px;font-size:1rem;border-radius:10px;}
+  .ul-hero-title{font-size:1rem;}
+  .ul-hero-sub{font-size:.75rem;}
+  .ul-back-btn{font-size:.8rem;padding:.35rem .75rem;}
+  .ul-steps{padding:.65rem .55rem;}
+  .ul-step-num{width:26px;height:26px;font-size:.8rem;border-radius:8px;}
+  .ul-card{padding:1rem 1.1rem;border-radius:14px;}
+  .ul-card-head{padding:.85rem 0;}
+  .ul-card-num{width:28px;height:28px;font-size:.8rem;border-radius:8px;}
+  .ul-card-title{font-size:.9rem;}
+  .ul-card-sub{font-size:.75rem;}
+  .ul-lbl{font-size:.78rem;}
+  .ul-input,.ul-select{padding:.45rem .75rem;font-size:.85rem;border-radius:10px;}
+  .ul-hint{font-size:.72rem;}
+  .ul-img-grid{grid-template-columns:repeat(2,1fr);gap:.5rem;}
+  .ul-zone-label{font-size:.68rem;}
+  .ul-zone-hint{font-size:.6rem;}
+  .ul-generate-btn{padding:.75rem 1.1rem;border-radius:12px;}
+  .ul-generate-btn i{font-size:1.2rem;}
+  .ul-generate-btn span:first-of-type{font-size:.85rem;}
+  .ul-btn-sub{font-size:.72rem;}
+  .ul-overlay-card{padding:1.5rem 1.25rem;border-radius:1.25rem;}
+  .ul-overlay-spinner{width:60px;height:60px;}
+  .ul-overlay-icon{font-size:1.2rem;}
+  .ul-overlay-title{font-size:1.05rem;}
+  .ul-overlay-sub{font-size:.8rem;}
+  .ul-ov-step{font-size:.75rem;padding:.3rem .7rem;}
 }
 </style>
 
