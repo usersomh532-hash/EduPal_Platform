@@ -44,22 +44,6 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
 }
 #stop-btn:hover{background:var(--sky);color:#fff;}
 
-/* رسائل التشتت أثناء الجلسة (متوافقة مع مخرجات الخوارزمية) */
-#distraction-banner{
-  display:none;margin:.35rem 0 1rem;padding:.72rem 1.1rem;border-radius:12px;
-  font-size:.88rem;font-weight:700;line-height:1.55;text-align:center;
-  background:linear-gradient(135deg,#fff7ed,#ffedd5);color:#9a3412;
-  border:1.5px solid #fdba74;box-shadow:0 2px 10px rgba(154,52,18,.08);
-}
-#distraction-banner.warning{
-  background:linear-gradient(135deg,#fffbeb,#fef3c7);color:#92400e;border-color:#fcd34d;
-}
-#distraction-banner.significant{
-  background:linear-gradient(135deg,#fef2f2,#fee2e2);color:#991b1b;border-color:#fca5a5;
-}
-#distraction-banner.drift{
-  background:linear-gradient(135deg,#f8fafc,#f1f5f9);color:#475569;border-color:#cbd5e1;
-}
 
 .lesson-header{
   background:linear-gradient(135deg,var(--sky-dk),var(--sky));
@@ -249,8 +233,6 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
     في حال حدوث خلل في اتصال الكاميرا أو استمرارها على حالة قديمة، يُنصح بإعادة تحميل الصفحة
   </div>
 
-  <div id="distraction-banner" role="status" aria-live="polite" style="display:none;"></div>
-
   <a href="{% url 'student:view_lesson_student' lesson.pk %}" class="back-link">
     <i class="fas fa-chevron-right"></i> العودة لصفحة الدرس
   </a>
@@ -327,10 +309,6 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
 
 {% include 'student_app/chatbot_widget.html' %}
 
-<div id="alert-toast" style="position:fixed;bottom:2rem;right:50%;transform:translateX(50%);
-  background:linear-gradient(135deg,var(--sky-dk),var(--sky));color:#fff;border-radius:50px;
-  padding:.8rem 1.75rem;font-size:.95rem;font-weight:700;box-shadow:0 8px 32px rgba(29,78,216,0.3);
-  display:none;z-index:9999;max-width:90vw;text-align:center;"></div>
 
 <div id="distraction-popup" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
   background:linear-gradient(135deg,#1e293b,#334155);color:#fff;border-radius:16px;
@@ -938,9 +916,6 @@ function distractionBannerTextFallback(s){
     if (c === 'gaze'){
         return sig ? (fn + '، نظرك بعيد عن الدرس — رجّعه للشاشة.')
             : (warn ? (fn + '، رجّع نظرك لمحتوى الدرس.') : (fn + '، تابع قراءة الشاشة معنا.'));
-    }
-    if (c === 'no_face'){
-        return fn + '، تأكد أن وجهك ظاهر للكاميرا حتى يستمر التتبع.';
     }
     return sig ? (fn + '، حافظ على تركيزك مع الجلسة — أنت قادر!')
         : (warn ? (fn + '، حاول ترجع للتركيز مع الدرس.') : (fn + '، ركّز قليلاً مع الدرس.'));
