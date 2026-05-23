@@ -9,9 +9,11 @@ import re
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
+from django.utils import timezone
 from learning.models import Parent, Performancereport, Student
 from accounts.models import Notification
+from student_app.models import CalibrationSession, BehavioralBaseline
 
 logger = logging.getLogger(__name__)
 
@@ -256,4 +258,252 @@ def parent_profile(request):
     return render(request, 'parent_app/profile.html', {
         'parent': parent,
         'child':  child,
+    })
+
+
+# ══════════════════════════════════════════════════════════════
+# نظام المعايرة السلوكية (Personalized Behavioral Baseline)
+# ══════════════════════════════════════════════════════════════
+
+@_parent_required
+def calibration_dashboard(request):
+    """
+    لوحة تحكم المعايرة السلوكية للأهل
+    تعرض حالة المعايرة وجلسات المعايرة المتاحة
+    """
+    parent = request.parent_obj
+    child = parent.childid if parent else None
+    
+    if not child:
+        messages.error(request, 'لا يوجد طالب مرتبط بحسابك.')
+        return redirect('parent:portal')
+    
+    # الحصول على النموذج السلوكي الشخصي للطالب
+    baseline, created = BehavioralBaseline.objects.get_or_create(
+        student=child.userid
+    )
+    
+    # الحصول على جلسات المعايرة
+    sessions = CalibrationSession.objects.filter(
+        student=child.userid
+    ).order_by('-start_time')
+    
+    # حساب عدد الجلسات المكتملة
+    completed_sessions = sessions.filter(is_completed=True).count()
+    
+    # تحديد الحالة
+    if baseline.is_active:
+        status = 'active'
+        status_text = 'النموذج نشط ومثبت'
+    elif completed_sessions >= 3:
+        status = 'ready_to_activate'
+        status_text = 'جاهز لتفعيل النموذج (3 جلسات مكتملة)'
+    elif completed_sessions > 0:
+        status = 'in_progress'
+        status_text = f'جاري المعايرة ({completed_sessions}/3 جلسات)'
+    else:
+        status = 'not_started'
+        status_text = 'لم تبدأ المعايرة بعد'
+    
+    # حساب رقم الجلسة التالية
+    next_session_number = sessions.count() + 1
+    
+    return render(request, 'parent_app/calibration_dashboard.html', {
+        'parent': parent,
+        'child': child,
+        'baseline': baseline,
+        'sessions': sessions,
+        'completed_sessions': completed_sessions,
+        'status': status,
+        'status_text': status_text,
+        'next_session_number': next_session_number,
+    })
+
+
+@_parent_required
+def start_calibration_session(request):
+    """
+    بدء جلسة معايرة جديدة
+    """
+    parent = request.parent_obj
+    child = parent.childid if parent else None
+    
+    if not child:
+        messages.error(request, 'لا يوجد طالب مرتبط بحسابك.')
+        return redirect('parent:calibration_dashboard')
+    
+    # التحقق من الحد الأقصى للجلسات (5 جلسات)
+    existing_sessions = CalibrationSession.objects.filter(
+        student=child.userid
+    ).count()
+    
+    if existing_sessions >= 5:
+        messages.warning(request, 'وصلت إلى الحد الأقصى لجلسات المعايرة (5 جلسات).')
+        return redirect('parent:calibration_dashboard')
+    
+    # إنشاء جلسة معايرة جديدة
+    session = CalibrationSession.objects.create(
+        student=child.userid,
+        session_number=existing_sessions + 1,
+        duration_minutes=3,  # افتراضي 3 دقائق
+    )
+    
+    messages.success(request, f'تم إنشاء جلسة معايرة #{session.session_number}.')
+    return redirect('parent:calibration_session_detail', session_id=session.pk)
+
+
+@_parent_required
+def calibration_session_detail(request, session_id):
+    """
+    عرض تفاصيل جلسة المعايرة
+    """
+    parent = request.parent_obj
+    child = parent.childid if parent else None
+    
+    session = get_object_or_404(
+        CalibrationSession,
+        pk=session_id,
+        student=child.userid
+    )
+    
+    if request.method == 'POST':
+        # تحديث بيانات الجلسة
+        session.time_of_day = request.POST.get('time_of_day')
+        session.environment_notes = request.POST.get('environment_notes', '')
+        
+        # تحديث الفيديو المخصص
+        if 'calibration_video' in request.FILES:
+            session.calibration_video = request.FILES['calibration_video']
+        
+        # تحديث مدة الجلسة
+        duration_minutes = request.POST.get('duration_minutes')
+        if duration_minutes:
+            try:
+                duration = int(duration_minutes)
+                if 2 <= duration <= 5:
+                    session.duration_minutes = duration
+            except ValueError:
+                pass
+        
+        session.save()
+        messages.success(request, 'تم تحديث بيانات الجلسة.')
+        return redirect('parent:calibration_session_detail', session_id=session.pk)
+    
+    # الحصول على النموذج السلوكي للطالب
+    baseline = BehavioralBaseline.objects.filter(student=child.userid).first()
+    
+    return render(request, 'parent_app/calibration_session_detail.html', {
+        'parent': parent,
+        'child': child,
+        'session': session,
+        'baseline': baseline,
+    })
+
+
+@_parent_required
+def activate_baseline(request):
+    """
+    تفعيل النموذج السلوكي الشخصي
+    """
+    parent = request.parent_obj
+    child = parent.childid if parent else None
+    
+    if not child:
+        messages.error(request, 'لا يوجد طالب مرتبط بحسابك.')
+        return redirect('parent:calibration_dashboard')
+    
+    baseline = BehavioralBaseline.objects.filter(student=child.userid).first()
+    
+    if not baseline:
+        messages.error(request, 'لا يوجد نموذج سلوكي للطالب.')
+        return redirect('parent:calibration_dashboard')
+    
+    # التحقق من وجود 3 جلسات معايرة مكتملة على الأقل
+    completed_sessions = CalibrationSession.objects.filter(
+        student=child.userid,
+        is_completed=True
+    ).count()
+    
+    if completed_sessions < 3:
+        messages.warning(request, 'يجب إكمال 3 جلسات معايرة على الأقل قبل تفعيل النموذج.')
+        return redirect('parent:calibration_dashboard')
+    
+    # تحديث النموذج من جلسات المعايرة
+    sessions = CalibrationSession.objects.filter(
+        student=child.userid,
+        is_completed=True
+    )
+    
+    baseline.update_from_sessions(sessions)
+    
+    # تفعيل وقفل النموذج
+    baseline.is_active = True
+    baseline.is_locked = True
+    baseline.calibration_completed_at = timezone.now()
+    baseline.save()
+    
+    messages.success(request, 'تم تفعيل النموذج السلوكي الشخصي بنجاح.')
+    return redirect('parent:calibration_dashboard')
+
+
+@_parent_required
+def reset_baseline(request):
+    """
+    إعادة المعايرة (حذف النموذج الحالي وجلسات المعايرة)
+    """
+    parent = request.parent_obj
+    child = parent.childid if parent else None
+    
+    if not child:
+        messages.error(request, 'لا يوجد طالب مرتبط بحسابك.')
+        return redirect('parent:calibration_dashboard')
+    
+    baseline = BehavioralBaseline.objects.filter(student=child.userid).first()
+    
+    if baseline:
+        # إعادة تعيين النموذج
+        baseline.is_active = False
+        baseline.is_locked = False
+        baseline.calibration_completed_at = None
+        baseline.calibration_sessions_count = 0
+        baseline.save()
+    
+    # حذف جلسات المعايرة
+    CalibrationSession.objects.filter(student=child.userid).delete()
+    
+    messages.success(request, 'تم إعادة المعايرة بنجاح. يمكنك بدء جلسات معايرة جديدة.')
+    return redirect('parent:calibration_dashboard')
+
+
+@_parent_required
+def start_calibration_session_for_student(request, session_id):
+    """
+    بدء جلسة المعايرة للطالب (من واجهة الأهل)
+    """
+    parent = request.parent_obj
+    child = parent.childid if parent else None
+    
+    if not child:
+        messages.error(request, 'لا يوجد طالب مرتبط بحسابك.')
+        return redirect('parent:calibration_dashboard')
+    
+    session = get_object_or_404(
+        CalibrationSession,
+        pk=session_id,
+        student=child.userid
+    )
+    
+    # إذا كانت الجلسة مكتملة، إعادة تعيينها لإعادة الجلسة
+    if session.is_completed:
+        session.is_completed = False
+        session.start_time = timezone.now()
+        session.end_time = None
+        session.behavioral_data = {}
+        session.save(update_fields=['is_completed', 'start_time', 'end_time', 'behavioral_data'])
+        messages.info(request, 'تم إعادة تعيين الجلسة. يمكنك بدء جلسة معايرة جديدة.')
+    
+    # عرض جلسة المعايرة للطالب
+    return render(request, 'student_app/calibration_session.html', {
+        'session': session,
+        'is_parent_view': True,  # للإشارة إلى أن هذا العرض من واجهة الأهل
     })

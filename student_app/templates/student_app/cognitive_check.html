@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}سؤال تحقق معرفي{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root{
+  --sky:#3b82f6;--sky-dk:#1d4ed8;--sky-lt:#eff6ff;--sky-bd:#bfdbfe;
+  --mint:#10b981;--amber:#f59e0b;--rose:#ef4444;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f0f5fb;--card:#fff;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',sans-serif;}
+
+.check-wrap{
+  max-width:600px;margin:2rem auto;padding:0 1.5rem 4rem;
+}
+
+.check-card{
+  background:#fff;border-radius:1.25rem;padding:2.5rem;
+  box-shadow:0 4px 16px rgba(0,0,0,.08);
+  border:2px solid var(--border);
+}
+
+.check-header{
+  text-align:center;margin-bottom:2rem;
+}
+.check-header h1{
+  font-size:1.5rem;font-weight:900;color:var(--sky-dk);margin-bottom:0.5rem;
+}
+.check-header p{
+  color:var(--muted);font-size:0.95rem;
+}
+
+.question-box{
+  background:var(--sky-lt);border:1.5px solid var(--sky-bd);
+  border-radius:1rem;padding:2rem;margin-bottom:2rem;
+}
+.question-box h3{
+  font-size:1.2rem;font-weight:800;color:var(--sky-dk);margin-bottom:1rem;
+}
+.question-box p{
+  color:var(--ink);line-height:2;font-size:1rem;margin-bottom:1.5rem;
+}
+
+.options-grid{
+  display:grid;gap:1rem;margin-bottom:2rem;
+}
+.option-btn{
+  background:#fff;border:2px solid var(--border);
+  border-radius:0.75rem;padding:1rem 1.5rem;
+  font-family:'Tajawal',sans-serif;font-size:1rem;
+  font-weight:600;cursor:pointer;transition:all 0.18s;
+  text-align:right;
+}
+.option-btn:hover{
+  border-color:var(--sky-dk);background:var(--sky-lt);
+}
+.option-btn.selected{
+  border-color:var(--sky-dk);background:var(--sky-dk);color:#fff;
+}
+
+.btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.8rem 2rem;border-radius:.75rem;border:none;
+  font-family:'Tajawal',sans-serif;font-size:1rem;
+  font-weight:800;cursor:pointer;transition:all .18s;
+  text-decoration:none;width:100%;justify-content:center;
+}
+.btn-primary{background:var(--sky-dk);color:#fff;box-shadow:0 4px 12px rgba(29,78,216,.3);}
+.btn-primary:hover{background:#1e3a8a;color:#fff;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="check-wrap" dir="rtl">
+  <div class="check-card">
+    <div class="check-header">
+      <h1><i class="fas fa-brain"></i> سؤال تحقق معرفي</h1>
+      <p>نلاحظ أنك قد تحتاج إلى استراحة قصيرة. سؤال بسيط للتأكد من انتباهك.</p>
+    </div>
+    
+    <div class="question-box">
+      <h3>سؤال التحقق</h3>
+      <p>ما هو الموضوع الرئيسي الذي كنت تشاهده للتو؟</p>
+      
+      <div class="options-grid">
+        <button class="option-btn" onclick="selectOption(this)">
+          الخيار الأول
+        </button>
+        <button class="option-btn" onclick="selectOption(this)">
+          الخيار الثاني
+        </button>
+        <button class="option-btn" onclick="selectOption(this)">
+          الخيار الثالث
+        </button>
+        <button class="option-btn" onclick="selectOption(this)">
+          الخيار الرابع
+        </button>
+      </div>
+    </div>
+    
+    <button class="btn btn-primary" onclick="submitAnswer()">
+      <i class="fas fa-check"></i> إرسال الإجابة
+    </button>
+  </div>
+</div>
+
+<script>
+let selectedOption = null;
+
+function selectOption(btn) {
+  // إزالة التحديد من جميع الأزرار
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  
+  // تحديد الزر المضغوط
+  btn.classList.add('selected');
+  selectedOption = btn.textContent.trim();
+}
+
+function submitAnswer() {
+  if (!selectedOption) {
+    alert('الرجاء اختيار إجابة');
+    return;
+  }
+  
+  // إرسال الإجابة إلى الخادم
+  fetch('/student/cognitive-check/submit/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: JSON.stringify({ answer: selectedOption })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.ok) {
+      // العودة إلى الجلسة
+      window.location.href = '/student/lesson/session/';
+    } else {
+      alert('حدث خطأ في إرسال الإجابة');
+    }
+  });
+}
+
+function getCSRFToken() {
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrftoken') {
+      return decodeURIComponent(value);
+    }
+  }
+  return '';
+}
+</script>
+{% endblock %}

@@ -186,7 +186,7 @@
 
   // ✅ Auto-polling every 30 seconds to update sidebar badge count
   (function poll(){
-    fetch(UNREAD_URL,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+    fetch(UNREAD_URL,{headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':CSRF}})
     .then(function(r){return r.json();})
     .then(function(d){updateBadges(d.count);})
     .catch(function(){});

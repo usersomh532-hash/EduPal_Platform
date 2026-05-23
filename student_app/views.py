@@ -421,6 +421,8 @@ def lesson_session(request, lesson_id):
             'question': cp.question,
             'option_a': cp.option_a,
             'option_b': cp.option_b,
+            'checkpoint_type': cp.checkpoint_type,
+            'correct_answer': cp.correct_answer,
         })
 
     return render(request, 'student_app/lesson_session.html', {
@@ -780,6 +782,8 @@ def view_lesson_student(request, lesson_id):
             'question': cp.question,
             'option_a': cp.option_a,
             'option_b': cp.option_b,
+            'checkpoint_type': cp.checkpoint_type,
+            'correct_answer': cp.correct_answer,
         })
 
     return render(request, 'student_app/view_lesson_student.html', {
@@ -849,7 +853,7 @@ def lesson_video(request, lesson_id):
 
     # تسجيل مشاهدة الطالب للفيديو
     if student:
-        from learning.models import LessonWatchRecord
+        from learning.models import LessonWatchRecord, Learningsession
         try:
             LessonWatchRecord.objects.get_or_create(
                 student=student,
@@ -859,10 +863,30 @@ def lesson_video(request, lesson_id):
         except Exception as e:
             logger.error(f'[Lesson Video] Failed to record watch: {str(e)}', exc_info=True)
 
+        # إنشاء أو جلب Learningsession للفيديو
+        try:
+            session, created = Learningsession.objects.get_or_create(
+                studentid=student,
+                lessonid=lesson,
+                defaults={
+                    'starttime': timezone.now(),
+                    'is_watched': False,
+                }
+            )
+            if created:
+                logger.info(f'[Lesson Video] Created new session {session.sessionid} for student {request.user.username} on lesson {lesson_id}')
+            else:
+                logger.info(f'[Lesson Video] Using existing session {session.sessionid} for student {request.user.username} on lesson {lesson_id}')
+            session_id = session.sessionid
+        except Exception as e:
+            logger.error(f'[Lesson Video] Failed to create/get session: {str(e)}', exc_info=True)
+            session_id = f"video_{lesson.pk}_student_{student.pk}"
+    else:
+        session_id = f"video_{lesson.pk}_student_anon"
+
     logger.info(f'[Lesson Video] Rendering video page for lesson {lesson_id} with video_url: {video_url}')
     
     # Prepare attention tracking data
-    session_id = f"video_{lesson.pk}_student_{student.pk if student else 'anon'}"
     student_name = request.user.fullname or request.user.username
     
     return render(request, 'student_app/lesson_video.html', {
@@ -939,3 +963,198 @@ def mark_lesson_watched(request, lesson_id):
     except Exception as e:
         logger.error(f'mark_lesson_watched error: {e}')
         return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
+
+# ══════════════════════════════════════════════════════════════
+# نظام المعايرة السلوكية (Personalized Behavioral Baseline)
+# ══════════════════════════════════════════════════════════════
+
+@login_required
+def calibration_session_view(request, session_id):
+    """
+    عرض جلسة المعايرة للطالب
+    ملاحظة: هذه الجلسة متاحة فقط من خلال واجهة الأهل
+    """
+    from student_app.models import CalibrationSession
+    from parent_app.models import Parent
+    
+    # محاولة الحصول على الجلسة
+    session = CalibrationSession.objects.filter(pk=session_id).first()
+    
+    if not session:
+        raise Http404("No CalibrationSession matches the given query.")
+    
+    # التحقق من أن المستخدم هو الأهل المرتبط بالطالب فقط
+    # جلسة المعايرة متاحة فقط من واجهة الأهل
+    try:
+        parent = Parent.objects.get(userid=request.user)
+        if parent.childid and parent.childid.userid == session.student:
+            # المستخدم هو الأهل المرتبط بالطالب
+            pass
+        else:
+            raise Http404("No CalibrationSession matches the given query.")
+    except Parent.DoesNotExist:
+        raise Http404("No CalibrationSession matches the given query.")
+    
+    return render(request, 'student_app/calibration_session.html', {
+        'session': session,
+    })
+
+
+@login_required
+@require_POST
+def start_calibration_session(request, session_id):
+    """
+    بدء جلسة المعايرة
+    ملاحظة: هذه الجلسة متاحة فقط من خلال واجهة الأهل
+    """
+    from student_app.models import CalibrationSession
+    from learning.models import Parent
+
+    # التحقق من أن المستخدم هو الأهل المرتبط بالطالب
+    try:
+        parent = Parent.objects.get(userid=request.user)
+        session = CalibrationSession.objects.get(pk=session_id, student=parent.childid.userid)
+    except Parent.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Unauthorized'}, status=403)
+    except CalibrationSession.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Session not found'}, status=404)
+
+    # تحديث وقت البدء
+    session.start_time = timezone.now()
+    session.save(update_fields=['start_time'])
+
+    # بدء attention_engine في وضع المعايرة
+    # ملاحظة: سيتم تنفيذ هذا لاحقاً مع WebSocket
+    # حالياً، سنستخدم JavaScript لجمع البيانات السلوكية
+
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
+def complete_calibration_session(request, session_id):
+    """
+    إكمال جلسة المعايرة
+    ملاحظة: هذه الجلسة متاحة فقط من خلال واجهة الأهل
+    """
+    from student_app.models import CalibrationSession, BehavioralBaseline
+    from learning.models import Parent
+
+    # التحقق من أن المستخدم هو الأهل المرتبط بالطالب
+    try:
+        parent = Parent.objects.get(userid=request.user)
+        session = CalibrationSession.objects.get(pk=session_id, student=parent.childid.userid)
+    except Parent.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Unauthorized'}, status=403)
+    except CalibrationSession.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Session not found'}, status=404)
+
+    # تحديث وقت الانتهاء والحالة
+    session.end_time = timezone.now()
+    session.is_completed = True
+    session.save(update_fields=['end_time', 'is_completed'])
+
+    # تحديث BehavioralBaseline من جميع الجلسات المكتملة
+    baseline, created = BehavioralBaseline.objects.get_or_create(
+        student=parent.childid.userid
+    )
+    completed_sessions = CalibrationSession.objects.filter(
+        student=parent.childid.userid,
+        is_completed=True
+    )
+    baseline.update_from_sessions(completed_sessions)
+    baseline.save()
+
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
+def save_calibration_data(request, session_id):
+    """
+    حفظ بيانات المعايرة السلوكية
+    ملاحظة: هذه الجلسة متاحة فقط من خلال واجهة الأهل
+    """
+    from student_app.models import CalibrationSession
+    from learning.models import Parent
+
+    # التحقق من أن المستخدم هو الأهل المرتبط بالطالب
+    try:
+        parent = Parent.objects.get(userid=request.user)
+        session = CalibrationSession.objects.get(pk=session_id, student=parent.childid.userid)
+    except Parent.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Unauthorized'}, status=403)
+    except CalibrationSession.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Session not found'}, status=404)
+
+    try:
+        data = json.loads(request.body)
+
+        # تحديث البيانات السلوكية
+        session.behavioral_data = data
+        session.save(update_fields=['behavioral_data'])
+
+        return JsonResponse({'ok': True})
+    except Exception as e:
+        logger.error(f'save_calibration_data error: {e}')
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def show_cognitive_check(request):
+    """
+    عرض سؤال تحقق معرفي عند اكتشاف احتمال التشوش
+    """
+    return render(request, 'student_app/cognitive_check.html')
+
+
+@login_required
+def get_baseline_data(request):
+    """
+    الحصول على بيانات النموذج السلوكي الشخصي للطالب
+    """
+    from student_app.models import BehavioralBaseline
+    
+    baseline = BehavioralBaseline.objects.filter(student=request.user, is_active=True).first()
+    
+    if not baseline:
+        return JsonResponse({'ok': False, 'error': 'No active baseline found'}, status=404)
+    
+    # تحويل البيانات إلى قاموس
+    baseline_dict = {
+        'ear_mean': baseline.ear_mean,
+        'ear_std': baseline.ear_std,
+        'ear_min': baseline.ear_min,
+        'ear_max': baseline.ear_max,
+        'head_yaw_mean': baseline.head_yaw_mean,
+        'head_yaw_std': baseline.head_yaw_std,
+        'head_yaw_min': baseline.head_yaw_min,
+        'head_yaw_max': baseline.head_yaw_max,
+        'head_pitch_mean': baseline.head_pitch_mean,
+        'head_pitch_std': baseline.head_pitch_std,
+        'head_pitch_min': baseline.head_pitch_min,
+        'head_pitch_max': baseline.head_pitch_max,
+        'head_roll_mean': baseline.head_roll_mean,
+        'head_roll_std': baseline.head_roll_std,
+        'head_roll_min': baseline.head_roll_min,
+        'head_roll_max': baseline.head_roll_max,
+        'gaze_horizontal_mean': baseline.gaze_horizontal_mean,
+        'gaze_horizontal_std': baseline.gaze_horizontal_std,
+        'gaze_horizontal_min': baseline.gaze_horizontal_min,
+        'gaze_horizontal_max': baseline.gaze_horizontal_max,
+        'gaze_vertical_mean': baseline.gaze_vertical_mean,
+        'gaze_vertical_std': baseline.gaze_vertical_std,
+        'gaze_vertical_min': baseline.gaze_vertical_min,
+        'gaze_vertical_max': baseline.gaze_vertical_max,
+        'nose_ear_ratio_mean': baseline.nose_ear_ratio_mean,
+        'nose_ear_ratio_std': baseline.nose_ear_ratio_std,
+        'nose_ear_ratio_min': baseline.nose_ear_ratio_min,
+        'nose_ear_ratio_max': baseline.nose_ear_ratio_max,
+        'yaw_threshold_personal': baseline.yaw_threshold_personal,
+        'pitch_threshold_personal': baseline.pitch_threshold_personal,
+        'gaze_horizontal_threshold_personal': baseline.gaze_horizontal_threshold_personal,
+        'gaze_vertical_threshold_personal': baseline.gaze_vertical_threshold_personal,
+    }
+    
+    return JsonResponse({'ok': True, 'baseline_data': baseline_dict})

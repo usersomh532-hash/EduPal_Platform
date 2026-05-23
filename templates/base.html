@@ -278,7 +278,7 @@
     /* badge المراسلات — polling كل 15 ثانية */
     (function pollUnread() {
         fetch("{% url 'accounts:messaging_unread' %}", {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}' }
         })
         .then(function(r) { return r.json(); })
         .then(function(d) {

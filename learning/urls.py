@@ -4,6 +4,7 @@ from django.conf.urls.static import static
 from . import views as learning_views
 from accounts import views as accounts_views
 from . import views
+from . import checkpoint_views
 app_name = 'learning'
 
 urlpatterns = [
@@ -58,12 +59,14 @@ urlpatterns = [
     path('teacher/test/question/delete/', learning_views.delete_question, name='delete_question'),
 
     # ── نقاط التحقق المعرفي (Checkpoints) ─────────────────────
-    path('lesson/<int:lesson_id>/checkpoint/create/', learning_views.checkpoint_create, name='checkpoint_create'),
-    path('checkpoint/<int:checkpoint_id>/update/', learning_views.checkpoint_update, name='checkpoint_update'),
-    path('checkpoint/<int:checkpoint_id>/delete/', learning_views.checkpoint_delete, name='checkpoint_delete'),
-    path('lesson/<int:lesson_id>/checkpoint/list/', learning_views.checkpoint_list, name='checkpoint_list'),
-    path('checkpoint/answer/', learning_views.student_checkpoint_answer, name='student_checkpoint_answer'),
-    path('lesson/<int:lesson_id>/checkpoint/results/', learning_views.checkpoint_results, name='checkpoint_results'),
+    path('lesson/<int:lesson_id>/checkpoint-designer/', checkpoint_views.checkpoint_designer, name='checkpoint_designer'),
+    path('lesson/<int:lesson_id>/checkpoint-results/', learning_views.checkpoint_results, name='checkpoint_results'),
+    path('lesson/<int:lesson_id>/checkpoint-list/', learning_views.checkpoint_list, name='checkpoint_list'),
+    path('create-checkpoint/', checkpoint_views.create_checkpoint, name='create_checkpoint'),
+    path('update-checkpoint/', checkpoint_views.update_checkpoint, name='update_checkpoint'),
+    path('delete-checkpoint/', checkpoint_views.delete_checkpoint, name='delete_checkpoint'),
+    path('get-checkpoint/', checkpoint_views.get_checkpoint_for_student, name='get_checkpoint_for_student'),
+    path('submit-checkpoint-answer/', checkpoint_views.submit_checkpoint_answer, name='submit_checkpoint_answer'),
 ]
 
 if settings.DEBUG:

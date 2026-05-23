@@ -22,6 +22,8 @@ import time
 import logging
 import numpy as np
 import base64
+import os
+import sys
 from io import BytesIO
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +37,20 @@ except ImportError as e:
     logger_init = logging.getLogger(__name__)
     logger_init.warning(f"تنبيه استيراد: {e}")
 
+# إضافة مسار المشروع للـ path لاستيراد نماذج Django
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'adhd_learning_system.settings')
+
+# تهيئة Django
+try:
+    import django
+    django.setup()
+    from learning.learning_state_updater import get_learning_state_updater
+    DJANGO_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Django not available: {e}")
+    DJANGO_AVAILABLE = False
+
 # تهيئة logging
 import os
 os.environ['NO_COLOR'] = '1'  # تعطيل colorama
@@ -42,6 +58,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+# بدء LearningStateUpdater إذا كان Django متاحاً
+if DJANGO_AVAILABLE:
+    learning_state_updater = get_learning_state_updater()
+    learning_state_updater.start()
+    logger.info("LearningStateUpdater started in background")
 
 app.add_middleware(
     CORSMiddleware,
@@ -278,6 +300,22 @@ async def ws_attention(websocket: WebSocket, session_id: str):
                             if len(session["state_buffer"]) > 500:
                                 session["state_buffer"].pop(0)
 
+                        # ✅ تحديث LearningStateSnapshot إذا كان Django متاحاً
+                        if DJANGO_AVAILABLE:
+                            try:
+                                # استخراج session_id و student_id من session_id string
+                                # التنسيق المتوقع: lesson_<lesson_id>_student_<student_id>
+                                parts = session_id.split("_")
+                                if len(parts) >= 4 and parts[0] == "lesson" and parts[2] == "student":
+                                    lesson_id = int(parts[1])
+                                    student_id = int(parts[3])
+                                    # تحديث اللقطة اللحظية
+                                    learning_state_updater.update_snapshot_from_attention(
+                                        lesson_id, student_id, state_dict
+                                    )
+                            except Exception as e:
+                                logger.debug(f"Error updating learning state snapshot: {e}")
+
                         # 4. الرد الفوري (هذا ما يضمن استقرار الواجهة الأمامية)
                         await websocket.send_json(state_dict)
 
@@ -297,4 +335,9 @@ async def ws_attention(websocket: WebSocket, session_id: str):
 if __name__ == "__main__":
     import uvicorn
     print("🚀 خادم تتبع الانتباه يعمل على http://localhost:5050")
+    
+    # تنظيف عند الإغلاق
+    import atexit
+    if DJANGO_AVAILABLE:
+        atexit.register(learning_state_updater.stop)
     uvicorn.run(app, host="0.0.0.0", port=5050)

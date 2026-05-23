@@ -300,6 +300,19 @@
         <option value="B">الخيار الثاني</option>
       </select>
     </div>
+    <div class="lr-checkform-group">
+      <label class="lr-checkform-label">نوع السؤال</label>
+      <select id="checkpointType" class="lr-checkform-input">
+        <option value="mandatory">إجباري - دوري</option>
+        <option value="adaptive">تكيفي - عند التشتت</option>
+      </select>
+      <p style="font-size:.75rem;color:#64748b;margin-top:.25rem;font-family:'Tajawal',sans-serif;">
+        <i class="fas fa-info-circle"></i>
+        إجباري: يظهر دورياً عند نهاية الفقرة لقياس الاتصال المعرفي العام
+        <br>
+        تكيفي: يظهر عند التشتت المستمر لمدة 10 ثوانٍ لإعادة ربط الطالب بالمحتوى
+      </p>
+    </div>
     <div class="lr-checkmodal-actions">
       <button type="button" class="lr-btn lr-btn-ghost" onclick="closeCheckpointModal()">إلغاء</button>
       <button type="button" class="lr-btn lr-btn-primary" onclick="saveCheckpoint()">حفظ نقطة التحقق</button>
@@ -541,9 +554,9 @@ var _csrf      = "{{ csrf_token }}";
 var LESSON_ID  = parseInt("{{ lesson.pk|escapejs }}") || 0;
 var _editingCheckpointIdx = null;
 var _deletingCheckpointIdx = null;
-var _checkpointCreateUrl = "{% url 'learning:checkpoint_create' lesson.pk %}";
-var _checkpointUpdateUrlBase = "{% url 'learning:checkpoint_update' 0 %}";
-var _checkpointDeleteUrlBase = "{% url 'learning:checkpoint_delete' 0 %}";
+var _checkpointCreateUrl = "/create-checkpoint/";
+var _checkpointUpdateUrlBase = "/update-checkpoint/";
+var _checkpointDeleteUrlBase = "/delete-checkpoint/";
 
 function init(){
     console.log('[DEBUG] init() started...');
@@ -722,12 +735,14 @@ function openCheckpointModal(paraIdx){
         document.getElementById('checkpointOptionA').value = checkpoint.option_a || '';
         document.getElementById('checkpointOptionB').value = checkpoint.option_b || '';
         document.getElementById('checkpointCorrectAnswer').value = checkpoint.correct_answer || 'A';
+        document.getElementById('checkpointType').value = checkpoint.checkpoint_type || 'mandatory';
     }else{
         title.innerHTML = '<i class="fas fa-question-circle"></i> إضافة نقطة تحقق';
         document.getElementById('checkpointQuestion').value = '';
         document.getElementById('checkpointOptionA').value = '';
         document.getElementById('checkpointOptionB').value = '';
         document.getElementById('checkpointCorrectAnswer').value = 'A';
+        document.getElementById('checkpointType').value = 'mandatory';
     }
 
     modal.classList.remove('d-none');
@@ -745,6 +760,7 @@ function saveCheckpoint(){
     var optionA = document.getElementById('checkpointOptionA').value.trim();
     var optionB = document.getElementById('checkpointOptionB').value.trim();
     var correctAnswer = document.getElementById('checkpointCorrectAnswer').value;
+    var checkpointType = document.getElementById('checkpointType').value;
     var statusEl = document.getElementById('checkpointSaveStatus');
 
     if(!question || !optionA || !optionB){
@@ -759,38 +775,52 @@ function saveCheckpoint(){
     statusEl.className = 'lr-checkform-status loading';
     statusEl.style.display = 'flex';
 
-    var data = {
-        paragraph_index: _editingCheckpointIdx,
-        question: question,
-        option_a: optionA,
-        option_b: optionB,
-        correct_answer: correctAnswer
-    };
+    var formData = new FormData();
+    formData.append('lesson_id', LESSON_ID);
+    formData.append('checkpoint_type', checkpointType);
+    formData.append('content_type', 'text');
+    formData.append('paragraph_index', _editingCheckpointIdx);
+    formData.append('question', question);
+    formData.append('option_a', optionA);
+    formData.append('option_b', optionB);
+    formData.append('correct_answer', correctAnswer);
+    formData.append('mandatory_frequency', 20);
+    formData.append('engagement_threshold', 0.5);
 
     var url = _checkpointCreateUrl;
     var existingCheckpoint = checkpointsMap[_editingCheckpointIdx];
     if(existingCheckpoint){
-        url = _checkpointUpdateUrlBase.replace('0', existingCheckpoint.checkpoint_id);
+        formData.append('checkpoint_id', existingCheckpoint.checkpoint_id);
+        url = _checkpointUpdateUrlBase;
     }
 
     fetch(url, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
             'X-CSRFToken': _csrf
         },
-        body: JSON.stringify(data)
+        body: formData
     })
-    .then(function(r){ return r.json(); })
+    .then(function(r){
+        console.log('[Checkpoint] Response status:', r.status);
+        if (!r.ok) {
+            throw new Error('Server returned ' + r.status);
+        }
+        return r.json();
+    })
     .then(function(d){
-        if(d.ok){
+        console.log('[Checkpoint] Response data:', d);
+        if(d.success){
             checkpointsMap[_editingCheckpointIdx] = {
                 checkpoint_id: d.checkpoint_id || existingCheckpoint.checkpoint_id,
                 paragraph_index: _editingCheckpointIdx,
                 question: question,
                 option_a: optionA,
                 option_b: optionB,
-                correct_answer: correctAnswer
+                correct_answer: correctAnswer,
+                checkpoint_type: checkpointType,
+                mandatory_frequency: 20,
+                engagement_threshold: 0.5
             };
             renderParagraphs();
             statusEl.innerHTML = '<i class="fas fa-check-circle"></i> تم حفظ نقطة التحقق بنجاح';
@@ -805,8 +835,9 @@ function saveCheckpoint(){
             statusEl.className = 'lr-checkform-status error';
         }
     })
-    .catch(function(){
-        statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> تعذّر الاتصال بالخادم';
+    .catch(function(e){
+        console.error('[Checkpoint] Error:', e);
+        statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> تعذّر الاتصال بالخادم: ' + e.message;
         statusEl.className = 'lr-checkform-status error';
     });
 }

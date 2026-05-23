@@ -365,25 +365,37 @@ async def generate_audio_async(text: str, file_path: str) -> str | None:
     if not clean:
         raise ValueError('النص فارغ بعد التنظيف')
 
-    communicate = edge_tts.Communicate(clean, 'ar-SA-HamadaNeural')
+    # استخدام صوت بديل إذا لم يكن الصوت الأساسي متاحاً
+    voice = 'ar-SA-HamadaNeural'
+    try:
+        communicate = edge_tts.Communicate(clean, voice)
+    except Exception as e:
+        # محاولة صوت بديل
+        voice = 'ar-SA'
+        communicate = edge_tts.Communicate(clean, voice)
+    
     audio_bytes: bytearray  = bytearray()
     word_timings: list[dict] = []
 
     # ✅ stream() يُعطي كلا audio و WordBoundary
-    async for chunk in communicate.stream():
-        ctype = chunk.get('type', '')
-        if ctype == 'audio':
-            audio_bytes.extend(chunk.get('data', b''))
-        elif ctype == 'WordBoundary':
-            word   = chunk.get('text', '').strip()
-            offset = chunk.get('offset',   0)   # 100-nanoseconds
-            dur    = chunk.get('duration', 0)   # 100-nanoseconds
-            if word:
-                word_timings.append({
-                    'word':  word,
-                    'start': round(offset          / 10_000_000, 3),
-                    'end':   round((offset + dur)  / 10_000_000, 3),
-                })
+    try:
+        async for chunk in communicate.stream():
+            ctype = chunk.get('type', '')
+            if ctype == 'audio':
+                audio_bytes.extend(chunk.get('data', b''))
+            elif ctype == 'WordBoundary':
+                word   = chunk.get('text', '').strip()
+                offset = chunk.get('offset',   0)   # 100-nanoseconds
+                dur    = chunk.get('duration', 0)   # 100-nanoseconds
+                if word:
+                    word_timings.append({
+                        'word':  word,
+                        'start': round(offset          / 10_000_000, 3),
+                        'end':   round((offset + dur)  / 10_000_000, 3),
+                    })
+    except Exception as e:
+        if not audio_bytes:
+            raise ValueError(f'فشل في توليد الصوت: {str(e)}')
 
     # ── حفظ MP3 ────────────────────────────────────────────
     if audio_bytes:

@@ -1020,6 +1020,10 @@ def lesson_result(request, lesson_id):
             'question': cp.question,
             'option_a': cp.option_a,
             'option_b': cp.option_b,
+            'correct_answer': cp.correct_answer,
+            'checkpoint_type': cp.checkpoint_type,
+            'mandatory_frequency': cp.mandatory_frequency,
+            'engagement_threshold': cp.engagement_threshold,
         })
 
     # تحضير النص للعرض
@@ -1389,13 +1393,23 @@ def checkpoint_list(request, lesson_id):
     """جلب جميع نقاط التحقق لدرس معين"""
     lesson = get_object_or_404(Lessoncontent, pk=lesson_id)
     teacher = Teacher.objects.filter(userid=request.user).first()
+    student = Student.objects.filter(userid=request.user).first()
 
-    # التحقق من الصلاحية
+    # التحقق من الصلاحية (المعلم أو الطالب)
     is_admin = request.user.is_staff or request.user.is_superuser
     role = getattr(request.user, 'userrole', None)
-    if not is_admin and role not in (ROLE_TEACHER, ROLE_ADMIN):
+    is_teacher = role == ROLE_TEACHER or teacher is not None
+    is_student = student is not None
+
+    if not is_admin and not is_teacher and not is_student:
         return JsonResponse({'error': 'غير مصرح'}, status=403)
-    if teacher and lesson.teacherid != teacher:
+
+    # المعلم يمكنه فقط رؤية نقاط التحقق الخاصة بدروسه
+    if is_teacher and lesson.teacherid != teacher:
+        return JsonResponse({'error': 'ليس لديك صلاحية لعرض هذه النقاط'}, status=403)
+
+    # الطالب يمكنه رؤية نقاط التحقق لدروسه فقط
+    if is_student and student.classid and lesson.subjectid and lesson.subjectid.classid != student.classid:
         return JsonResponse({'error': 'ليس لديك صلاحية لعرض هذه النقاط'}, status=403)
 
     checkpoints = Checkpoint.objects.filter(lessonid=lesson).order_by('paragraph_index')
@@ -1404,9 +1418,15 @@ def checkpoint_list(request, lesson_id):
         checkpoint_data.append({
             'checkpoint_id': cp.checkpointid,
             'paragraph_index': cp.paragraph_index,
+            'video_timestamp': cp.video_timestamp,
+            'content_type': cp.content_type,
+            'checkpoint_type': cp.checkpoint_type,
+            'display_type': cp.display_type,
             'question': cp.question,
             'option_a': cp.option_a,
             'option_b': cp.option_b,
+            'option_c': cp.option_c,
+            'option_d': cp.option_d,
             'correct_answer': cp.correct_answer,
         })
 
@@ -1477,7 +1497,7 @@ def checkpoint_results(request, lesson_id):
     if teacher and lesson.teacherid != teacher:
         return JsonResponse({'error': 'ليس لديك صلاحية لعرض هذه النتائج'}, status=403)
 
-    checkpoints = Checkpoint.objects.filter(lessonid=lesson).order_by('paragraph_index')
+    checkpoints = Checkpoint.objects.filter(lessonid=lesson, content_type='text').order_by('paragraph_index')
     results = []
 
     for cp in checkpoints:

@@ -204,6 +204,47 @@ body { background: var(--bg); font-family: 'Cairo', 'Tajawal', sans-serif; color
   .attention-toggle-btn{width:38px;height:38px;font-size:.9rem;bottom:10px;left:10px;}
 }
 .attention-toggle-btn.disabled { background: var(--muted); cursor: not-allowed; }
+
+/* ══ Checkpoint Popup Styles ═════════════════════════════════════════ */
+.checkpoint-popup {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+}
+.checkpoint-popup.d-none { display: none !important; }
+.checkpoint-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+}
+.checkpoint-box {
+  position: relative; z-index: 1;
+  background: #fff; border-radius: 1.25rem; padding: 2rem;
+  max-width: 480px; width: 90%;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+}
+.checkpoint-title {
+  font-family: 'Cairo', sans-serif;
+  font-size: 1.1rem; font-weight: 800; margin-bottom: 1.25rem;
+  color: #1e293b; display: flex; align-items: center; gap: 0.5rem;
+}
+.checkpoint-title i { color: #3b82f6; }
+.checkpoint-question {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 1rem; font-weight: 700;
+  color: #1e293b; margin-bottom: 1.25rem; line-height: 1.6;
+}
+.checkpoint-options { display: flex; flex-direction: column; gap: 0.75rem; }
+.checkpoint-option {
+  padding: 0.85rem 1rem; border: 2px solid #e2e8f0; border-radius: 10px;
+  font-family: 'Tajawal', sans-serif; font-size: 0.95rem; font-weight: 600;
+  color: #1e293b; cursor: pointer; transition: all 0.2s; text-align: right;
+}
+.checkpoint-option:hover {
+  border-color: #3b82f6; background: #eff6ff;
+}
+.checkpoint-option.selected {
+  border-color: #3b82f6; background: #eff6ff;
+}
 </style>
 {% endblock %}
 
@@ -270,9 +311,290 @@ body { background: var(--bg); font-family: 'Cairo', 'Tajawal', sans-serif; color
   </div>
 </div>
 
+<!-- Checkpoint popup -->
+<div class="checkpoint-popup d-none" id="checkpointPopup">
+  <div class="checkpoint-backdrop"></div>
+  <div class="checkpoint-box">
+    <h5 class="checkpoint-title" id="checkpointTitle"><i class="fas fa-question-circle"></i> نقطة تحقق</h5>
+    <div class="checkpoint-question" id="checkpointQuestion"></div>
+    <div class="checkpoint-options">
+      <button type="button" class="checkpoint-option" id="checkpointOptionA" onclick="selectCheckpointAnswer('A')"></button>
+      <button type="button" class="checkpoint-option" id="checkpointOptionB" onclick="selectCheckpointAnswer('B')"></button>
+      {% if checkpoint_option_c %}
+      <button type="button" class="checkpoint-option" id="checkpointOptionC" onclick="selectCheckpointAnswer('C')"></button>
+      {% endif %}
+      {% if checkpoint_option_d %}
+      <button type="button" class="checkpoint-option" id="checkpointOptionD" onclick="selectCheckpointAnswer('D')"></button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
 {% include 'student_app/chatbot_widget.html' %}
 
 <script>
+// ══════════════════════════════════════════════════════════════
+// Checkpoint System for Video
+// ══════════════════════════════════════════════════════════════
+
+var CHECKPOINTS = [];
+var currentCheckpoint = null;
+var checkpointAnswered = {};
+var checkpointStartTime = null;
+var videoPausedForCheckpoint = false;
+var checkpointCheckInterval = null;
+
+// Load checkpoints from server
+function loadCheckpoints() {
+  // Load all checkpoints for the lesson
+  fetch("{% url 'learning:checkpoint_list' lesson_id %}")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.ok && data.checkpoints) {
+        CHECKPOINTS = data.checkpoints.filter(function(cp) {
+          return cp.content_type === 'video' && cp.video_timestamp !== null;
+        });
+        console.log('[Checkpoint] Loaded all video checkpoints:', CHECKPOINTS);
+      } else if (data.error) {
+        console.error('[Checkpoint] Error loading checkpoints:', data.error);
+      }
+    })
+    .catch(function(e) {
+      console.error('[Checkpoint] Error loading checkpoints:', e);
+    });
+}
+
+// Show checkpoint popup
+function showCheckpointPopup(checkpoint) {
+  console.log('[Checkpoint] Showing popup for checkpoint:', checkpoint);
+
+  currentCheckpoint = checkpoint;
+  checkpointStartTime = Date.now();
+
+  // Set popup content
+  document.getElementById('checkpointQuestion').textContent = checkpoint.question;
+  document.getElementById('checkpointOptionA').textContent = checkpoint.option_a;
+  document.getElementById('checkpointOptionB').textContent = checkpoint.option_b;
+
+  // Handle optional options
+  var optionC = document.getElementById('checkpointOptionC');
+  var optionD = document.getElementById('checkpointOptionD');
+  if (checkpoint.option_c && optionC) {
+    optionC.textContent = checkpoint.option_c;
+    optionC.style.display = 'block';
+  } else if (optionC) {
+    optionC.style.display = 'none';
+  }
+  if (checkpoint.option_d && optionD) {
+    optionD.textContent = checkpoint.option_d;
+    optionD.style.display = 'block';
+  } else if (optionD) {
+    optionD.style.display = 'none';
+  }
+
+  // Show popup
+  var popup = document.getElementById('checkpointPopup');
+  popup.classList.remove('d-none');
+
+  // Pause video if playing
+  if (videoElement && !videoElement.paused) {
+    videoElement.pause();
+    videoPausedForCheckpoint = true;
+  }
+
+  // Play audio alert "أجب عن السؤال التالي"
+  playCheckpointAlert();
+}
+
+// Close checkpoint popup
+function closeCheckpointPopup(resumeVideo) {
+  console.log('[Checkpoint] Closing popup, resumeVideo:', resumeVideo);
+
+  var popup = document.getElementById('checkpointPopup');
+  popup.classList.add('d-none');
+
+  currentCheckpoint = null;
+
+  // Resume video only if requested (correct answer)
+  if (resumeVideo && videoPausedForCheckpoint && videoElement) {
+    videoElement.play();
+    videoPausedForCheckpoint = false;
+  }
+}
+
+// Select checkpoint answer
+function selectCheckpointAnswer(answer) {
+  console.log('[Checkpoint] Answer selected:', answer);
+
+  if (!currentCheckpoint) return;
+
+  // Calculate response time in seconds
+  var responseTime = 0;
+  if (checkpointStartTime) {
+    responseTime = (Date.now() - checkpointStartTime) / 1000;
+  }
+
+  // Mark checkpoint as answered
+  checkpointAnswered[currentCheckpoint.checkpoint_id] = true;
+
+  // Save answer to server with response time
+  saveCheckpointAnswer(currentCheckpoint.checkpoint_id, answer, responseTime, videoElement.currentTime);
+
+  // Check if answer is correct
+  var isCorrect = (answer === currentCheckpoint.correct_answer);
+  console.log('[Checkpoint] Answer is correct:', isCorrect);
+
+  // If answer is incorrect, rewind video 5 seconds then resume
+  if (!isCorrect) {
+    console.log('[Checkpoint] Incorrect answer - rewinding 5 seconds then resuming');
+    if (videoElement) {
+      videoElement.currentTime = Math.max(0, videoElement.currentTime - 5);
+      // Resume video after rewinding
+      videoElement.play();
+      videoPausedForCheckpoint = false;
+    }
+    // Close popup WITHOUT resuming video (already resumed above)
+    closeCheckpointPopup(false);
+  } else {
+    // Close popup WITH resuming video (correct answer)
+    closeCheckpointPopup(true);
+  }
+}
+
+// Save checkpoint answer to server
+function saveCheckpointAnswer(checkpointId, answer, responseTime, currentPosition) {
+  console.log('[Checkpoint] Saving answer:', checkpointId, answer, 'Response time:', responseTime + 's', 'Current position:', currentPosition + 's');
+
+  fetch("{% url 'learning:submit_checkpoint_answer' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': CSRF_TOKEN
+    },
+    body: JSON.stringify({
+      checkpoint_id: checkpointId,
+      selected_answer: answer,
+      session_id: SESSION_ID,
+      response_time: responseTime,
+      current_position: currentPosition,
+      content_type: 'video'
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      console.log('[Checkpoint] Answer saved successfully');
+    } else {
+      console.error('[Checkpoint] Error saving answer:', data.error);
+    }
+  })
+  .catch(function(e) {
+    console.error('[Checkpoint] Error saving answer:', e);
+  });
+}
+
+// Play checkpoint alert audio
+function playCheckpointAlert() {
+  console.log('[Checkpoint] Playing audio alert: "أجب عن السؤال التالي"');
+
+  if ('speechSynthesis' in window) {
+    var utterance = new SpeechSynthesisUtterance('أجب عن السؤال التالي');
+    utterance.lang = 'ar-SA';
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    utterance.volume = 0.9;
+
+    // Try to find Arabic voice
+    var voices = window.speechSynthesis.getVoices();
+    var arabicVoice = voices.find(function(v) { return v.lang.indexOf('ar') === 0; });
+    if (arabicVoice) {
+      utterance.voice = arabicVoice;
+    }
+
+    utterance.onend = function() {
+      console.log('[Checkpoint] Alert audio completed');
+    };
+    utterance.onerror = function(e) {
+      console.error('[Checkpoint] Alert audio error:', e);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+// Check for scheduled checkpoints based on video time
+function checkScheduledCheckpoints() {
+  if (!videoElement || videoElement.paused || currentCheckpoint) return;
+
+  var currentTime = videoElement.currentTime;
+
+  CHECKPOINTS.forEach(function(checkpoint) {
+    // Only show checkpoints with display_type 'scheduled' or 'both'
+    if (checkpoint.display_type !== 'scheduled' && checkpoint.display_type !== 'both') return;
+
+    // Only show if not already answered
+    if (checkpointAnswered[checkpoint.checkpoint_id]) return;
+
+    // Check if we've reached the checkpoint timestamp (with 0.5 second tolerance)
+    if (checkpoint.video_timestamp && Math.abs(currentTime - checkpoint.video_timestamp) < 0.5) {
+      console.log('[Checkpoint] Showing scheduled checkpoint at time:', currentTime, 'checkpoint timestamp:', checkpoint.video_timestamp);
+      showCheckpointPopup(checkpoint);
+    }
+  });
+}
+
+// Find nearest checkpoint before current time for distraction
+function findNearestCheckpointBeforeTime(currentTime) {
+  var nearest = null;
+  var minDiff = Infinity;
+
+  CHECKPOINTS.forEach(function(checkpoint) {
+    // Only consider checkpoints with display_type 'distraction' or 'both'
+    if (checkpoint.display_type !== 'distraction' && checkpoint.display_type !== 'both') return;
+
+    // Only consider checkpoints that haven't been answered
+    if (checkpointAnswered[checkpoint.checkpoint_id]) return;
+
+    // Check if checkpoint timestamp is before current time
+    if (checkpoint.video_timestamp && checkpoint.video_timestamp < currentTime) {
+      var diff = currentTime - checkpoint.video_timestamp;
+      if (diff < minDiff) {
+        minDiff = diff;
+        nearest = checkpoint;
+      }
+    }
+  });
+
+  return nearest;
+}
+
+// Show checkpoint on distraction
+function showCheckpointOnDistraction() {
+  if (!videoElement || currentCheckpoint) return;
+
+  var currentTime = videoElement.currentTime;
+  var checkpoint = findNearestCheckpointBeforeTime(currentTime);
+
+  if (checkpoint) {
+    console.log('[Checkpoint] Showing checkpoint on distraction at time:', currentTime, 'nearest checkpoint:', checkpoint.video_timestamp);
+    showCheckpointPopup(checkpoint);
+  }
+}
+
+// Start checkpoint checking interval
+function startCheckpointChecking() {
+  if (checkpointCheckInterval) clearInterval(checkpointCheckInterval);
+  checkpointCheckInterval = setInterval(checkScheduledCheckpoints, 500); // Check every 500ms
+}
+
+// Stop checkpoint checking interval
+function stopCheckpointChecking() {
+  if (checkpointCheckInterval) {
+    clearInterval(checkpointCheckInterval);
+    checkpointCheckInterval = null;
+  }
+}
+
 // ══════════════════════════════════════════════════════════════
 // Attention Tracking System - Real WebSocket Implementation
 // ══════════════════════════════════════════════════════════════
@@ -306,7 +628,9 @@ var _videoState = {
 var _alertState = {
   shortAlertShown: false,
   longAlertActive: false,
-  audioPlaying: false
+  audioPlaying: false,
+  checkpointTimeout: null,
+  distractionStartTime: null
 };
 
 // Configuration
@@ -453,7 +777,10 @@ function onVideoPlay() {
   console.log('[Video] Video playing');
   _videoState.wasPlayingBeforeDistraction = true;
   _videoState.pausedByUser = false;
-  
+
+  // Start checkpoint checking
+  startCheckpointChecking();
+
   // Start tracking only when video plays
   if (!trackingActive) {
     startTracking();
@@ -468,13 +795,16 @@ function onVideoPlay() {
 
 function onVideoPause() {
   console.log('[Video] Video paused');
-  
+
+  // Stop checkpoint checking
+  stopCheckpointChecking();
+
   // If paused by system (distraction), don't stop tracking
   if (_videoState.pausedBySystem) {
     console.log('[Video] ℹ Paused by system (distraction) - tracking continues');
     return;
   }
-  
+
   // User manually paused the video
   console.log('[Video] ❚❚ User paused video manually - pausing frame sending (session remains)');
   _videoState.pausedByUser = true;
@@ -485,6 +815,7 @@ function onVideoPause() {
 function onVideoEnded() {
   console.log('[Video] Video ended');
   _videoState.wasPlayingBeforeDistraction = false;
+  stopCheckpointChecking();
   stopTracking();
 }
 
@@ -526,39 +857,42 @@ function startTracking() {
 function stopTracking() {
   console.log('[Attention] 🛑 Stopping tracking');
   trackingActive = false;
-  
+
+  // Stop checkpoint checking
+  stopCheckpointChecking();
+
   // Stop sending frames
   stopFrameSending();
-  
+
   // Close WebSocket
   if (ws) {
     ws.close();
     ws = null;
     console.log('[Attention] WebSocket closed');
   }
-  
+
   // Stop camera stream
   if (_mediaStream) {
     _mediaStream.getTracks().forEach(function(t) { t.stop(); });
     _mediaStream = null;
     console.log('[Attention] Camera stream stopped');
   }
-  
+
   // Stop all audio alerts
   cancelAllAlerts();
-  
+
   // Hide all visual alerts
   clearAlerts();
-  
+
   // Reset state
   resetAttentionState();
-  
+
   // Hide UI
   var statusElement = document.getElementById('attentionStatus');
   if (statusElement) {
     statusElement.style.display = 'none';
   }
-  
+
   // Notify backend to stop the session (best-effort)
   try {
     fetch("{% url 'student:attention_stop' %}", {
@@ -772,6 +1106,19 @@ function handleDistractionLevel(level, duration) {
     showLongAlert();
   } else if (level === 'severe' && duration >= 10) {
     showSevereAlert();
+    
+    // Start 10-second timer for checkpoint
+    if (!_alertState.checkpointTimeout && !_alertState.distractionStartTime) {
+      _alertState.distractionStartTime = Date.now();
+      console.log('[Attention] Starting 10-second timer for checkpoint');
+      
+      _alertState.checkpointTimeout = setTimeout(function() {
+        console.log('[Attention] 10-second timer elapsed, showing checkpoint');
+        showCheckpointOnDistraction();
+        _alertState.checkpointTimeout = null;
+        _alertState.distractionStartTime = null;
+      }, 10000); // 10 seconds
+    }
   }
 }
 
@@ -877,6 +1224,14 @@ function onAttentiveDetected() {
   _alertState.shortAlertShown = false;
   _alertState.audioPlaying = false;
   
+  // Cancel checkpoint timer if active
+  if (_alertState.checkpointTimeout) {
+    clearTimeout(_alertState.checkpointTimeout);
+    _alertState.checkpointTimeout = null;
+    _alertState.distractionStartTime = null;
+    console.log('[Attention] Checkpoint timer cancelled due to focus return');
+  }
+  
   // Auto-resume video if paused by system
   if (videoElement && videoElement.paused && _videoState.pausedBySystem) {
     console.log('[Attention] Resuming video after focus returned');
@@ -973,10 +1328,13 @@ function showAlert(msg) {
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log('[Attention] Initializing system');
-  
+
   initVoice();
   setupVideoEvents();
-  
+
+  // Load checkpoints for the lesson
+  loadCheckpoints();
+
   // Request camera permission
   requestCameraAndStart();
 });

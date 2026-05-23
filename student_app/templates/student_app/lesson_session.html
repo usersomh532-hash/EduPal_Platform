@@ -157,9 +157,9 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
   cursor:pointer;text-decoration:none;transition:opacity .2s;
 }
   .btn-finish:hover{opacity:.9;color:#fff;}
-  
-  /* تأثير الاهتزاز عند التشتت الشديد */
-  @keyframes shake {
+
+  /* تأثير الاهتزاز عند التشتت الشديد - تم إزالته حسب الطلب */
+  /* @keyframes shake {
     0% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
     50% { transform: translateX(5px); }
@@ -171,7 +171,7 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     perspective: 1000px;
-  }
+  } */
 
   /* Checkpoint popup styles */
   .checkpoint-popup{
@@ -227,6 +227,9 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
       <i class="fas fa-stop-circle"></i> إيقاف
     </button>
   </div>
+
+  <!-- Alert toast element -->
+  <div id="alert-toast" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;padding:1rem 1.5rem;border-radius:12px;color:#fff;font-weight:700;font-family:'Tajawal',sans-serif;font-size:.9rem;box-shadow:0 8px 24px rgba(0,0,0,.2);display:none;text-align:center;min-width:300px;"></div>
 
   <div style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem 1rem;margin:1rem 0;font-size:.85rem;color:#64748b;line-height:1.5;text-align:center;">
     <i class="fas fa-info-circle" style="margin-left:.4rem;"></i>
@@ -308,30 +311,6 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
 </div>
 
 {% include 'student_app/chatbot_widget.html' %}
-
-
-<div id="distraction-popup" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  background:linear-gradient(135deg,#1e293b,#334155);color:#fff;border-radius:16px;
-  padding:2rem;box-shadow:0 16px 64px rgba(0,0,0,0.4);z-index:10000;max-width:400px;
-  display:none;text-align:center;">
-  <div style="font-size:1.5rem;margin-bottom:1rem;">⚠️</div>
-  <h3 style="margin:0 0 1rem 0;font-size:1.2rem;">فقدت تركيزك</h3>
-  <p style="margin:0 0 1.5rem 0;color:#cbd5e1;line-height:1.6;">
-    يمكنك إعادة آخر خمس ثوانٍ للحفاظ على اتصالك بسياق الدرس.
-  </p>
-  <div style="display:flex;gap:1rem;justify-content:center;">
-    <button id="rewind-5s-btn" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;
-      border:none;padding:0.75rem 1.5rem;border-radius:8px;cursor:pointer;font-weight:600;
-      transition:all 0.2s;">
-      إعادة 5 ثوانٍ
-    </button>
-    <button id="close-popup-btn" style="background:linear-gradient(135deg,#64748b,#475569);color:#fff;
-      border:none;padding:0.75rem 1.5rem;border-radius:8px;cursor:pointer;font-weight:600;
-      transition:all 0.2s;">
-      متابعة
-    </button>
-  </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -365,6 +344,22 @@ var currentCheckpoint = null;
 var audioPausedForCheckpoint = false;
 var checkpointAnswered = {};
 var checkpointStartTime = null;
+var currentParagraphIndex = -1; // Track current paragraph during highlighting
+var voicesLoaded = false; // Track if voices are loaded
+
+// تحميل الأصوات مسبقاً عند تحميل الصفحة
+if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = function(){
+        voicesLoaded = true;
+        var voices = window.speechSynthesis.getVoices();
+        console.log('[Checkpoint] Voices loaded:', voices.length);
+        var arabicVoices = voices.filter(function(v){
+            return v.lang.indexOf('ar') === 0;
+        });
+        console.log('[Checkpoint] Arabic voices available:', arabicVoices.length);
+    };
+}
 
 
 var TIMING_URL = (function(){
@@ -596,6 +591,12 @@ var AudioManager = (function(){
     function _resumeLessonAudioAndSync() {
         // Only resume if tracking is still active and not paused by user
         if (!trackingActive || _sessionState.pausedByUser) return;
+        
+        // لا تستأنف الصوت إذا كانت نقطة التحقق مفتوحة
+        if (currentCheckpoint) {
+            console.log('[Audio] Not resuming audio - checkpoint is open');
+            return;
+        }
 
         console.log('[Audio] Resuming lesson audio after TTS');
         _state.resumeCheckAttempts = 0;
@@ -864,25 +865,6 @@ document.addEventListener('DOMContentLoaded', function(){
             }
         });
     }
-
-    // event listeners لأزرار النافذة المنبثقة
-    var rewindBtn = document.getElementById('rewind-5s-btn');
-    if (rewindBtn) {
-        rewindBtn.addEventListener('click', rewindAudio5Seconds);
-    }
-
-    var closePopupBtn = document.getElementById('close-popup-btn');
-    if (closePopupBtn) {
-        closePopupBtn.addEventListener('click', function(){
-            hideDistractionPopup();
-            // إعادة تشغيل الصوت تلقائياً عند إغلاق النافذة
-            var audio = document.getElementById('topAudio');
-            if (audio && audio.paused && _attentionState.audioPausedForAlert) {
-                audio.play();
-                _attentionState.audioPausedForAlert = false;
-            }
-        });
-    }
 });
 
 function distractionBannerText(s){
@@ -892,10 +874,12 @@ function distractionBannerText(s){
         return fn + '، انتباهك بعيد جداً الآن — لنساعدك على العودة للدرس.';
     }
     if (level === 'medium') {
-        return fn + '، هناك تشتت ملحوظ. ركّز معي مرة أخرى.';
+        // تم إزالة رسالة التشتت المتوسط
+        return '';
     }
     if (level === 'low') {
-        return fn + '، يبدو أنك مشتت قليلاً. أعد نظرك إلى الشاشة.';
+        // تم إزالة رسالة التشتت البسيط
+        return '';
     }
     return distractionBannerTextFallback(s);
 }
@@ -907,7 +891,7 @@ function distractionBannerTextFallback(s){
     var warn = !!s.is_warning_distraction;
     if (c === 'head_turn'){
         return sig ? (fn + '، ثبّت رأسك أمام الشاشة — نحتاج تركيزك على الدرس.')
-            : (warn ? (fn + '، حاول ترجع وجهك نحو الشاشة والدرس.') : (fn + '، ركّز وجهك نحو الشاشة قليلاً.'));
+            : (warn ? (fn + '، حاول ترجع وجهك نحو الشاشة والدرس.') : '');
     }
     if (c === 'drowsy'){
         return sig ? (fn + '، افتح عينيك وتابع معنا — الجلسة ما زالت شغالة.')
@@ -918,7 +902,7 @@ function distractionBannerTextFallback(s){
             : (warn ? (fn + '، رجّع نظرك لمحتوى الدرس.') : (fn + '، تابع قراءة الشاشة معنا.'));
     }
     return sig ? (fn + '، حافظ على تركيزك مع الجلسة — أنت قادر!')
-        : (warn ? (fn + '، حاول ترجع للتركيز مع الدرس.') : (fn + '، ركّز قليلاً مع الدرس.'));
+        : (warn ? (fn + '، حاول ترجع للتركيز مع الدرس.') : '');
 }
 
 function clearDistractionBanner(){
@@ -992,39 +976,24 @@ function processAttentionState(s) {
             }
         }
 
-        // تنبيه صوتي بعد 7 ثواني من التشتت مع إيقاف الصوت فقط
-        if (duration >= 7.0 && _attentionState.lastAlertLevel !== 'audio_alert') {
-            _attentionState.lastAlertLevel = 'audio_alert';
-            var toastMsg = distractionToastMessage(s);
-            if (toastMsg) {
-                // إيقاف الصوت قبل التنبيه الصوتي لمنع التداخل
-                var audio = document.getElementById('topAudio');
-                if (audio && !audio.paused) {
-                    audio.pause();
-                    _attentionState.audioPausedForAlert = true;
-                    // التتبع يستمر في العمل - لا نوقفه
-                }
-                AudioManager.playAlert(toastMsg, true);
-                // إظهار نافذة منبثقة مع خيار إعادة آخر 5 ثوانٍ
-                showDistractionPopup();
-            }
-        }
+        // تنبيه صوتي بعد 7 ثواني من التشتت - تم إزالته حسب الطلب
+        // if (duration >= 7.0 && _attentionState.lastAlertLevel !== 'audio_alert') {
+        //     _attentionState.lastAlertLevel = 'audio_alert';
+        //     var toastMsg = distractionToastMessage(s);
+        //     if (toastMsg) {
+        //         // إيقاف الصوت قبل التنبيه الصوتي لمنع التداخل
+        //         var audio = document.getElementById('topAudio');
+        //         if (audio && !audio.paused) {
+        //             audio.pause();
+        //             _attentionState.audioPausedForAlert = true;
+        //             // التتبع يستمر في العمل - لا نوقفه
+        //         }
+        //         AudioManager.playAlert(toastMsg, true);
+        //     }
+        // }
     } else {
-        if (_attentionState.distracted) {
-            // عودة عمل الصوت تلقائياً عند عودة التركيز (التتبع يستمر)
-            if (_attentionState.audioPausedForAlert) {
-                var audio = document.getElementById('topAudio');
-                if (audio && audio.paused) {
-                    audio.play();
-                    _attentionState.audioPausedForAlert = false;
-                    // التتبع يستمر في العمل - لا نحتاج لاستئنافه
-                }
-            }
-            // إغلاق النافذة المنبثقة بعد ثانية إضافية عند عودة التركيز
-            setTimeout(function(){
-                hideDistractionPopup();
-            }, 1000);
-        }
+        // عودة الانتباه - لا تستأنف الصوت تلقائياً
+        // الصوت يستأنف فقط عند الإجابة على السؤال المعرفي
         _attentionState.distracted = false;
         _attentionState.level = 'none';
         _attentionState.startTime = null;
@@ -1032,15 +1001,24 @@ function processAttentionState(s) {
         _attentionState.lastToastLevel = null;
         _attentionState.eyeClosureEventActive = false;
         _attentionState.significantDistractionCounted = false;
-        // Always resume audio when attention returns (unless paused by user)
         _attentionState.pausedByDistraction = false;
-        resumeLessonAudio();
     }
 }
 
 function feedbackForDistractionLevel(level, s, duration) {
+    // Check for adaptive checkpoint in current paragraph when distraction lasts 10 seconds
+    // This check should happen BEFORE the early return to ensure checkpoint triggers
+    if (currentParagraphIndex >= 0 && level !== 'none' && duration >= 10) {
+        var checkpoint = checkpointsMap[currentParagraphIndex];
+        if (checkpoint && checkpoint.checkpoint_type === 'adaptive' && !checkpointAnswered[currentParagraphIndex]) {
+            console.log('[Checkpoint] Showing adaptive checkpoint for paragraph:', currentParagraphIndex, 'Distraction duration:', duration + 's');
+            showCheckpointPopup(checkpoint);
+        }
+    }
+    
     if (_attentionState.lastAlertLevel === level) return;
     _attentionState.lastAlertLevel = level;
+    
     if (level === 'short') {
         // لا نوقف الصوت للتشتت القصير، فقط نوضح الحالة على الشريط.
         pulseAttentionBar('distracted');
@@ -1054,7 +1032,7 @@ function feedbackForDistractionLevel(level, s, duration) {
         // لا نوقف الصوت هنا - نوقفه فقط بعد 7 ثواني في التنبيه الصوتي
         _attentionState.pausedByDistraction = true;
         pulseAttentionBar('distracted');
-        shakeUI();
+        // shakeUI() - تم إزالة الاهتزاز حسب الطلب
     }
 }
 
@@ -1069,6 +1047,11 @@ function pauseLessonAudio() {
 
 function resumeLessonAudio() {
     var audio = document.getElementById('topAudio');
+    // لا تستأنف الصوت إذا كانت نقطة التحقق مفتوحة
+    if (currentCheckpoint) {
+        console.log('[Audio] Not resuming audio - checkpoint is open');
+        return;
+    }
     // تشغيل الصوت إذا كان التتبع نشطاً ولم يوقفه المستخدم يدوياً.
     if (audio && audio.paused && trackingActive && !_sessionState.pausedByUser && !_sessionState.audioPausedByUser) {
         audio.play().catch(function(e){
@@ -1097,12 +1080,12 @@ function pulseAttentionBar(cls) {
     setTimeout(function(){ bar.classList.remove(cls); }, 900);
 }
 
-function shakeUI() {
-    var container = document.querySelector('.session-wrap');
-    if (!container) return;
-    container.classList.add('shake-ui');
-    setTimeout(function(){ container.classList.remove('shake-ui'); }, 520);
-}
+// function shakeUI() {
+//     var container = document.querySelector('.session-wrap');
+//     if (!container) return;
+//     container.classList.add('shake-ui');
+//     setTimeout(function(){ container.classList.remove('shake-ui'); }, 520);
+// }
 
 window.addEventListener('load', function(){ 
     AudioManager.init();
@@ -1162,28 +1145,8 @@ function _doCameraRequest(){
 }
 
 function showCameraStatus(s){
-    var t = document.getElementById('alert-toast'); if (!t) return;
-    if (s === 'granted'){
-        t.style.background = 'linear-gradient(135deg,#059669,#10b981)';
-        t.textContent = '✅ تم تفعيل الكاميرا — تتبع الانتباه نشط';
-        t.style.display = 'block';
-        setTimeout(function(){ t.style.display = 'none'; }, 4000);
-    } else if (s === 'denied'){
-        t.style.background = 'linear-gradient(135deg,#b45309,#d97706)';
-        t.innerHTML = '⚠️ رُفض إذن الكاميرا — <a href="#" onclick="openCameraSettings()" style="color:#fff;text-decoration:underline;font-weight:700;">انقر هنا لإعادة التفعيل</a>';
-        t.style.display = 'block';
-        setTimeout(function(){ t.style.display = 'none'; }, 10000);
-    } else if (s === 'noCam'){
-        t.style.background = 'linear-gradient(135deg,#475569,#64748b)';
-        t.textContent = 'لا توجد كاميرا — يمكنك متابعة الدرس عادةً';
-        t.style.display = 'block';
-        setTimeout(function(){ t.style.display = 'none'; }, 5000);
-    } else if (s === 'insecure'){
-        t.style.background = 'linear-gradient(135deg,#0369a1,#0284c7)';
-        t.textContent = 'تتبع الانتباه يحتاج اتصالاً آمناً (HTTPS) أو localhost — يمكنك متابعة الدرس عادةً';
-        t.style.display = 'block';
-        setTimeout(function(){ t.style.display = 'none'; }, 7000);
-    }
+    // تم إخفاء جميع رسائل حالة الكاميرا
+    return;
 }
 
 function openCameraSettings(){
@@ -1220,13 +1183,21 @@ function startTracking(){
             trackingActive = true;
             connectWebSocket(d.ws_url);
             updateBar('attentive', 'التتبع نشط ✅', 100);
+
+            // تشغيل الصوت تلقائياً عند بدء التتبع
+            var audio = document.getElementById('topAudio');
+            if (audio && audio.paused) {
+                audio.play().catch(function(e){
+                    console.log('[Audio] Autoplay blocked:', e);
+                });
+            }
         } else {
             showAlert('فشل بدء تتبع الانتباه. سنحاول إعادة الاتصال.');
             hideAttentionBar();
             setTimeout(startTracking, 5000);
         }
     })
-    .catch(function(){ 
+    .catch(function(){
         showAlert('تعذر التواصل مع خادم تتبع الانتباه. إعادة المحاولة بعد 5 ثوانٍ.');
         hideAttentionBar(true);
         setTimeout(startTracking, 5000); // إعادة المحاولة بعد 5 ثوانٍ
@@ -1368,28 +1339,8 @@ function updateBar(cls, label, score){
 }
 
 function showAlert(msg){
-    var t = document.getElementById('alert-toast'); if (!t) return;
-    t.textContent = msg;
-    t.style.background = 'linear-gradient(135deg,var(--sky-dk),var(--sky))';
-    t.style.display = 'block';
-    if (alertTimer) clearTimeout(alertTimer);
-    alertTimer = setTimeout(function(){ t.style.display = 'none'; }, 5000);
-}
-
-// إظهار نافذة منبثقة عند التنبيه الصوتي
-function showDistractionPopup(){
-    var popup = document.getElementById('distraction-popup');
-    if (popup) {
-        popup.style.display = 'block';
-    }
-}
-
-// إخفاء نافذة منبثقة
-function hideDistractionPopup(){
-    var popup = document.getElementById('distraction-popup');
-    if (popup) {
-        popup.style.display = 'none';
-    }
+    // تم إخفاء جميع رسائل التنبيه العامة
+    return;
 }
 
 // إعادة آخر 5 ثوانٍ من الصوت
@@ -1399,23 +1350,97 @@ function rewindAudio5Seconds(){
         audio.currentTime = Math.max(0, audio.currentTime - 5);
         audio.play();
     }
-    hideDistractionPopup();
+}
+
+// تشغيل تنبيه صوتي "أجب عن السؤال التالي" عند ظهور نقطة التحقق
+function playCheckpointAlert() {
+    console.log('[Checkpoint] Playing audio alert: "أجب عن السؤال التالي"');
+    
+    // الطريقة الأولى: استخدام Web Speech API
+    if ('speechSynthesis' in window) {
+        // إلغاء أي صوت قيد التشغيل
+        window.speechSynthesis.cancel();
+        
+        // التأكد من تحميل الأصوات
+        var voices = window.speechSynthesis.getVoices();
+        console.log('[Checkpoint] Available voices:', voices.length);
+        
+        var utterance = new SpeechSynthesisUtterance('أجب عن السؤال التالي');
+        utterance.lang = 'ar-SA';
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        
+        // محاولة اختيار صوت عربي
+        var arabicVoice = voices.filter(function(v){
+            return v.lang.indexOf('ar') === 0;
+        });
+        
+        if (arabicVoice.length > 0) {
+            utterance.voice = arabicVoice[0];
+            console.log('[Checkpoint] Using Arabic voice:', arabicVoice[0].name);
+        } else {
+            console.warn('[Checkpoint] No Arabic voice found, using default');
+            utterance.lang = 'ar'; // محاولة عامة للعربية
+        }
+        
+        utterance.onend = function(){
+            console.log('[Checkpoint] Alert audio completed');
+        };
+        utterance.onerror = function(e){
+            console.error('[Checkpoint] Alert audio error:', e);
+            // في حالة فشل Web Speech API، نحاول استخدام ملف صوتي
+            playCheckpointAlertAudioFile();
+        };
+        
+        // تشغيل الصوت مع تأخير بسيط لضمان جاهزية المتصفح
+        setTimeout(function(){
+            window.speechSynthesis.speak(utterance);
+            console.log('[Checkpoint] Alert audio started via Web Speech API');
+        }, 100);
+    } else {
+        console.warn('[Checkpoint] Web Speech API not supported, using audio file');
+        playCheckpointAlertAudioFile();
+    }
+}
+
+// الطريقة البديلة: استخدام ملف صوتي مسجل مسبقاً
+function playCheckpointAlertAudioFile() {
+    console.log('[Checkpoint] Trying to play audio file alert');
+
+    // استخدام TTS API لتوليد ملف صوتي
+    fetch("{% url 'student:tts_alert' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': CSRF_TOKEN
+        },
+        body: JSON.stringify({
+            text: 'أجب عن السؤال التالي'
+        })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        console.log('[Checkpoint] TTS response:', d);
+        if (d.ok && d.audio_url) {
+            var alertAudio = new Audio(d.audio_url);
+            alertAudio.volume = 1.0;
+            alertAudio.play().catch(function(e){
+                console.error('[Checkpoint] Alert audio play error:', e);
+            });
+        } else {
+            console.error('[Checkpoint] TTS failed:', d.error || 'Unknown error');
+        }
+    })
+    .catch(function(e){
+        console.error('[Checkpoint] Error generating alert audio:', e);
+    });
 }
 
 /** رسائل التشتت من الخادم (غالباً تتضمن اسم الطالب) — لون أوضح من تنبيهات الكاميرا */
 function showDistractionToast(msg, isFirm){
-    var t = document.getElementById('alert-toast'); if (!t) return;
-    t.textContent = msg;
-    t.style.background = isFirm
-        ? 'linear-gradient(135deg,#991b1b,#ef4444)'
-        : 'linear-gradient(135deg,#b45309,#ea580c)';
-    t.style.display = 'block';
-
-    if (alertTimer) clearTimeout(alertTimer);
-    alertTimer = setTimeout(function(){
-        t.style.display = 'none';
-        t.style.background = 'linear-gradient(135deg,var(--sky-dk),var(--sky))';
-    }, 6500);
+    // تم إخفاء جميع رسائل التشتت
+    return;
 }
 
 function handleMediaControl(s) {
@@ -1501,8 +1526,14 @@ function onParagraphEnd(paraIndex) {
         return;
     }
 
+    // Check checkpoint_type - only show mandatory checkpoints at paragraph end
+    if (checkpoint.checkpoint_type !== 'mandatory') {
+        console.log('[Checkpoint] Checkpoint is not mandatory, skipping:', checkpoint.checkpoint_type);
+        return;
+    }
+
     // Show checkpoint popup
-    console.log('[Checkpoint] Showing popup for checkpoint:', checkpoint);
+    console.log('[Checkpoint] Showing mandatory checkpoint for paragraph:', paraIndex);
     showCheckpointPopup(checkpoint);
 }
 
@@ -1521,29 +1552,38 @@ function showCheckpointPopup(checkpoint) {
     var popup = document.getElementById('checkpointPopup');
     popup.classList.remove('d-none');
 
-    // Pause audio
+    // Pause audio and word highlight
     var audio = document.getElementById('topAudio');
     if (audio && !audio.paused) {
         audio.pause();
         audioPausedForCheckpoint = true;
     }
+    pauseWordHighlight();
+
+    // Play audio alert "أجب عن السؤال التالي" - يُشغّل بالتزامن مع ظهور النافذة
+    console.log('[Checkpoint] Triggering audio alert');
+    playCheckpointAlert();
 }
 
-function closeCheckpointPopup() {
-    console.log('[Checkpoint] Closing popup');
+function closeCheckpointPopup(resumeAudio) {
+    console.log('[Checkpoint] Closing popup, resumeAudio:', resumeAudio);
 
     var popup = document.getElementById('checkpointPopup');
     popup.classList.add('d-none');
 
     currentCheckpoint = null;
 
-    // Resume audio if it was paused for checkpoint
-    if (audioPausedForCheckpoint) {
+    // Resume audio only if requested (correct answer)
+    if (resumeAudio && audioPausedForCheckpoint) {
         var audio = document.getElementById('topAudio');
         if (audio && audio.paused) {
             audio.play();
         }
         audioPausedForCheckpoint = false;
+    }
+    
+    if (resumeAudio) {
+        resumeWordHighlight();
     }
 }
 
@@ -1564,14 +1604,36 @@ function selectCheckpointAnswer(answer) {
     // Save answer to server with response time
     saveCheckpointAnswer(currentCheckpoint.checkpoint_id, answer, responseTime);
 
-    // Close popup without showing result
-    closeCheckpointPopup();
+    // Check if answer is correct (compare with correct_answer from checkpoint)
+    var isCorrect = (answer === currentCheckpoint.correct_answer);
+    console.log('[Checkpoint] Answer is correct:', isCorrect);
+
+    // If answer is incorrect, rewind audio 5 seconds then resume
+    if (!isCorrect) {
+        console.log('[Checkpoint] Incorrect answer - rewinding 5 seconds then resuming');
+        var audio = document.getElementById('topAudio');
+        if (audio) {
+            audio.currentTime = Math.max(0, audio.currentTime - 5);
+            // Rewind word highlight as well
+            if (window.WordHighlight && typeof window.WordHighlight.seek === 'function') {
+                window.WordHighlight.seek(audio.currentTime);
+            }
+            // Resume audio after rewinding
+            audio.play();
+            audioPausedForCheckpoint = false;
+        }
+        // Close popup WITHOUT resuming audio (already resumed above)
+        closeCheckpointPopup(false);
+    } else {
+        // Close popup WITH resuming audio (correct answer)
+        closeCheckpointPopup(true);
+    }
 }
 
 function saveCheckpointAnswer(checkpointId, answer, responseTime) {
     console.log('[Checkpoint] Saving answer:', checkpointId, answer, 'Response time:', responseTime + 's');
 
-    fetch("{% url 'learning:student_checkpoint_answer' %}", {
+    fetch("{% url 'learning:submit_checkpoint_answer' %}", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1934,6 +1996,8 @@ function updateHighlight() {
             var paragraph = span.closest('.std-para-block');
             if (paragraph) {
                 var paraIndex = parseInt(paragraph.dataset.paraIdx || '0');
+                // Update current paragraph index
+                currentParagraphIndex = paraIndex;
                 // Check if this is the last word in the paragraph
                 var allSpans = paragraph.querySelectorAll('.wh-word');
                 var lastSpanIndex = Array.from(allSpans).indexOf(span);

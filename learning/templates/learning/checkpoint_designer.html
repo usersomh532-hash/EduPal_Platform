@@ -1,0 +1,542 @@
+{% extends "base.html" %}
+
+{% block title %}تصميم الأسئلة المعرفية{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-question-circle"></i> تصميم الأسئلة المعرفية
+                <small class="text-muted">- {{ lesson.lessontitle }}</small>
+            </h2>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">معلومات الدرس</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>نوع المحتوى:</strong> 
+                        {% if content_type == 'video' %}
+                            <span class="badge bg-info">فيديو</span>
+                        {% else %}
+                            <span class="badge bg-success">نص</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>عدد نقاط التحقق الحالية:</strong> {{ checkpoints.count }}</p>
+                    {% if content_type == 'video' and video_duration %}
+                    <p><strong>مدة الفيديو:</strong> 
+                        <span class="badge bg-warning" id="videoDurationBadge">{{ video_duration }} ثانية</span>
+                        <input type="hidden" id="videoDuration" value="{{ video_duration }}">
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if content_type == 'video' %}
+            <!-- عرض الفيديو للمعلم -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-video"></i> مشاهدة الفيديو</h5>
+                </div>
+                <div class="card-body">
+                    {% if video_url %}
+                    <div class="row">
+                        <div class="col-md-8">
+                            <video id="checkpointVideo" class="w-100" controls style="max-height: 400px;">
+                                <source src="{{ video_url }}" type="video/mp4">
+                                متصفحك لا يدعم تشغيل الفيديو.
+                            </video>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">الوقت الحالي</h6>
+                                    <h4 id="currentTimeDisplay" class="text-primary">0:00</h4>
+                                    <button class="btn btn-primary w-100 mb-2" onclick="captureCurrentTime()">
+                                        <i class="fas fa-clock"></i> التقاط الوقت الحالي
+                                    </button>
+                                    <small class="text-muted">
+                                        شغل الفيديو وأوقفه عند النقطة التي تريد إضافة سؤال فيها، ثم اضغط على زر "التقاط الوقت الحالي"
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        لا يوجد فيديو متاح لهذا الدرس.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- زر إضافة نقطة تحقق جديدة -->
+            <button class="btn btn-primary mb-3" onclick="showCheckpointForm()">
+                <i class="fas fa-plus"></i> إضافة نقطة تحقق جديدة
+            </button>
+
+            <!-- نموذج إضافة نقطة تحقق -->
+            <div id="checkpointForm" class="card mb-4" style="display: none;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">إضافة نقطة تحقق جديدة</h5>
+                </div>
+                <div class="card-body">
+                    <form id="newCheckpointForm">
+                        <input type="hidden" name="lesson_id" value="{{ lesson.lessonid }}">
+                        <input type="hidden" name="content_type" value="{{ content_type }}">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">نوع السؤال</label>
+                                <select class="form-select" name="checkpoint_type" required>
+                                    <option value="mandatory">إجباري - يظهر في الوقت المحدد بالفيديو</option>
+                                    <option value="adaptive">تكيفي - يظهر عند التشتت المستمر لمدة 10 ثوانٍ</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    {% if content_type == 'video' %}
+                                        وقت ظهور السؤال (ثانية)
+                                    {% else %}
+                                        رقم الفقرة
+                                    {% endif %}
+                                </label>
+                                {% if content_type == 'video' %}
+                                <input type="number" class="form-control" name="video_timestamp"
+                                       placeholder="الوقت بالثانية" min="0" step="1" required>
+                                <small class="text-muted">الوقت بالثانية (مثلاً: 90)</small>
+                                {% else %}
+                                <input type="number" class="form-control" name="paragraph_index" step="1" required>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">السؤال</label>
+                            <textarea class="form-control" name="question" rows="2" required
+                                      placeholder="اكتب سؤالاً قصيراً"></textarea>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">الخيار الأول</label>
+                                <input type="text" class="form-control" name="option_a" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الخيار الثاني</label>
+                                <input type="text" class="form-control" name="option_b" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">الإجابة الصحيحة (للمعلم فقط)</label>
+                            <select class="form-select" name="correct_answer" required>
+                                <option value="A">الخيار الأول</option>
+                                <option value="B">الخيار الثاني</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> حفظ نقطة التحقق
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="hideCheckpointForm()">
+                            إلغاء
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- قائمة نقاط التحقق للفيديو -->
+            {% if video_checkpoints %}
+            <div class="card mb-4" style="border: 1px solid #e0e0e0; box-shadow: none;">
+                <div class="card-header" style="background: #f8f9fa; border-bottom: 1px solid #e0e0e0;">
+                    <h5 class="mb-0" style="color: #333; font-size: 1rem;">الأسئلة المعرفية للفيديو ({{ video_checkpoints.count }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for checkpoint in video_checkpoints %}
+                        <div class="list-group-item" style="border: 1px solid #f0f0f0; margin-bottom: 10px; border-radius: 5px;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="mb-2">
+                                        <small class="text-muted" style="font-size: 0.85rem;">
+                                            <i class="fas fa-clock"></i>
+                                            <span class="video-timestamp" data-seconds="{{ checkpoint.video_timestamp }}">{{ checkpoint.video_timestamp }}</span> ثانية
+                                        </small>
+                                        <span class="mx-2" style="color: #ddd;">|</span>
+                                        <small class="text-muted" style="font-size: 0.85rem;">
+                                            {% if checkpoint.checkpoint_type == 'mandatory' %}
+                                                <i class="fas fa-check-circle"></i> إجباري
+                                            {% else %}
+                                                <i class="fas fa-brain"></i> تكيفي
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    <h6 class="mb-1" style="color: #333; font-size: 1rem;">{{ checkpoint.question }}</h6>
+                                    <small class="text-muted" style="font-size: 0.85rem;">
+                                        A: {{ checkpoint.option_a }} | B: {{ checkpoint.option_b }}
+                                        {% if checkpoint.option_c %}| C: {{ checkpoint.option_c }}{% endif %}
+                                        {% if checkpoint.option_d %}| D: {{ checkpoint.option_d }}{% endif %}
+                                    </small>
+                                </div>
+                                <div class="ms-3">
+                                    <button class="btn btn-sm" style="background: #f0f0f0; color: #666; border: none;" data-checkpoint-id="{{ checkpoint.checkpointid }}" onclick="deleteCheckpoint(this)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if not video_checkpoints %}
+            <div class="alert alert-info" style="background: #f8f9fa; border: 1px solid #e0e0e0; color: #666;">
+                <i class="fas fa-info-circle"></i> لا توجد نقاط تحقق للفيديو بعد. أضف نقطة تحقق جديدة للبدء.
+            </div>
+            {% endif %}
+
+            <!-- نافذة تنبيه مخصصة -->
+            <div id="customAlert" class="custom-alert" style="display: none; position: fixed; top: 20px; right: 20px; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 9999; min-width: 350px; border-right: 4px solid #5a91e6;">
+                <div class="d-flex align-items-center">
+                    <div id="alertIcon" class="me-3" style="font-size: 1.5rem;"></div>
+                    <div class="flex-grow-1">
+                        <h6 id="alertTitle" style="margin: 0; color: #334155; font-weight: 600;"></h6>
+                        <p id="alertMessage" class="mb-0 text-muted" style="font-size: 0.9rem; color: #64748b;"></p>
+                    </div>
+                    <button type="button" onclick="hideCustomAlert()" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer;">&times;</button>
+                </div>
+            </div>
+
+            <!-- نافذة تأكيد مخصصة -->
+            <div id="customConfirm" class="custom-confirm" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 35px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 10000; min-width: 450px;">
+                <div class="text-center">
+                    <div id="confirmIcon" style="font-size: 3rem; margin-bottom: 20px;"></div>
+                    <h5 id="confirmTitle" style="margin-bottom: 15px; color: #334155; font-weight: 700;"></h5>
+                    <p id="confirmMessage" style="margin-bottom: 30px; color: #64748b; font-size: 1rem;"></p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="button" id="confirmYes" class="btn btn-primary" style="background-color: #ef4444; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 600;">نعم</button>
+                        <button type="button" id="confirmNo" class="btn btn-secondary" style="background-color: #64748b; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 600;">لا</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="{% url 'learning:teacher_dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right"></i> العودة للوحة التحكم
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// دالة عرض التنبيه المخصص
+function showCustomAlert(title, message, type = 'info') {
+    const alertBox = document.getElementById('customAlert');
+    const alertIcon = document.getElementById('alertIcon');
+    const alertTitle = document.getElementById('alertTitle');
+    const alertMessage = document.getElementById('alertMessage');
+    
+    alertTitle.textContent = title;
+    alertMessage.textContent = message;
+    
+    // تحديد الأيقونة واللون حسب النوع (استخدام ألوان base.html)
+    if (type === 'success') {
+        alertIcon.innerHTML = '✓';
+        alertIcon.style.color = '#22c55e';
+        alertBox.style.borderRightColor = '#22c55e';
+    } else if (type === 'error') {
+        alertIcon.innerHTML = '✕';
+        alertIcon.style.color = '#ef4444';
+        alertBox.style.borderRightColor = '#ef4444';
+    } else {
+        alertIcon.innerHTML = 'ℹ';
+        alertIcon.style.color = '#5a91e6';
+        alertBox.style.borderRightColor = '#5a91e6';
+    }
+    
+    alertBox.style.display = 'block';
+    
+    // إخفاء التنبيه تلقائياً بعد 3 ثواني
+    setTimeout(hideCustomAlert, 3000);
+}
+
+// دالة إخفاء التنبيه المخصص
+function hideCustomAlert() {
+    const alertBox = document.getElementById('customAlert');
+    alertBox.style.display = 'none';
+}
+
+// دالة عرض نافذة التأكيد المخصصة
+function showCustomConfirm(title, message, onConfirm, type = 'danger') {
+    const confirmBox = document.getElementById('customConfirm');
+    const confirmIcon = document.getElementById('confirmIcon');
+    const confirmTitle = document.getElementById('confirmTitle');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmYes = document.getElementById('confirmYes');
+    const confirmNo = document.getElementById('confirmNo');
+    
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    
+    // تحديد الأيقونة واللون حسب النوع
+    if (type === 'danger') {
+        confirmIcon.innerHTML = '⚠';
+        confirmIcon.style.color = '#ef4444';
+        confirmYes.style.background = '#ef4444';
+    } else if (type === 'warning') {
+        confirmIcon.innerHTML = '⚠';
+        confirmIcon.style.color = '#f59e0b';
+        confirmYes.style.background = '#f59e0b';
+    } else {
+        confirmIcon.innerHTML = 'ℹ';
+        confirmIcon.style.color = '#3b82f6';
+        confirmYes.style.background = '#3b82f6';
+    }
+    
+    confirmBox.style.display = 'block';
+    
+    // إزالة المستمعين القديمة
+    const newYes = confirmYes.cloneNode(true);
+    const newNo = confirmNo.cloneNode(true);
+    confirmYes.parentNode.replaceChild(newYes, confirmYes);
+    confirmNo.parentNode.replaceChild(newNo, confirmNo);
+    
+    // إضافة مستمعين جدد
+    newYes.addEventListener('click', function() {
+        confirmBox.style.display = 'none';
+        if (onConfirm) onConfirm();
+    });
+    
+    newNo.addEventListener('click', function() {
+        confirmBox.style.display = 'none';
+    });
+}
+
+// تحديث عرض الوقت الحالي للفيديو
+function updateCurrentTime() {
+    const video = document.getElementById('checkpointVideo');
+    const display = document.getElementById('currentTimeDisplay');
+    if (video && display) {
+        const currentTime = video.currentTime;
+        const minutes = Math.floor(currentTime / 60);
+        const seconds = Math.floor(currentTime % 60);
+        display.textContent = minutes + ':' + seconds.toString().padStart(2, '0');
+    }
+}
+
+// التقاط الوقت الحالي وملء الحقول
+function captureCurrentTime() {
+    const video = document.getElementById('checkpointVideo');
+    if (!video) {
+        showCustomAlert('لم يتم العثور على الفيديو', 'الرجاء التأكد من وجود الفيديو في الصفحة', 'error');
+        return;
+    }
+    
+    const currentTime = video.currentTime;
+    const timestampInput = document.querySelector('input[name="video_timestamp"]');
+    
+    if (timestampInput) {
+        timestampInput.value = Math.floor(currentTime);
+        
+        // إظهار نموذج إضافة نقطة التحقق إذا لم يكن ظاهراً
+        showCheckpointForm();
+        
+        showCustomAlert('تم التقاط الوقت', Math.floor(currentTime) + ' ثانية', 'success');
+    } else {
+        showCustomAlert('لم يتم العثور على حقل الوقت', 'الرجاء التأكد من وجود حقل الوقت في النموذج', 'error');
+    }
+}
+
+// التحقق من أن timestamp لا يتجاوز مدة الفيديو
+function validateTimestamp() {
+    const videoDuration = document.getElementById('videoDuration');
+    if (!videoDuration) return true; // لا يوجد فيديو، لا داعي للتحقق
+    
+    const duration = parseFloat(videoDuration.value);
+    if (!duration || isNaN(duration)) return true; // لا يمكن الحصول على المدة، السماح بالاستمرار
+    
+    const timestampInput = document.querySelector('input[name="video_timestamp"]');
+    
+    if (!timestampInput) return true; // حقل الوقت غير موجود (للنص)
+    
+    const timestamp = parseFloat(timestampInput.value) || 0;
+    
+    if (timestamp > duration) {
+        showCustomAlert('الوقت يتجاوز مدة الفيديو', 'الوقت المحدد (' + timestamp + ' ثانية) يتجاوز مدة الفيديو (' + Math.floor(duration) + ' ثانية). الرجاء تحديد وقت ضمن مدة الفيديو.', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+// إضافة مستمع لحدث timeupdate للفيديو
+document.addEventListener('DOMContentLoaded', function() {
+    const video = document.getElementById('checkpointVideo');
+    if (video) {
+        video.addEventListener('timeupdate', updateCurrentTime);
+        video.addEventListener('loadedmetadata', updateCurrentTime);
+        video.addEventListener('loadedmetadata', function() {
+            // عرض مدة الفيديو عند تحميل البيانات
+            const duration = video.duration;
+            if (duration && !isNaN(duration)) {
+                const minutes = Math.floor(duration / 60);
+                const seconds = Math.floor(duration % 60);
+                const durationBadge = document.getElementById('videoDurationBadge');
+                if (durationBadge) {
+                    durationBadge.textContent = minutes + ':' + seconds.toString().padStart(2, '0');
+                }
+                const durationInput = document.getElementById('videoDuration');
+                if (durationInput) {
+                    durationInput.value = duration;
+                }
+            }
+        });
+    }
+    
+    // تحويل الثواني إلى دقيقة:ثانية عند تحميل الصفحة
+    const timestampElements = document.querySelectorAll('.video-timestamp');
+    timestampElements.forEach(function(element) {
+        const seconds = parseInt(element.getAttribute('data-seconds'), 10);
+        if (!isNaN(seconds)) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            element.textContent = minutes + ':' + remainingSeconds.toString().padStart(2, '0');
+        }
+    });
+});
+
+function showCheckpointForm() {
+    document.getElementById('checkpointForm').style.display = 'block';
+}
+
+function hideCheckpointForm() {
+    document.getElementById('checkpointForm').style.display = 'none';
+}
+
+document.getElementById('newCheckpointForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // التحقق من أن timestamp لا يتجاوز مدة الفيديو
+    if (!validateTimestamp()) {
+        return; // إلغاء الإرسال إذا فشل التحقق
+    }
+
+    const formData = new FormData(this);
+
+    // الحصول على CSRF token من meta tag أو cookie
+    let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (!csrfToken) {
+        csrfToken = getCookie('csrftoken');
+    }
+
+    console.log('CSRF Token:', csrfToken);
+    console.log('FormData:', Array.from(formData.entries()));
+
+    // إضافة CSRF token إلى FormData
+    formData.append('csrfmiddlewaretoken', csrfToken);
+
+    fetch('/create-checkpoint/', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error('Server response was not ok: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            location.reload();
+        } else {
+            showCustomAlert('حدث خطأ', data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showCustomAlert('حدث خطأ', 'حدث خطأ في حفظ نقطة التحقق: ' + error.message, 'error');
+    });
+});
+
+function editCheckpoint(button) {
+    const checkpointId = button.getAttribute('data-checkpoint-id');
+    // TODO: Implement edit functionality
+    showCustomAlert('ميزة قيد التطوير', 'ميزة التعديل قيد التطوير - ID: ' + checkpointId, 'info');
+}
+
+function deleteCheckpoint(button) {
+    const checkpointId = button.getAttribute('data-checkpoint-id');
+    showCustomConfirm(
+        'تأكيد الحذف',
+        'هل أنت متأكد من حذف هذه نقطة التحقق؟',
+        function() {
+            // تنفيذ الحذف عند التأكيد
+            const formData = new FormData();
+            formData.append('checkpoint_id', checkpointId);
+            
+            fetch('/delete-checkpoint/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showCustomAlert('حدث خطأ', data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showCustomAlert('حدث خطأ', 'حدث خطأ في حذف نقطة التحقق', 'error');
+            });
+        },
+        'danger'
+    );
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// تحويل الثواني إلى دقيقة:ثانية عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    const timestampElements = document.querySelectorAll('.video-timestamp');
+    timestampElements.forEach(function(element) {
+        const seconds = parseInt(element.getAttribute('data-seconds'), 10);
+        if (!isNaN(seconds)) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            element.textContent = minutes + ':' + remainingSeconds.toString().padStart(2, '0');
+        }
+    });
+});
+</script>
+{% endblock %}

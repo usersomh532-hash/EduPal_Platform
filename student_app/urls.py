@@ -49,4 +49,16 @@ urlpatterns = [
     path('lesson/<int:lesson_id>/chat/',
          chat_views.lesson_chat,                 name='lesson_chat'),
     path('lesson/<int:lesson_id>/watched/', views.mark_lesson_watched, name='mark_lesson_watched'),
+
+    # ── Calibration System API ─────────────────────────────────
+    path('calibration/<int:session_id>/', views.calibration_session_view, name='calibration_session_view'),
+    path('calibration/<int:session_id>/start/', views.start_calibration_session, name='start_calibration_session'),
+    path('calibration/<int:session_id>/complete/', views.complete_calibration_session, name='complete_calibration_session'),
+    path('calibration/<int:session_id>/save-data/', views.save_calibration_data, name='save_calibration_data'),
+    
+    # ── Cognitive Check API ─────────────────────────────────────
+    path('cognitive-check/', views.show_cognitive_check, name='cognitive_check'),
+    
+    # ── Baseline Data API ─────────────────────────────────────
+    path('baseline-data/', views.get_baseline_data, name='get_baseline_data'),
 ]

@@ -332,7 +332,7 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
 
     <!-- بطاقة الفيديو التعليمي -->
     {% if has_video %}
-    <a href="{% url 'student:lesson_video' lesson.pk %}" class="gateway-card gc-video {% if video_watched %}watched{% endif %}">
+    <div class="gateway-card gc-video {% if video_watched %}watched{% endif %}" onclick="openVideoModal()">
       {% if video_watched %}
       <div class="gc-watched-tag">
         <i class="fas fa-check-circle"></i>
@@ -361,7 +361,7 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
         <i class="fas fa-play-circle"></i> مشاهدة الفيديو
         {% endif %}
       </span>
-    </a>
+    </div>
     {% else %}
     <div class="gateway-card gc-video disabled">
       <div class="gc-icon"><i class="fas fa-video"></i></div>
@@ -442,11 +442,68 @@ body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',s
   </div>
 </div>
 
+<!-- ══ Video Modal ══ -->
+<div class="sm-overlay" id="videoModal">
+  <div class="sm-box">
+    <div class="sm-head">
+      <div class="sm-head-title">
+        <i class="fas fa-video"></i>
+        {% if video_watched %}إعادة مشاهدة الفيديو{% else %}مشاهدة الفيديو التعليمي{% endif %}
+      </div>
+      <button class="sm-close" onclick="closeVideoModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="sm-body">
+      <div class="sm-lesson-name">{{ lesson.lessontitle }}</div>
+
+      {% if video_watched %}
+      <!-- ✅ تلميح إعادة المشاهدة -->
+      <div class="sm-rewatched-note">
+        <i class="fas fa-check-circle" style="font-size:1rem;flex-shrink:0;"></i>
+        لقد شاهدت هذا الفيديو مسبقاً — إعادة المشاهدة تُرسّخ الفهم!
+      </div>
+      {% endif %}
+
+      <div class="sm-tips">
+        <div class="sm-tips-head">
+          <i class="fas fa-info-circle"></i>
+          نظام تتبع الانتباه
+        </div>
+        <ul>
+          <li>سيبدأ التتبع تلقائياً مع الدرس</li>
+          <li>تأكد من إضاءة المكان جيداً</li>
+          <li>تأكد من عمل الكاميرا</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sm-foot">
+      <button class="sm-btn sm-btn-ghost" onclick="closeVideoModal()">
+        لاحقاً
+      </button>
+      <a href="{% url 'student:lesson_video' lesson.pk %}"
+         class="sm-btn sm-btn-primary {% if video_watched %}rewatched{% endif %}">
+        {% if video_watched %}
+        <i class="fas fa-redo"></i> أعد المشاهدة
+        {% else %}
+        <i class="fas fa-play"></i> شاهد الآن
+        {% endif %}
+      </a>
+    </div>
+  </div>
+</div>
+
 <script>
 function openSessionModal()  { document.getElementById('sessionModal').classList.add('open'); }
 function closeSessionModal() { document.getElementById('sessionModal').classList.remove('open'); }
 document.getElementById('sessionModal').addEventListener('click', function(e) {
   if (e.target === this) closeSessionModal();
+});
+
+function openVideoModal()  { document.getElementById('videoModal').classList.add('open'); }
+function closeVideoModal() { document.getElementById('videoModal').classList.remove('open'); }
+document.getElementById('videoModal').addEventListener('click', function(e) {
+  if (e.target === this) closeVideoModal();
 });
 </script>
 {% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}المعايرة السلوكية{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root{
+  --sky:#3b82f6;--sky-dk:#1d4ed8;--sky-lt:#eff6ff;--sky-bd:#bfdbfe;
+  --mint:#10b981;--amber:#f59e0b;--rose:#ef4444;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f0f5fb;--card:#fff;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',sans-serif;}
+
+.calibration-wrap{
+  max-width:1200px;margin:2rem auto;padding:0 1.5rem 4rem;
+}
+
+/* ── Header ── */
+.cal-header{
+  background:linear-gradient(135deg,var(--sky-dk),var(--sky));
+  border-radius:1.25rem;padding:2rem 2.5rem;
+  color:#fff;margin-bottom:2rem;
+  box-shadow:0 6px 24px rgba(29,78,216,0.2);
+}
+.cal-header h1{font-size:1.8rem;font-weight:900;margin-bottom:.5rem;}
+.cal-header p{opacity:.9;font-size:.95rem;}
+
+/* ── Status Card ── */
+.status-card{
+  background:#fff;border-radius:1rem;padding:1.5rem 2rem;
+  margin-bottom:2rem;border:2px solid var(--border);
+  display:flex;align-items:center;gap:1.5rem;
+}
+.status-card.active{border-color:var(--mint);background:#f0fdf4;}
+.status-card.in_progress{border-color:var(--amber);background:#fffbeb;}
+.status-card.not_started{border-color:var(--border);}
+.status-icon{
+  width:64px;height:64px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;flex-shrink:0;
+}
+.status-card.active .status-icon{background:var(--mint);color:#fff;}
+.status-card.in_progress .status-icon{background:var(--amber);color:#fff;}
+.status-card.not_started .status-icon{background:var(--border);color:var(--muted);}
+.status-info h3{font-size:1.2rem;font-weight:800;margin-bottom:.4rem;}
+.status-info p{color:var(--muted);font-size:.9rem;}
+
+/* ── Grid ── */
+.cal-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;
+  margin-bottom:2rem;
+}
+@media(max-width:768px){.cal-grid{grid-template-columns:1fr;}}
+
+/* ── Card ── */
+.cal-card{
+  background:#fff;border-radius:1rem;padding:1.5rem;
+  border:2px solid var(--border);
+}
+.cal-card h3{font-size:1.1rem;font-weight:800;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.cal-card h3 i{color:var(--sky-dk);}
+
+/* ── Sessions List ── */
+.session-item{
+  background:var(--sky-lt);border:1.5px solid var(--sky-bd);
+  border-radius:.75rem;padding:1rem 1.25rem;margin-bottom:.75rem;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.session-item.completed{background:#f0fdf4;border-color:#6ee7b7;}
+.session-item.pending{background:#fffbeb;border-color:#fde68a;}
+.session-info h4{font-size:1rem;font-weight:800;margin-bottom:.3rem;}
+.session-info p{color:var(--muted);font-size:.85rem;}
+.session-badge{
+  background:var(--sky-dk);color:#fff;padding:.3rem .8rem;
+  border-radius:100px;font-size:.75rem;font-weight:700;
+}
+.session-item.completed .session-badge{background:var(--mint);}
+.session-item.pending .session-badge{background:var(--amber);}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.6rem 1.4rem;border-radius:.65rem;border:none;
+  font-family:'Tajawal',sans-serif;font-size:.9rem;
+  font-weight:800;cursor:pointer;transition:all .18s;
+  text-decoration:none;
+}
+.btn-primary{background:var(--sky-dk);color:#fff;box-shadow:0 4px 12px rgba(29,78,216,.3);}
+.btn-primary:hover{background:#1e3a8a;color:#fff;}
+.btn-success{background:var(--mint);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.3);}
+.btn-success:hover{background:#059669;color:#fff;}
+.btn-danger{background:var(--rose);color:#fff;box-shadow:0 4px 12px rgba(239,68,68,.3);}
+.btn-danger:hover{background:#dc2626;color:#fff;}
+.btn-ghost{background:var(--border);color:var(--muted);}
+.btn-ghost:hover{background:#d1d5db;color:var(--ink);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── Stats ── */
+.stat-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;
+  margin-bottom:1.5rem;
+}
+.stat-box{
+  background:var(--sky-lt);border:1.5px solid var(--sky-bd);
+  border-radius:.75rem;padding:1rem;text-align:center;
+}
+.stat-box h4{font-size:1.5rem;font-weight:900;color:var(--sky-dk);margin-bottom:.2rem;}
+.stat-box p{color:var(--muted);font-size:.8rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calibration-wrap" dir="rtl">
+
+  <!-- Header -->
+  <div class="cal-header">
+    <h1>المعايرة السلوكية</h1>
+    <p>بناء نموذج انتباه شخصي للطالب {{ child.userid.fullname }}</p>
+  </div>
+
+  <!-- Status Card -->
+  <div class="status-card {{ status }}">
+    <div class="status-icon">
+      {% if status == 'active' %}
+      <i class="fas fa-check-circle"></i>
+      {% elif status == 'in_progress' %}
+      <i class="fas fa-chart-line"></i>
+      {% elif status == 'ready_to_activate' %}
+      <i class="fas fa-check-double"></i>
+      {% else %}
+      <i class="fas fa-clock"></i>
+      {% endif %}
+    </div>
+    <div class="status-info">
+      <h3>{{ status_text }}</h3>
+      <p>
+        {% if status == 'active' %}
+        النموذج السلوكي نشط ومثبت. سيتم استخدامه في جميع جلسات التعلم.
+        {% elif status == 'in_progress' %}
+        أكمل {{ completed_sessions }} من 3 جلسات مطلوبة. استمر في إجراء جلسات المعايرة.
+        {% elif status == 'ready_to_activate' %}
+        أكملت جميع جلسات المعايرة المطلوبة. يمكنك تفعيل النموذج الآن.
+        {% else %}
+        ابدأ بإجراء جلسات المعايرة لبناء نموذج انتباه شخصي لطفلك.
+        {% endif %}
+      </p>
+    </div>
+    {% if status == 'ready_to_activate' %}
+    <a href="{% url 'parent:activate_baseline' %}" class="btn btn-success">
+      <i class="fas fa-play"></i> تفعيل النموذج
+    </a>
+    {% elif status == 'active' %}
+    <a href="{% url 'parent:reset_baseline' %}" class="btn btn-danger" onclick="return confirm('هل أنت متأكد من إعادة المعايرة؟ سيتم حذف جميع البيانات الحالية.');">
+      <i class="fas fa-redo"></i> إعادة المعايرة
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stat-grid">
+    <div class="stat-box">
+      <h4>{{ completed_sessions }}</h4>
+      <p>جلسات مكتملة</p>
+    </div>
+    <div class="stat-box">
+      <h4>{{ sessions.count }}</h4>
+      <p>إجمالي الجلسات</p>
+    </div>
+    <div class="stat-box">
+      <h4>{{ baseline.calibration_sessions_count|default:0 }}</h4>
+      <p>جلسات في النموذج</p>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="cal-grid">
+    
+    <!-- Sessions Card -->
+    <div class="cal-card">
+      <h3><i class="fas fa-list"></i> جلسات المعايرة</h3>
+      {% if sessions %}
+        {% for session in sessions %}
+        <div class="session-item {% if session.is_completed %}completed{% else %}pending{% endif %}">
+          <div class="session-info">
+            <h4>جلسة #{{ session.session_number }}</h4>
+            <p>
+              {{ session.start_time|date:"d M Y - H:i" }}
+              {% if session.is_completed %}
+              • مكتملة
+              {% else %}
+              • قيد الانتظار
+              {% endif %}
+            </p>
+          </div>
+          <a href="{% url 'parent:calibration_session_detail' session.pk %}" class="btn btn-ghost">
+            <i class="fas fa-eye"></i> عرض
+          </a>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--muted);text-align:center;padding:2rem;">لا توجد جلسات معايرة بعد.</p>
+      {% endif %}
+      
+      {% if sessions.count < 5 and not baseline.is_active %}
+      <a href="{% url 'parent:start_calibration_session' %}" class="btn btn-primary" style="width:100%;margin-top:1rem;">
+        <i class="fas fa-plus"></i> إضافة جلسة معايرة
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- Info Card -->
+    <div class="cal-card">
+      <h3><i class="fas fa-info-circle"></i> ما هي المعايرة السلوكية؟</h3>
+      <p style="color:var(--muted);line-height:1.8;font-size:.9rem;margin-bottom:1rem;">
+        المعايرة السلوكية هي عملية بناء نموذج انتباه شخصي لطفلك من خلال عدة جلسات قصيرة (2-5 دقائق) تُجرى في أوقات مختلفة وبيئات هادئة.
+      </p>
+      <h4 style="font-size:.95rem;font-weight:800;margin-bottom:.5rem;">كيف تعمل؟</h4>
+      <ul style="color:var(--muted);line-height:1.8;font-size:.85rem;padding-right:1.5rem;">
+        <li>تُعرض محتوى تعليمي بسيط أو نشاط محايد</li>
+        <li>يحلل النظام أنماط السلوك الطبيعية للانتباه</li>
+        <li>يُبنى نموذج شخصي يعتمد على التوزيعات الإحصائية</li>
+        <li>يُثبت النموذج بعد 3 جلسات معايرة مكتملة</li>
+      </ul>
+      <h4 style="font-size:.95rem;font-weight:800;margin-bottom:.5rem;margin-top:1rem;">ملاحظات مهمة</h4>
+      <ul style="color:var(--muted);line-height:1.8;font-size:.85rem;padding-right:1.5rem;">
+        <li>دور الأهل مقتصر على تهيئة البيئة وتشغيل الجلسة</li>
+        <li>لا توجد تدخلات أو أسئلة أو تقييمات أثناء الجلسة</li>
+        <li>النموذج يمثل "نمط الانتباه الطبيعي" وليس تصنيفاً للأداء</li>
+        <li>يمكن إعادة المعايرة يدوياً عند الحاجة</li>
+      </ul>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

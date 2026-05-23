@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}جلسة المعايرة{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+:root{
+  --sky:#3b82f6;--sky-dk:#1d4ed8;--sky-lt:#eff6ff;--sky-bd:#bfdbfe;
+  --mint:#10b981;--amber:#f59e0b;--rose:#ef4444;
+  --ink:#1e293b;--muted:#64748b;--border:#e2e8f0;--bg:#f0f5fb;--card:#fff;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);direction:rtl;font-family:'Tajawal',sans-serif;}
+
+.calibration-wrap{
+  max-width:900px;margin:2rem auto;padding:0 1.5rem 4rem;
+}
+
+/* ── Header ── */
+.cal-header{
+  background:linear-gradient(135deg,var(--sky-dk),var(--sky));
+  border-radius:1.25rem;padding:2rem 2.5rem;
+  color:#fff;margin-bottom:2rem;
+  box-shadow:0 6px 24px rgba(29,78,216,0.2);
+  text-align:center;
+}
+.cal-header h1{font-size:1.8rem;font-weight:900;margin-bottom:.5rem;}
+.cal-header p{opacity:.9;font-size:.95rem;}
+
+/* ── Content Card ── */
+.content-card{
+  background:#fff;border-radius:1.25rem;padding:2.5rem;
+  margin-bottom:2rem;border:2px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,.08);
+}
+.content-card h2{font-size:1.4rem;font-weight:800;margin-bottom:1.5rem;color:var(--sky-dk);}
+.content-card p{color:var(--muted);line-height:2;font-size:1.05rem;margin-bottom:1.5rem;}
+
+/* ── Neutral Content ── */
+.neutral-content{
+  background:var(--sky-lt);border:1.5px solid var(--sky-bd);
+  border-radius:1rem;padding:2rem;margin-bottom:2rem;
+}
+.neutral-content h3{font-size:1.2rem;font-weight:800;margin-bottom:1rem;color:var(--sky-dk);}
+.neutral-content p{color:var(--ink);line-height:2;font-size:1rem;margin-bottom:1rem;}
+
+/* ── Timer ── */
+.timer-display{
+  text-align:center;padding:2rem;
+  background:var(--sky-lt);border:1.5px solid var(--sky-bd);
+  border-radius:1rem;margin-bottom:2rem;
+}
+.timer-display .time{
+  font-size:4rem;font-weight:900;color:var(--sky-dk);
+  font-family:'Courier New',monospace;
+}
+.timer-display .label{color:var(--muted);font-size:.9rem;margin-top:.5rem;}
+
+/* ── Progress ── */
+.progress-bar{
+  height:8px;background:var(--border);border-radius:4px;
+  overflow:hidden;margin-bottom:2rem;
+}
+.progress-fill{
+  height:100%;background:var(--sky-dk);
+  transition:width 1s linear;
+}
+
+/* ── Camera Preview ── */
+.camera-preview{
+  width:100%;height:300px;background:#000;
+  border-radius:1rem;overflow:hidden;margin-bottom:2rem;
+  position:relative;
+}
+.camera-preview video{
+  width:100%;height:100%;object-fit:cover;
+}
+.camera-preview .status{
+  position:absolute;top:1rem;right:1rem;
+  background:rgba(0,0,0,.7);color:#fff;
+  padding:.4rem .8rem;border-radius:100px;
+  font-size:.75rem;font-weight:700;
+  display:flex;align-items:center;gap:.4rem;
+}
+.camera-preview .status.active{background:var(--mint);}
+.camera-preview .status.inactive{background:var(--rose);}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.8rem 2rem;border-radius:.75rem;border:none;
+  font-family:'Tajawal',sans-serif;font-size:1rem;
+  font-weight:800;cursor:pointer;transition:all .18s;
+  text-decoration:none;
+}
+.btn-primary{background:var(--sky-dk);color:#fff;box-shadow:0 4px 12px rgba(29,78,216,.3);}
+.btn-primary:hover{background:#1e3a8a;color:#fff;}
+.btn-success{background:var(--mint);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.3);}
+.btn-success:hover{background:#059669;color:#fff;}
+.btn-ghost{background:var(--border);color:var(--muted);}
+.btn-ghost:hover{background:#d1d5db;color:var(--ink);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── Instructions ── */
+.instructions{
+  background:#fffbeb;border:1.5px solid #fde68a;
+  border-radius:1rem;padding:1.5rem;margin-bottom:2rem;
+}
+.instructions h3{font-size:1rem;font-weight:800;color:#92400e;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.instructions p{color:#92400e;font-size:.9rem;line-height:1.8;margin-bottom:.5rem;}
+.instructions ul{color:#92400e;font-size:.9rem;line-height:1.8;padding-right:1.5rem;}
+
+/* ── Completion Message ── */
+.completion-message{
+  background:#f0fdf4;border:1.5px solid #6ee7b7;
+  border-radius:1rem;padding:2rem;text-align:center;
+  display:none;
+}
+.completion-message.show{display:block;}
+.completion-message h2{font-size:1.5rem;font-weight:900;color:#065f46;margin-bottom:1rem;}
+.completion-message p{color:#065f46;font-size:1rem;line-height:1.8;margin-bottom:1.5rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calibration-wrap" dir="rtl" data-duration="{{ session.duration_minutes|default:3 }}" data-session-id="{{ session.id|default:0 }}">
+
+  <!-- Header -->
+  <div class="cal-header">
+    <h1>جلسة المعايرة السلوكية</h1>
+    <p>شاهد المحتوى بشكل طبيعي - النظام سيجمع البيانات تلقائياً</p>
+  </div>
+
+  <!-- Instructions -->
+  <div class="instructions">
+    <h3><i class="fas fa-info-circle"></i> تعليمات الجلسة</h3>
+    <p>هذه جلسة معايرة سلوكية لبناء نموذج انتباه شخصي لك.</p>
+    <ul>
+      <li>شاهد المحتوى بشكل طبيعي ومريح</li>
+      <li>لا توجد أسئلة أو اختبارات</li>
+      <li>لا يوجد تقييم للأداء</li>
+      <li>النظام يجمع بيانات السلوك الطبيعي فقط</li>
+      <li>استمر في المشاهدة حتى انتهاء الوقت</li>
+    </ul>
+  </div>
+
+  <!-- Timer -->
+  <div class="timer-display">
+    <div class="time" id="timer">00:00</div>
+    <div class="label">الوقت المتبقي</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress" style="width: 0%;"></div>
+  </div>
+
+  <!-- Camera Preview -->
+  <div class="camera-preview">
+    <video id="camera" autoplay playsinline muted></video>
+    <div class="status inactive" id="cameraStatus">
+      <i class="fas fa-video-slash"></i> الكاميرا غير متصلة
+    </div>
+  </div>
+
+  <!-- Content Card -->
+  <div class="content-card" id="contentCard">
+    <h2>محتوى محايد للمعايرة</h2>
+    
+    {% if session.calibration_video %}
+    <div class="neutral-content">
+      <h3>فيديو مخصص</h3>
+      <video id="calibrationVideo" controls autoplay muted loop style="width: 100%; max-height: 400px; border-radius: 0.5rem;">
+        <source src="{{ session.calibration_video.url }}" type="video/mp4">
+        متصفحك لا يدعم تشغيل الفيديو.
+      </video>
+    </div>
+    {% else %}
+    <div class="neutral-content">
+      <h3>ما هو الانتباه؟</h3>
+      <p>
+        الانتباه هو القدرة على التركيز على مهمة معينة وتجاهل المشتتات. 
+        يختلف الانتباه من شخص لآخر، ويمكن تحسينه بالممارسة والتدريب.
+      </p>
+      <p>
+        هناك أنواع مختلفة من الانتباه: الانتباه المستمر، الانتباه الانتقائي، 
+        والانتباه المقسم. كل نوع له دوره في التعلم والحياة اليومية.
+      </p>
+      <p>
+        فهم نمط انتباهك الشخصي يمكن أن يساعدك في التعلم بشكل أفضل 
+        وتحسين أدائك في المهام المختلفة.
+      </p>
+    </div>
+
+    <div class="neutral-content">
+      <h3>أهمية التركيز</h3>
+      <p>
+        التركيز هو مفتاح التعلم الفعال. عندما نركز بشكل جيد، 
+        نستطيع استيعاب المعلومات بشكل أسرع وأفضل.
+      </p>
+      <p>
+        التركيز لا يعني عدم وجود أي تشتت، بل يعني القدرة على 
+        العودة للتركيز بعد التشتت. هذا مهارة يمكن تطويرها.
+      </p>
+    </div>
+
+    <div class="neutral-content">
+      <h3>نصائح للتركيز</h3>
+      <p>
+        - قلل المشتتات في بيئتك
+      </p>
+      <p>
+        - خذ استراحات قصيرة منتظمة
+      </p>
+      <p>
+        - نم بشكل كافٍ
+      </p>
+      <p>
+        - مارس الرياضة بانتظام
+      </p>
+      <p>
+        - اشرب الماء بكميات كافية
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Completion Message -->
+  <div class="completion-message" id="completionMessage">
+    <h2><i class="fas fa-check-circle"></i> تمت الجلسة بنجاح!</h2>
+    <p>
+      شكراً لك على إكمال جلسة المعايرة. تم جمع البيانات السلوكية 
+      وسيتم دمجها مع جلسات المعايرة الأخرى لبناء نموذج انتباه شخصي لك.
+    </p>
+    {% if is_parent_view %}
+    <a href="{% url 'parent:calibration_dashboard' %}" class="btn btn-success">
+      <i class="fas fa-home"></i> العودة للرئيسية
+    </a>
+    {% else %}
+    <a href="{% url 'student:student_home' %}" class="btn btn-success">
+      <i class="fas fa-home"></i> العودة للرئيسية
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Start Button -->
+  <div style="text-align:center;" id="startSection">
+    <button class="btn btn-primary" id="startBtn" onclick="startCalibration()">
+      <i class="fas fa-play"></i> بدء الجلسة
+    </button>
+  </div>
+
+</div>
+
+<script>
+// الحصول على القيم من data-attributes
+const sessionData = document.querySelector('.calibration-wrap');
+const SESSION_DURATION = parseInt(sessionData.dataset.duration || '3') * 60; // بالثواني
+const session_id = parseInt(sessionData.dataset.sessionId || '0');
+let timerInterval;
+let secondsRemaining = SESSION_DURATION;
+let isRunning = false;
+
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function updateTimer() {
+  secondsRemaining--;
+  document.getElementById('timer').textContent = formatTime(secondsRemaining);
+  
+  const progress = ((SESSION_DURATION - secondsRemaining) / SESSION_DURATION) * 100;
+  document.getElementById('progress').style.width = progress + '%';
+  
+  if (secondsRemaining <= 0) {
+    clearInterval(timerInterval);
+    completeCalibration();
+  }
+}
+
+// تهيئة العرض عند تحميل الصفحة
+function initializeTimerDisplay() {
+  document.getElementById('timer').textContent = formatTime(SESSION_DURATION);
+}
+
+function startCalibration() {
+  if (isRunning) return;
+  isRunning = true;
+  
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('startBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الجلسة...';
+  
+  // بدء تشغيل الفيديو المخصص إذا كان موجوداً
+  const calibrationVideo = document.getElementById('calibrationVideo');
+  if (calibrationVideo) {
+    calibrationVideo.play().catch(err => console.error('Video play error:', err));
+  }
+  
+  // بدء الكاميرا
+  startCamera();
+  
+  // بدء جمع البيانات السلوكية
+  startBehavioralDataCollection();
+  
+  // بدء المؤقت
+  timerInterval = setInterval(updateTimer, 1000);
+  
+  // إرسال بيانات البدء للخادم
+  fetch(`/calibration/${session_id}/start/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: JSON.stringify({})
+  });
+}
+
+function startCamera() {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      const video = document.getElementById('camera');
+      video.srcObject = stream;
+      document.getElementById('cameraStatus').className = 'status active';
+      document.getElementById('cameraStatus').innerHTML = '<i class="fas fa-video"></i> الكاميرا متصلة';
+    })
+    .catch(err => {
+      console.error('Camera error:', err);
+      document.getElementById('cameraStatus').innerHTML = '<i class="fas fa-exclamation-triangle"></i> خطأ في الكاميرا';
+    });
+}
+
+// متغيرات لجمع البيانات السلوكية
+let calibrationData = {
+  ear_values: [],
+  head_yaw_values: [],
+  head_pitch_values: [],
+  head_roll_values: [],
+  gaze_horizontal_values: [],
+  gaze_vertical_values: [],
+  nose_ear_ratio_values: [],
+  head_turn_count: 0,
+  gaze_away_count: 0,
+  drowsy_count: 0,
+  total_frames: 0,
+};
+let dataCollectionInterval;
+
+function startBehavioralDataCollection() {
+  // جمع البيانات السلوكية بشكل دوري
+  dataCollectionInterval = setInterval(() => {
+    // محاكاة جمع البيانات السلوكية
+    // في الواقع، يجب استخدام attention_engine.py أو مكتبة JavaScript لتحليل الوجه
+    calibrationData.total_frames += 1;
+    
+    // إضافة بيانات محاكاة للمعايرة
+    calibrationData.ear_values.push(0.3 + Math.random() * 0.1);
+    calibrationData.head_yaw_values.push((Math.random() - 0.5) * 20);
+    calibrationData.head_pitch_values.push((Math.random() - 0.5) * 15);
+    calibrationData.head_roll_values.push((Math.random() - 0.5) * 10);
+    calibrationData.gaze_horizontal_values.push((Math.random() - 0.5) * 15);
+    calibrationData.gaze_vertical_values.push((Math.random() - 0.5) * 10);
+    calibrationData.nose_ear_ratio_values.push(2.5 + Math.random() * 0.5);
+    
+    // محاكاة تكرارات السلوك
+    if (Math.random() < 0.05) {
+      calibrationData.head_turn_count += 1;
+    }
+    if (Math.random() < 0.03) {
+      calibrationData.gaze_away_count += 1;
+    }
+    if (Math.random() < 0.02) {
+      calibrationData.drowsy_count += 1;
+    }
+    
+    // إرسال البيانات السلوكية بشكل دوري (كل 10 ثواني)
+    if (calibrationData.total_frames % 10 === 0) {
+      sendBehavioralData();
+    }
+  }, 1000);
+}
+
+function sendBehavioralData() {
+  console.log('إرسال البيانات السلوكية:', calibrationData);
+  return fetch(`/calibration/${session_id}/save-data/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: JSON.stringify(calibrationData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.ok) {
+      console.log('تم حفظ البيانات السلوكية بنجاح');
+      return data;
+    } else {
+      console.error('خطأ في حفظ البيانات السلوكية:', data.error);
+      throw new Error(data.error || 'خطأ في حفظ البيانات');
+    }
+  })
+  .catch(error => {
+    console.error('خطأ في الاتصال بالخادم:', error);
+    throw error;
+  });
+}
+
+function completeCalibration() {
+  console.log('بدء إكمال الجلسة...');
+  
+  // إيقاف جمع البيانات السلوكية
+  if (dataCollectionInterval) {
+    clearInterval(dataCollectionInterval);
+  }
+  
+  // إيقاف الكاميرا
+  const video = document.getElementById('camera');
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach(track => track.stop());
+  }
+  
+  // إيقاف الفيديو المخصص
+  const calibrationVideo = document.getElementById('calibrationVideo');
+  if (calibrationVideo) {
+    calibrationVideo.pause();
+  }
+  
+  // إرسال البيانات السلوكية النهائية للخادم
+  console.log('إرسال البيانات السلوكية النهائية...');
+  sendBehavioralData()
+    .then(() => {
+      // إرسال بيانات الإكمال للخادم
+      console.log('إرسال بيانات الإكمال للخادم...');
+      return fetch(`/calibration/${session_id}/complete/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({})
+      });
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.ok) {
+        console.log('تم إكمال الجلسة بنجاح');
+        // إخفاء المحتوى وإظهار رسالة الإكمال
+        document.getElementById('contentCard').style.display = 'none';
+        document.getElementById('startSection').style.display = 'none';
+        document.getElementById('completionMessage').classList.add('show');
+      } else {
+        console.error('خطأ في إكمال الجلسة:', data.error);
+        alert('حدث خطأ في إكمال الجلسة: ' + (data.error || 'خطأ غير معروف'));
+      }
+    })
+    .catch(error => {
+      console.error('خطأ في الاتصال بالخادم:', error);
+      alert('حدث خطأ في الاتصال بالخادم: ' + error);
+    });
+}
+
+function getCSRFToken() {
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrftoken') {
+      return decodeURIComponent(value);
+    }
+  }
+  return '';
+}
+
+// التحقق من CSRF token
+const CSRF_TOKEN = getCSRFToken();
+
+// تهيئة العرض عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+  initializeTimerDisplay();
+});
+</script>
+{% endblock %}

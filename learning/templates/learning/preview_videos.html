@@ -347,6 +347,10 @@ body { background: var(--bg); font-family: 'Cairo', 'Tajawal', sans-serif; color
             <i class="fas fa-external-link-alt"></i>
             معاينة كطالب
           </a>
+          <a href="{% url 'learning:checkpoint_designer' lesson.pk %}" class="action-btn btn-edit" style="background: var(--teal);">
+            <i class="fas fa-question-circle"></i>
+            الأسئلة المعرفية
+          </a>
           <a href="{% url 'learning:video_viewers' lesson.pk %}" class="action-btn btn-edit" style="background: var(--purple);">
             <i class="fas fa-users"></i>
             المشاهدون

@@ -458,68 +458,340 @@ class Performancereport(models.Model):
 
 
 # ════════════════════════════════════════════════════════════════
-# Checkpoint (نقاط تحقق معرفي)
+# Checkpoint (نقاط تحقق معرفي - محسّنة)
 # ════════════════════════════════════════════════════════════════
 class Checkpoint(models.Model):
+    CHECKPOINT_TYPE_CHOICES = [
+        ('mandatory', 'إجباري - دوري'),
+        ('adaptive', 'تكيفي - عند انخفاض الانخراط'),
+    ]
+
+    CONTENT_TYPE_CHOICES = [
+        ('text', 'نص'),
+        ('audio', 'صوت'),
+        ('video', 'فيديو'),
+    ]
+
+    DISPLAY_TYPE_CHOICES = [
+        ('scheduled', 'مجدول - يظهر في الوقت المحدد فقط'),
+        ('distraction', 'عند التشتت - يظهر فقط عند رصد التشتت'),
+        ('both', 'كلاهما - يظهر في الوقت المحدد وعند التشتت'),
+    ]
+    
     checkpointid = models.AutoField(db_column='CheckpointID', primary_key=True)
     lessonid = models.ForeignKey(Lessoncontent, on_delete=models.CASCADE, db_column='LessonID')
-    paragraph_index = models.IntegerField(db_column='ParagraphIndex', help_text='رقم الفقرة (يبدأ من 0)')
-    question = models.CharField(db_column='Question', max_length=500, help_text='سؤال قصير للفقرة')
+    
+    # نوع نقطة التحقق
+    checkpoint_type = models.CharField(
+        db_column='CheckpointType',
+        max_length=20,
+        choices=CHECKPOINT_TYPE_CHOICES,
+        default='mandatory',
+        help_text='نوع نقطة التحقق: إجباري (دوري) أو تكيفي (عند انخفاض الانخراط)'
+    )
+
+    # نوع العرض
+    display_type = models.CharField(
+        db_column='DisplayType',
+        max_length=20,
+        choices=DISPLAY_TYPE_CHOICES,
+        default='scheduled',
+        help_text='نوع العرض: مجدول (في الوقت المحدد فقط)، عند التشتت (فقط عند رصد التشتت)، أو كلاهما'
+    )
+
+    # نوع المحتوى
+    content_type = models.CharField(
+        db_column='ContentType',
+        max_length=10,
+        choices=CONTENT_TYPE_CHOICES,
+        default='text',
+        help_text='نوع المحتوى المرتبط بنقطة التحقق'
+    )
+    
+    # للنص: رقم الفقرة
+    paragraph_index = models.IntegerField(
+        db_column='ParagraphIndex', 
+        null=True, 
+        blank=True,
+        help_text='رقم الفقرة (يبدأ من 0) - للنص فقط'
+    )
+    
+    # للفيديو: timestamp بالثواني
+    video_timestamp = models.FloatField(
+        db_column='VideoTimestamp',
+        null=True,
+        blank=True,
+        help_text='الوقت بالثواني في الفيديو - للفيديو فقط'
+    )
+    
+    # السؤال والإجابات
+    question = models.CharField(db_column='Question', max_length=500, help_text='سؤال قصير')
     option_a = models.CharField(db_column='OptionA', max_length=300, help_text='الخيار الأول')
     option_b = models.CharField(db_column='OptionB', max_length=300, help_text='الخيار الثاني')
+    option_c = models.CharField(db_column='OptionC', max_length=300, null=True, blank=True, help_text='الخيار الثالث (اختياري)')
+    option_d = models.CharField(db_column='OptionD', max_length=300, null=True, blank=True, help_text='الخيار الرابع (اختياري)')
     correct_answer = models.CharField(
         db_column='CorrectAnswer',
         max_length=10,
-        choices=[('A', 'A'), ('B', 'B')],
+        choices=[('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')],
         help_text='الإجابة الصحيحة (للمعلم فقط)'
     )
+    
+    # نسبة الأسئلة الإجبارية (للمعلم لضبط التكرار)
+    mandatory_frequency = models.IntegerField(
+        db_column='MandatoryFrequency',
+        default=20,
+        help_text='نسبة الأسئلة الإجبارية (مثلاً: 20 تعني سؤال إجباري كل 20% من المحتوى)'
+    )
+    
+    # عتبة الانخراط للأسئلة التكيفية
+    engagement_threshold = models.FloatField(
+        db_column='EngagementThreshold',
+        default=0.5,
+        help_text='عتبة الانخراط (0-1) لإظهار السؤال التكيفي'
+    )
+    
     created_at = models.DateTimeField(db_column='CreatedAt', auto_now_add=True)
     updated_at = models.DateTimeField(db_column='UpdatedAt', auto_now=True)
 
     class Meta:
         managed  = True
         db_table = 'Checkpoint'
-        unique_together = [('lessonid', 'paragraph_index')]
         indexes  = [
             models.Index(fields=['lessonid'], name='idx_chk_lesson'),
-            models.Index(fields=['lessonid', 'paragraph_index'], name='idx_chk_lesson_para'),
+            models.Index(fields=['lessonid', 'checkpoint_type'], name='idx_chk_lesson_type'),
+            models.Index(fields=['video_timestamp'], name='idx_chk_timestamp'),
         ]
 
     def __str__(self):
-        return f"Checkpoint for Lesson {self.lessonid_id}, Paragraph {self.paragraph_index}"
+        return f"Checkpoint {self.checkpoint_type} for Lesson {self.lessonid_id}"
 
 
 # ════════════════════════════════════════════════════════════════
-# StudentCheckpointAnswer (إجابات الطلاب على نقاط التحقق)
+# StudentCheckpointAnswer (إجابات الطلاب على نقاط التحقق - محسّنة)
 # ════════════════════════════════════════════════════════════════
 class StudentCheckpointAnswer(models.Model):
     answerid = models.AutoField(db_column='AnswerID', primary_key=True)
     checkpoint = models.ForeignKey(Checkpoint, on_delete=models.CASCADE, db_column='CheckpointID')
     studentid = models.ForeignKey(Student, on_delete=models.CASCADE, db_column='StudentID')
     sessionid = models.ForeignKey(Learningsession, on_delete=models.CASCADE, db_column='SessionID', null=True, blank=True)
+    
     selected_answer = models.CharField(
         db_column='SelectedAnswer',
         max_length=10,
-        choices=[('A', 'A'), ('B', 'B')],
+        choices=[('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')],
         help_text='الإجابة التي اختارها الطالب'
     )
+    
+    # لا نعرض للطالب ما إذا كانت إجابته صحيحة أو خاطئة
+    # لكن نسجلها داخلياً للتحليل
+    is_correct = models.BooleanField(
+        db_column='IsCorrect',
+        default=False,
+        help_text='هل الإجابة صحيحة؟ (داخلي فقط - لا يُعرض للطالب)'
+    )
+    
+    # حالة الاتصال المعرفي
+    cognitive_connection_state = models.CharField(
+        db_column='CognitiveConnectionState',
+        max_length=20,
+        choices=[
+            ('strong', 'قوي - استمرارية الفهم'),
+            ('weak', 'ضعيف مؤقت'),
+            ('disconnected', 'منقطع'),
+        ],
+        default='strong',
+        help_text='حالة الاتصال المعرفي بناءً على الإجابة'
+    )
+    
+    # هل تم تفعيل التدخل الداعم (الرجوع 5 ثواني)
+    support_intervention_triggered = models.BooleanField(
+        db_column='SupportInterventionTriggered',
+        default=False,
+        help_text='هل تم تفعيل الرجوع 5 ثواني لإعادة بناء السياق؟'
+    )
+    
     response_time = models.FloatField(
         db_column='ResponseTime',
         null=True,
         blank=True,
         help_text='المدة الزمنية التي احتاجها الطالب للاختيار (بالثواني)'
     )
+    
     answered_at = models.DateTimeField(db_column='AnsweredAt', auto_now_add=True)
+    
+    # السياق عند الإجابة (للتحليل)
+    current_video_position = models.FloatField(
+        db_column='CurrentVideoPosition',
+        null=True,
+        blank=True,
+        help_text='موضع الفيديو الحالي بالثواني عند الإجابة'
+    )
+    current_paragraph_index = models.IntegerField(
+        db_column='CurrentParagraphIndex',
+        null=True,
+        blank=True,
+        help_text='رقم الفقرة الحالية عند الإجابة'
+    )
 
     class Meta:
         managed  = True
         db_table = 'StudentCheckpointAnswer'
-        unique_together = [('checkpoint', 'studentid', 'sessionid')]
         indexes  = [
             models.Index(fields=['studentid'], name='idx_stud_chk_ans'),
             models.Index(fields=['checkpoint'], name='idx_chk_ans_chk'),
             models.Index(fields=['sessionid'], name='idx_chk_ans_sess'),
+            models.Index(fields=['answered_at'], name='idx_chk_ans_time'),
         ]
 
     def __str__(self):
-        return f"Student {self.studentid_id} answered Checkpoint {self.checkpoint_id}: {self.selected_answer}"
+        return f"Student {self.studentid_id} answered Checkpoint {self.checkpoint_id}"
+
+
+# ════════════════════════════════════════════════════════════════
+# LearningState (نموذج حالة التعلم الزمنية)
+# ════════════════════════════════════════════════════════════════
+class LearningState(models.Model):
+    """
+    نموذج حالة التعلم الزمنية - يحلل الانخراط عبر الزمن بدل اللحظات الفردية
+    يدمج إشارات سلوكية (حركة العين، اتجاه الرأس، النظر) مع نقاط التحقق المعرفي
+    لإنتاج مؤشر حالة تعلم احتمالي
+    """
+    stateid = models.AutoField(db_column='StateID', primary_key=True)
+    sessionid = models.ForeignKey(Learningsession, on_delete=models.CASCADE, db_column='SessionID')
+    studentid = models.ForeignKey(Student, on_delete=models.CASCADE, db_column='StudentID')
+    
+    # المؤشرات السلوكية (من تتبع الانتباه)
+    behavioral_engagement_score = models.FloatField(
+        db_column='BehavioralEngagementScore',
+        default=0.0,
+        help_text='مؤشر الانخراط السلوكي (0-1) من تحليل حركة العين والرأس'
+    )
+    
+    # مؤشر حالة التعلم الاحتمالي
+    learning_state_probability = models.FloatField(
+        db_column='LearningStateProbability',
+        default=0.5,
+        help_text='احتمالية حالة التعلم (0-1) - مؤشر شامل'
+    )
+    
+    # حالة الاتصال المعرفي (من نقاط التحقق)
+    cognitive_connection_score = models.FloatField(
+        db_column='CognitiveConnectionScore',
+        default=0.5,
+        help_text='مؤشر الاتصال المعرفي (0-1) من إجابات نقاط التحقق'
+    )
+    
+    # الحمل الإدراكي الحالي
+    cognitive_load = models.CharField(
+        db_column='CognitiveLoad',
+        max_length=20,
+        choices=[
+            ('low', 'منخفض'),
+            ('optimal', 'مثالي'),
+        ('high', 'عالي'),
+        ('overload', 'فائق'),
+        ],
+        default='optimal',
+        help_text='الحمل الإدراكي الحالي'
+    )
+    
+    # الاتجاه الزمني
+    temporal_trend = models.CharField(
+        db_column='TemporalTrend',
+        max_length=20,
+        choices=[
+            ('improving', 'محسّن'),
+            ('stable', 'مستقر'),
+            ('declining', 'تناقص'),
+            ('fluctuating', 'متذبذب'),
+        ],
+        default='stable',
+        help_text='الاتجاه الزمني لحالة التعلم'
+    )
+    
+    # النافذة الزمنية للتحليل
+    time_window_start = models.DateTimeField(db_column='TimeWindowStart')
+    time_window_end = models.DateTimeField(db_column='TimeWindowEnd')
+    
+    # بيانات تفصيلية (للتحليل)
+    attention_samples_count = models.IntegerField(
+        db_column='AttentionSamplesCount',
+        default=0,
+        help_text='عدد عينات الانتباه في هذه النافذة'
+    )
+    checkpoint_answers_count = models.IntegerField(
+        db_column='CheckpointAnswersCount',
+        default=0,
+        help_text='عدد إجابات نقاط التحقق في هذه النافذة'
+    )
+    
+    created_at = models.DateTimeField(db_column='CreatedAt', auto_now_add=True)
+    
+    class Meta:
+        managed  = True
+        db_table = 'LearningState'
+        indexes  = [
+            models.Index(fields=['sessionid'], name='idx_ls_session'),
+            models.Index(fields=['studentid'], name='idx_ls_student'),
+            models.Index(fields=['time_window_start'], name='idx_ls_time_start'),
+            models.Index(fields=['sessionid', '-created_at'], name='idx_ls_session_time'),
+        ]
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"LearningState for Session {self.sessionid_id}: {self.learning_state_probability:.2f}"
+
+
+# ════════════════════════════════════════════════════════════════
+# LearningStateSnapshot (لقطات لحظية للتحليل السريع)
+# ════════════════════════════════════════════════════════════════
+class LearningStateSnapshot(models.Model):
+    """
+    لقطات لحظية لحالة التعلم للتحليل السريع والعرض للمعلم وولي الأمر
+    تُحدث كل 30 ثانية تقريباً
+    """
+    snapshotid = models.AutoField(db_column='SnapshotID', primary_key=True)
+    sessionid = models.ForeignKey(Learningsession, on_delete=models.CASCADE, db_column='SessionID')
+    studentid = models.ForeignKey(Student, on_delete=models.CASCADE, db_column='StudentID')
+    
+    # المؤشرات اللحظية
+    current_attention_score = models.FloatField(
+        db_column='CurrentAttentionScore',
+        default=0.0,
+        help_text='درجة الانتباه الحالية (0-100)'
+    )
+    
+    current_learning_state = models.FloatField(
+        db_column='CurrentLearningState',
+        default=0.5,
+        help_text='حالة التعلم الحالية (0-1)'
+    )
+    
+    # إشارات سلوكية مفصلة
+    head_yaw = models.FloatField(db_column='HeadYaw', null=True, blank=True, help_text='زاوية التفات الرأس')
+    head_pitch = models.FloatField(db_column='HeadPitch', null=True, blank=True, help_text='زاوية النظر للأعلى/الأسفل')
+    head_roll = models.FloatField(db_column='HeadRoll', null=True, blank=True, help_text='زاوية الإمالة')
+    gaze_horizontal = models.FloatField(db_column='GazeHorizontal', null=True, blank=True, help_text='زاوية النظر الأفقية')
+    gaze_vertical = models.FloatField(db_column='GazeVertical', null=True, blank=True, help_text='زاوية النظر العمودية')
+    is_looking_away = models.BooleanField(db_column='IsLookingAway', default=False, help_text='هل ينظر بعيداً؟')
+    
+    # حالة العين
+    ear_value = models.FloatField(db_column='EARValue', null=True, blank=True, help_text='قيمة EAR')
+    is_drowsy = models.BooleanField(db_column='IsDrowsy', default=False, help_text='هل يظهر نعاس؟')
+    
+    snapshot_time = models.DateTimeField(db_column='SnapshotTime', auto_now_add=True)
+    
+    class Meta:
+        managed  = True
+        db_table = 'LearningStateSnapshot'
+        indexes  = [
+            models.Index(fields=['sessionid'], name='idx_lss_session'),
+            models.Index(fields=['studentid'], name='idx_lss_student'),
+            models.Index(fields=['snapshot_time'], name='idx_lss_time'),
+            models.Index(fields=['sessionid', '-snapshot_time'], name='idx_lss_session_time'),
+        ]
+        ordering = ['-snapshot_time']
+    
+    def __str__(self):
+        return f"Snapshot for Session {self.sessionid_id} at {self.snapshot_time}"
