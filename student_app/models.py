@@ -483,8 +483,7 @@ class BehavioralBaseline(models.Model):
             from django.utils import timezone
 
             self.calibration_completed_at = timezone.now()
-
-                self.is_active = True  # تفعيل النموذج
+            self.is_active = True  # تفعيل النموذج
 
 
         self.save()
