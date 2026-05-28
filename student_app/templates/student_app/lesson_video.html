@@ -336,6 +336,49 @@ body { background: var(--bg); font-family: 'Cairo', 'Tajawal', sans-serif; color
   </div>
 </div>
 
+<!-- AI Assistant popup (Level 2) -->
+<div class="checkpoint-popup d-none" id="aiAssistantPopup">
+  <div class="checkpoint-backdrop"></div>
+  <div class="checkpoint-box" style="max-width:400px;">
+    <div style="font-size:48px;margin-bottom:16px;text-align:center;">🤖</div>
+    <h5 style="margin:0 0 12px 0;color:#1d4ed8;font-size:1.2rem;text-align:center;">مساعد الدرس الذكي</h5>
+    <p style="margin:0 0 20px 0;color:#64748b;font-size:0.95rem;line-height:1.6;text-align:center;">
+        يمكنك استخدام المساعد الذكي لمساعدتك في فهم المفهوم.
+    </p>
+    <div style="text-align:center;">
+        <button id="aiAssistantBtn" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;font-family:'Tajawal',sans-serif;">
+            انتقل للمساعد الذكي
+        </button>
+        <button id="aiAssistantClose" style="background:#f1f5f9;color:#64748b;border:none;padding:12px 24px;border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer;margin-right:8px;transition:background 0.2s;font-family:'Tajawal',sans-serif;">
+            إغلاق
+        </button>
+    </div>
+  </div>
+</div>
+
+<!-- Level 3 popup (Learning style change) -->
+<div class="checkpoint-popup d-none" id="level3Popup">
+  <div class="checkpoint-backdrop"></div>
+  <div class="checkpoint-box" style="max-width:450px;">
+    <div style="font-size:48px;margin-bottom:16px;text-align:center;">💡</div>
+    <h5 style="margin:0 0 12px 0;color:#7c3aed;font-size:1.2rem;text-align:center;">نصائح للتركيز</h5>
+    <p style="margin:0 0 20px 0;color:#64748b;font-size:0.95rem;line-height:1.6;text-align:center;">
+        لاحظنا أنك تحتاج إلى بعض المساعدة الإضافية للتركيز على الدرس. إليك بعض النصائح:
+    </p>
+    <ul style="margin:0 0 20px 0;padding:0 20px;color:#64748b;font-size:0.9rem;line-height:1.8;">
+        <li>حاول أخذ استراحة قصيرة لمدة 5 دقائق</li>
+        <li>اشرب الماء وتحرك قليلاً</li>
+        <li>راجع النقاط الرئيسية في الدرس</li>
+        <li>استخدم المساعد الذكي للأسئلة</li>
+    </ul>
+    <div style="text-align:center;">
+        <button id="level3Close" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;font-family:'Tajawal',sans-serif;">
+            فهمت، سأحاول
+        </button>
+    </div>
+  </div>
+</div>
+
 {% include 'student_app/chatbot_widget.html' %}
 
 <script>
@@ -728,8 +771,15 @@ var _alertState = {
   // ✅ متغيرات جديدة للمستويات التسلسلية
   level1CheckpointShown: false, // المستوى 1: 3% من مدة الجلسة
   level2CheckpointShown: false, // المستوى 2: 15% من مدة الجلسة
-  level3CheckpointShown: false  // المستوى 3: 45% من مدة الجلسة
+  level3CheckpointShown: false,  // المستوى 3: 45% من مدة الجلسة
+  lastLevel2Threshold: 0, // ✅ آخر عتبة تم الوصول إليها للمستوى الثاني (15%، 30%، 45%، إلخ)
+  lastLevel1TriggerTime: 0, // ✅ وقت آخر ظهور للمستوى 1
+  distractionTimerPaused: false // ✅ هل تم إيقاف عداد التشتت بسبب نافذة مفتوحة
 };
+
+// متغيرات لتتبع حالة إيقاف الفيديو
+var videoPausedForAIAssistant = false;
+var videoPausedForLevel3 = false;
 
 // Configuration
 var _config = {
@@ -738,6 +788,218 @@ var _config = {
   frameSendRate: 300,        // Send frames every 300ms
   cameraDimensions: { width: 320, height: 240 }
 };
+
+// ✅ دالة لتحديد المستوى الذي يجب أن يظهر بناءً على الأولوية
+function determinePopupLevel(totalDistractionTime, level1Window, level2Window, level3Window) {
+    // الأولوية: المستوى 3 > المستوى 2 > المستوى 1
+    if (totalDistractionTime >= level3Window) {
+        return 3;
+    }
+    if (totalDistractionTime >= level2Window) {
+        return 2;
+    }
+    if (totalDistractionTime >= level1Window) {
+        return 1;
+    }
+    return 0;
+}
+
+// ✅ دالة لحساب الفاصل الزمني الديناميكي
+function calculateDynamicInterval(distractionTime, sessionDuration, level) {
+    // الفاصل الزمني الديناميكي: (وقت التشتت / مدة الجلسة) * 60 ثانية
+    var baseInterval = (distractionTime / sessionDuration) * 60;
+
+    // حدود الفاصل الزمني لكل مستوى
+    var minInterval, maxInterval;
+    if (level === 1) {
+        minInterval = 3;  // الحد الأدنى 3 ثواني
+        maxInterval = 15; // الحد الأقصى 15 ثانية
+    } else if (level === 2) {
+        minInterval = 15; // الحد الأدنى 15 ثانية
+        maxInterval = 60; // الحد الأقصى 60 ثانية
+    } else {
+        minInterval = 30; // الحد الأدنى 30 ثانية
+        maxInterval = 120; // الحد الأقصى 120 ثانية
+    }
+
+    // تطبيق الحدود
+    var interval = Math.max(minInterval, Math.min(maxInterval, baseInterval));
+    return interval;
+}
+
+// ✅ دالة لتحديد المستوى النشط
+function getActivePopupLevel() {
+    var checkpointPopup = document.getElementById('checkpointPopup');
+    var aiAssistantPopup = document.getElementById('aiAssistantPopup');
+    var level3Popup = document.getElementById('level3Popup');
+
+    if (level3Popup && !level3Popup.classList.contains('d-none')) {
+        return 3;
+    }
+    if (aiAssistantPopup && !aiAssistantPopup.classList.contains('d-none')) {
+        return 2;
+    }
+    if (checkpointPopup && !checkpointPopup.classList.contains('d-none')) {
+        return 1;
+    }
+    return 0;
+}
+
+// ✅ دالة لإظهار النافذة المناسبة بناءً على المستوى والأولوية
+function showPopupByLevel(targetLevel) {
+    var activeLevel = getActivePopupLevel();
+
+    // الأولوية للمستوى الأعلى
+    if (targetLevel <= activeLevel) {
+        console.log('[Popup] Target level', targetLevel, 'is not higher than active level', activeLevel, '- skipping');
+        return false;
+    }
+
+    // إغلاق أي نافذة منخفضة المستوى
+    if (activeLevel > 0) {
+        closePopupByLevel(activeLevel);
+    }
+
+    // ✅ إيقاف عداد التشتت عند ظهور أي نافذة
+    _alertState.distractionTimerPaused = true;
+    console.log('[Popup] Distraction timer paused due to popup');
+
+    // إظهار النافذة المناسبة
+    if (targetLevel === 1) {
+        // المستوى 1: سؤال تكيّفي (يتم التعامل معه من خلال showCheckpointOnDistraction)
+        console.log('[Popup] Level 1 handled by checkpoint system');
+        return true;
+    } else if (targetLevel === 2) {
+        // المستوى 2: نافذة توجيهية (المساعد الذكي)
+        console.log('[Popup] Showing Level 2 popup (AI Assistant)');
+        showAIAssistantPopup();
+        return true;
+    } else if (targetLevel === 3) {
+        // المستوى 3: نافذة تعليمات ونصائح
+        console.log('[Popup] Showing Level 3 popup (Learning style change)');
+        showLevel3Popup();
+        return true;
+    }
+
+    return false;
+}
+
+// ✅ دالة لإغلاق نافذة محددة
+function closePopupByLevel(level) {
+    if (level === 1) {
+        var popup = document.getElementById('checkpointPopup');
+        if (popup) {
+            popup.classList.add('d-none');
+        }
+    } else if (level === 2) {
+        var popup = document.getElementById('aiAssistantPopup');
+        if (popup) {
+            popup.classList.add('d-none');
+        }
+    } else if (level === 3) {
+        var popup = document.getElementById('level3Popup');
+        if (popup) {
+            popup.classList.add('d-none');
+        }
+    }
+}
+
+// ✅ نافذة منبثقة للمساعد الذكي
+function showAIAssistantPopup() {
+    console.log('[AI Assistant] Showing popup');
+
+    // ✅ إيقاف الفيديو مؤقتاً
+    if (videoElement && !videoElement.paused) {
+        videoElement.pause();
+        videoPausedForAIAssistant = true;
+    }
+
+    // ✅ تشغيل صوت تنبيه
+    playAIAssistantAlert();
+
+    // إظهار النافذة
+    var popup = document.getElementById('aiAssistantPopup');
+    popup.classList.remove('d-none');
+
+    // إضافة مستمعي الأحداث إذا لم تكن موجودة
+    if (!popup.dataset.listenersAdded) {
+        document.getElementById('aiAssistantBtn').addEventListener('click', function() {
+            openChatWithVideo();
+            popup.classList.add('d-none');
+            _alertState.distractionTimerPaused = false;
+            console.log('[AI Assistant] Distraction timer resumed after popup closed');
+            resumeVideo();
+        });
+
+        document.getElementById('aiAssistantClose').addEventListener('click', function() {
+            popup.classList.add('d-none');
+            _alertState.distractionTimerPaused = false;
+            console.log('[AI Assistant] Distraction timer resumed after popup closed');
+            resumeVideo();
+        });
+
+        popup.dataset.listenersAdded = 'true';
+    }
+}
+
+// ✅ نافذة منبثقة للمستوى 3
+function showLevel3Popup() {
+    console.log('[Level 3] Showing popup');
+
+    // ✅ إيقاف الفيديو مؤقتاً
+    if (videoElement && !videoElement.paused) {
+        videoElement.pause();
+        videoPausedForLevel3 = true;
+    }
+
+    // إظهار النافذة
+    var popup = document.getElementById('level3Popup');
+    popup.classList.remove('d-none');
+
+    // إضافة مستمعي الأحداث إذا لم تكن موجودة
+    if (!popup.dataset.listenersAdded) {
+        document.getElementById('level3Close').addEventListener('click', function() {
+            popup.classList.add('d-none');
+            _alertState.distractionTimerPaused = false;
+            console.log('[Level 3] Distraction timer resumed after popup closed');
+            resumeVideo();
+        });
+
+        popup.dataset.listenersAdded = 'true';
+    }
+}
+
+// ✅ دالة لاستئناف الفيديو
+function resumeVideo() {
+    if (videoPausedForAIAssistant || videoPausedForLevel3) {
+        if (videoElement && videoElement.paused) {
+            videoElement.play();
+        }
+        videoPausedForAIAssistant = false;
+        videoPausedForLevel3 = false;
+    }
+}
+
+// ✅ دالة لفتح المساعد الذكي مع الفيديو
+function openChatWithVideo() {
+    console.log('[AI Assistant] Opening chat with video context');
+    // فتح المساعد الذكي
+    var chatWidget = document.querySelector('.chatbot-widget');
+    if (chatWidget) {
+        chatWidget.style.display = 'block';
+    }
+}
+
+// ✅ دالة لتشغيل صوت تنبيه المساعد الذكي
+function playAIAssistantAlert() {
+    if ('speechSynthesis' in window) {
+        var utterance = new SpeechSynthesisUtterance('يمكنك استخدام المساعد الذكي لمساعدتك في فهم المفهوم');
+        utterance.lang = 'ar-SA';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        speechSynthesis.speak(utterance);
+    }
+}
 
 // Template variables - read from data attributes
 var wrapElement = document.querySelector('.lesson-video-wrap');
@@ -1231,8 +1493,10 @@ function processAttentionState(s) {
       console.log('[Attention] 😴 Distraction detected');
     }
 
-    // ✅ تراكم وقت التشتت المتواصل
-    _probabilisticModel.totalDistractionTime += timeSinceLastUpdate;
+    // ✅ تراكم وقت التشتت المتواصل (فقط إذا لم يتم إيقافه بسبب نافذة مفتوحة)
+    if (!_alertState.distractionTimerPaused) {
+        _probabilisticModel.totalDistractionTime += timeSinceLastUpdate;
+    }
 
     // Calculate duration of current distraction
     var duration = (now - (_attentionState.startTime || now)) / 1000;
@@ -1240,22 +1504,38 @@ function processAttentionState(s) {
     _attentionState.level = newLevel;
 
     // ✅ منطق تسلسلي للمستويات الثلاثة (للإشعارات فقط، وليس لظهور الأسئلة التكيفية)
-    // المستوى 1: 3% من مدة الجلسة
-    if (_probabilisticModel.totalDistractionTime >= level1Window && !_alertState.level1CheckpointShown) {
-      console.log('[Distraction] Level 1 threshold reached (3% of session). Total distraction time:', _probabilisticModel.totalDistractionTime.toFixed(2) + 's', 'Window:', level1Window.toFixed(2) + 's');
-      _alertState.level1CheckpointShown = true;
+    // المستوى 1: 3% من مدة الجلسة - يتكرر مع فاصل زمني ديناميكي (3-15 ثانية)
+    if (_probabilisticModel.totalDistractionTime >= level1Window) {
+      var now = Date.now();
+      var timeSinceLastLevel1 = now - _alertState.lastLevel1TriggerTime;
+      var dynamicInterval = calculateDynamicInterval(_probabilisticModel.totalDistractionTime, videoDuration, 1);
+
+      // إظهار فقط إذا مر الفاصل الزمني الديناميكي
+      if (timeSinceLastLevel1 > (dynamicInterval * 1000) || _alertState.lastLevel1TriggerTime === 0) {
+        console.log('[Distraction] Level 1 threshold reached (3% of session). Total distraction time:', _probabilisticModel.totalDistractionTime.toFixed(2) + 's', 'Window:', level1Window.toFixed(2) + 's', 'Dynamic interval:', dynamicInterval.toFixed(2) + 's');
+        _alertState.lastLevel1TriggerTime = now;
+      }
     }
 
-    // المستوى 2: 15% من مدة الجلسة (بعد المستوى 1)
-    if (_probabilisticModel.totalDistractionTime >= level2Window && _alertState.level1CheckpointShown && !_alertState.level2CheckpointShown) {
-      console.log('[Distraction] Level 2 threshold reached (15% of session). Total distraction time:', _probabilisticModel.totalDistractionTime.toFixed(2) + 's', 'Window:', level2Window.toFixed(2) + 's');
-      _alertState.level2CheckpointShown = true;
+    // المستوى 2: 15% من مدة الجلسة - تظهر كل 15% (15%، 30%، 45%، إلخ)
+    var targetLevel = determinePopupLevel(_probabilisticModel.totalDistractionTime, level1Window, level2Window, level3Window);
+    if (targetLevel === 2) {
+      var currentThreshold = Math.floor(_probabilisticModel.totalDistractionTime / (videoDuration * 0.15)) * 0.15;
+
+      if (currentThreshold > _alertState.lastLevel2Threshold) {
+        console.log('[Distraction] Level 2 threshold reached (' + (currentThreshold * 100) + '% of session). Total distraction time:', _probabilisticModel.totalDistractionTime.toFixed(2) + 's', 'Window:', level2Window.toFixed(2) + 's');
+        _alertState.lastLevel2Threshold = currentThreshold;
+        // ✅ إظهار نافذة المستوى 2
+        showPopupByLevel(2);
+      }
     }
 
-    // المستوى 3: 45% من مدة الجلسة (بعد المستوى 2)
-    if (_probabilisticModel.totalDistractionTime >= level3Window && _alertState.level2CheckpointShown && !_alertState.level3CheckpointShown) {
+    // المستوى 3: 45% من مدة الجلسة - تظهر مرة واحدة فقط
+    if (targetLevel === 3 && !_alertState.level3CheckpointShown) {
       console.log('[Distraction] Level 3 threshold reached (45% of session). Total distraction time:', _probabilisticModel.totalDistractionTime.toFixed(2) + 's', 'Window:', level3Window.toFixed(2) + 's');
       _alertState.level3CheckpointShown = true;
+      // ✅ إظهار نافذة المستوى 3
+      showPopupByLevel(3);
       // ✅ إرسال إشعارات للمعلم وولي الأمر (فقط عند المستوى 3)
       sendLevel3Notifications();
     }
