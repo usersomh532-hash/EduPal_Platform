@@ -6,6 +6,18 @@
     html, body { direction: rtl; }
 </style>
 
+<!-- ✅ السهم الإرشادي للمعايرة — يظهر فقط إذا لم تُكتمل المعايرة -->
+{% if not has_calibration %}
+<div id="calibration-arrow-guide" aria-hidden="true">
+    <!-- الذيل العمودي للسهم -->
+    <div class="arrow-shaft"></div>
+    <!-- رأس السهم -->
+    <div class="arrow-head"></div>
+    <!-- نص توضيحي -->
+    <div class="arrow-label">ابدأ هنا!</div>
+</div>
+{% endif %}
+
 <div class="container-lg mt-5 pb-5" dir="rtl" lang="ar">
 
     <!-- ═══════════════ Hero ═══════════════ -->
@@ -71,8 +83,8 @@
                                     <span class="grade-badge">{{ report.grade }}</span>
                                 </td>
                                 <td class="text-center">
-                                    <span class="status-pill stable">
-                                        <i class="fas fa-check-circle"></i> مستقر
+                                    <span class="status-pill {{ report.status_class }}">
+                                        <i class="fas fa-check-circle"></i> {{ report.status }}
                                     </span>
                                 </td>
                             </tr>
@@ -95,7 +107,7 @@
         <div class="col-lg-4 d-flex flex-column gap-4">
 
             <!-- المعايرة السلوكية -->
-            <div class="panel">
+            <div class="panel" id="calibration-panel">
                 <div class="panel-head">
                     <i class="fas fa-sliders-h panel-icon"></i>
                     <span>المعايرة السلوكية</span>
@@ -104,32 +116,11 @@
                     <p class="text-muted mb-3" style="font-size:0.9rem;">
                         بناء نموذج انتباه شخصي لطفلك من خلال جلسات معايرة قصيرة.
                     </p>
-                    <a href="{% url 'parent:calibration_dashboard' %}" class="btn btn-primary w-100">
+                    <a href="{% url 'parent:calibration_dashboard' %}"
+                       class="btn btn-primary w-100"
+                       id="calibration-btn">
                         <i class="fas fa-cog"></i> إدارة المعايرة
                     </a>
-                </div>
-            </div>
-
-            <!-- ملاحظات المعلمين -->
-            <div class="panel">
-                <div class="panel-head">
-                    <i class="fas fa-comment-dots panel-icon"></i>
-                    <span>ملاحظات المعلمين</span>
-                </div>
-                <div class="panel-body">
-                    {% for note in teacher_notes %}
-                    <div class="note-card">
-                        <div class="note-meta">
-                            <span class="note-teacher">{{ note.teacher_name }}</span>
-                            <span class="note-date">{{ note.date }}</span>
-                        </div>
-                        <p class="note-text mb-0">{{ note.text }}</p>
-                    </div>
-                    {% empty %}
-                    <p class="text-center text-muted py-3 mb-0" style="font-size:0.95rem;">
-                        لا توجد ملاحظات جديدة حالياً.
-                    </p>
-                    {% endfor %}
                 </div>
             </div>
 
@@ -176,6 +167,69 @@ body {
     background: var(--bg);
     font-family: 'Cairo', 'Tajawal', sans-serif;
     color: var(--ink); direction: rtl;
+}
+
+/* ══════════════════════════════════════════════════════
+   ✅ السهم الإرشادي للمعايرة
+   - يبدأ من أعلى الشاشة من المنتصف
+   - أصفر، كبير، متحرك (نبضة للأسفل)
+   - يختفي تلقائياً عند has_calibration = True
+══════════════════════════════════════════════════════ */
+#calibration-arrow-guide {
+    position: fixed;
+    /* يُحسب موضعه بـ JavaScript ليتمركز فوق زر المعايرة */
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 9999;
+    pointer-events: none; /* لا يعيق النقر على العناصر تحته */
+    animation: arrowBounce 1.1s ease-in-out infinite;
+}
+
+/* الذيل العمودي */
+.arrow-shaft {
+    width: 18px;
+    height: 120px;
+    background: linear-gradient(to bottom, #facc15, #f59e0b);
+    border-radius: 9px 9px 0 0;
+    box-shadow: 0 2px 16px rgba(245,158,11,0.45);
+}
+
+/* رأس السهم المثلثي */
+.arrow-head {
+    width: 0;
+    height: 0;
+    border-left:  36px solid transparent;
+    border-right: 36px solid transparent;
+    border-top:   54px solid #f59e0b;
+    filter: drop-shadow(0 4px 10px rgba(245,158,11,0.5));
+}
+
+/* نص فوق السهم */
+.arrow-label {
+    position: absolute;
+    top: -36px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fbbf24;
+    color: #1e293b;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    padding: 4px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* ✅ حركة النبضة للأسفل — تشبه أسهم الألعاب الإرشادية */
+@keyframes arrowBounce {
+    0%, 100% { transform: translateX(-50%) translateY(0);    }
+    45%       { transform: translateX(-50%) translateY(18px); }
+    65%       { transform: translateX(-50%) translateY(8px);  }
 }
 
 /* ── Hero ── */
@@ -256,7 +310,11 @@ body {
     font-family: 'Cairo', sans-serif;
     display: inline-flex; align-items: center; gap: 5px;
 }
-.status-pill.stable { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.status-pill.stable           { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.status-pill.excellent        { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.status-pill.good             { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.status-pill.acceptable       { background: #fefce8; color: #854d0e; border: 1px solid #fde047; }
+.status-pill.needs-improvement{ background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 
 /* ── Notes ── */
 .note-card {
@@ -324,6 +382,10 @@ body {
   .panel-icon{width:36px;height:36px;font-size:1rem;}
   .note-card{padding:.85rem .9rem;}
   .tip-card{padding:1.1rem 1rem;}
+  /* تصغير السهم على الشاشات الصغيرة */
+  .arrow-shaft { height: 80px; width: 14px; }
+  .arrow-head  { border-left-width: 26px; border-right-width: 26px; border-top-width: 40px; }
+  .arrow-label { font-size: 0.78rem; }
 }
 
 @media(max-width: 600px){
@@ -407,15 +469,14 @@ body {
             window._progressChart.destroy();
         }
         var ctx = canvas.getContext('2d');
-        
-        // استخدام البيانات الحقيقية من القالب
+
         var chartDataElement = document.getElementById('chart-data-json');
         var chartData = chartDataElement ? JSON.parse(chartDataElement.textContent) : {
             labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
             attention_scores: [0, 0, 0, 0],
             test_scores: [0, 0, 0, 0]
         };
-        
+
         window._progressChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -489,11 +550,55 @@ body {
         document.head.appendChild(script);
     }
 
+    /* ══════════════════════════════════════════════════════
+       ✅ تموضع السهم الإرشادي فوق زر المعايرة
+       - يُحسب موضع الزر بعد تحميل الصفحة كاملاً
+       - يتمركز السهم أفقياً فوق مركز الزر
+       - عند تغيير حجم الشاشة يُعاد الحساب تلقائياً
+    ══════════════════════════════════════════════════════ */
+    function positionCalibrationArrow() {
+        var arrow = document.getElementById('calibration-arrow-guide');
+        if (!arrow) return; /* has_calibration = True → السهم غير موجود */
+
+        var btn = document.getElementById('calibration-btn');
+        if (!btn) return;
+
+        var btnRect   = btn.getBoundingClientRect();
+        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+        /* مركز الزر أفقياً بالنسبة للصفحة */
+        var btnCenterX = btnRect.left + btnRect.width / 2;
+
+        /* ارتفاع السهم الكلي = shaft + head */
+        var arrowHeight = 120 + 54; /* shaft.height + arrow-head.border-top */
+
+        /* نضع قمة السهم بحيث رأسه يصل لأعلى الزر بمسافة 8px */
+        var arrowTop = scrollTop + btnRect.top - arrowHeight - 8;
+
+        /* لا نسمح للسهم بالخروج فوق الـ viewport */
+        if (arrowTop < scrollTop + 8) {
+            arrowTop = scrollTop + 8;
+        }
+
+        arrow.style.position  = 'absolute';
+        arrow.style.top       = arrowTop + 'px';
+        arrow.style.left      = btnCenterX + 'px';
+        arrow.style.transform = 'translateX(-50%)';
+        arrow.style.display   = 'flex';
+    }
+
     document.addEventListener('DOMContentLoaded', function(){
         initParentNotifications();
         applyProgressBars();
         loadChartJS(initChart);
+
+        /* ✅ تموضع السهم بعد تحميل الصفحة */
+        positionCalibrationArrow();
     });
+
+    /* ✅ إعادة حساب الموضع عند تغيير حجم الشاشة أو التمرير */
+    window.addEventListener('resize', positionCalibrationArrow);
+    window.addEventListener('scroll', positionCalibrationArrow);
 })();
 </script>
 {% endblock %}

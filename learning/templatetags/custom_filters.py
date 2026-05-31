@@ -17,3 +17,11 @@ def index_filter(list_data, index):
         return list_data[index]
     except (IndexError, TypeError, KeyError):
         return None
+
+@register.filter(name='get_item')
+def get_item(dict_data, key):
+    """يجلب القيمة من dict باستخدام المفتاح"""
+    try:
+        return dict_data.get(key, 0)
+    except (TypeError, AttributeError):
+        return 0

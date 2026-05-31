@@ -64,8 +64,14 @@
             </li>
 
             <li class="nav-item">
-                <a href="{% url 'accounts:schedule_page' %}" class="nav-link d-flex align-items-center">
-                    <i class="fas fa-calendar-alt ms-3 text-success"></i> <span>جدول المهام</span>
+                <a href="{% url 'accounts:schedule_page' %}" class="nav-link d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-calendar-alt ms-3 text-success"></i> <span>جدول المهام</span>
+                    </div>
+                    <span class="schedule-update-badge"
+                          style="display:none;background:#ef4444;color:#fff;
+                                 border-radius:100px;padding:1px 7px;
+                                 font-size:.7rem;font-weight:700;"></span>
                 </a>
             </li>
 
@@ -294,5 +300,25 @@
     })
     .catch(function(){});
     setTimeout(pollNotifBadge, 20000);
+})();
+
+/* ── polling تحديثات جدول المهام في السايدبار — كل 20 ثانية ── */
+(function pollScheduleBadge(){
+    fetch("{% url 'accounts:schedule_updates_count' %}", {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        var badge = document.querySelector('.schedule-update-badge');
+        if(!badge) return;
+        if(d.count && d.count > 0){
+            badge.textContent = d.count > 99 ? '99+' : d.count;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    })
+    .catch(function(){});
+    setTimeout(pollScheduleBadge, 20000);
 })();
 </script>

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
 {% block title %}إدارة الصفوف – العام الدراسي {{ current_year }}{% endblock %}
 {% block extra_css %}
 <style>
@@ -277,7 +278,7 @@ body{background:var(--bg);font-family:'Cairo',sans-serif;color:var(--ink);direct
                     <div style="display:flex;align-items:flex-start;gap:.6rem;">
                         <i class="fas fa-info-circle" style="color:#ca8a04;font-size:.95rem;margin-top:.15rem;"></i>
                         <div style="font-size:.82rem;color:#854d0e;line-height:1.7;">
-                            <strong style="color:#713f12;">تنبيه هام:</strong> عمليات إضافة ونقل وإزالة الطلاب متاحة فقط خلال فترة التسجيل للسنة الدراسية الجديدة (شهر سبتمبر). كما يُشترط أن يكون الصف مناسب لعمر الطالب حسب النظام المدرسي، وأن يكون الانتقال منطقي (زيادة صف واحد فقط بعد نهاية السنة الدراسية).
+                            <strong style="color:#713f12;">تنبيه هام:</strong> عمليات إضافة ونقل وإزالة الطلاب متاحة في أي وقت. يُشترط أن يكون الصف مناسب لعمر الطالب حسب النظام المدرسي (يمكن أن يكون الطالب في صف نفس عمره أو صف أقل من عمره)، وأن يكون الانتقال منطقي (زيادة صف واحد فقط بعد نهاية السنة الدراسية). لا يمكن نقل الطالب من معلم لمعلم آخر إلا بعد أن يقوم المعلم الحالي بحذف الطالب من صفوفه.
                         </div>
                     </div>
                 </div>
@@ -355,7 +356,7 @@ body{background:var(--bg);font-family:'Cairo',sans-serif;color:var(--ink);direct
                         <div class="subject-icon"><i class="fas fa-door-open"></i></div>
                         <div class="subject-info">
                             <div class="subject-name">{{ cls.classname }}</div>
-                            <div class="subject-class">{{ cls.student_set.count }} طالب</div>
+                            <div class="subject-class">{{ class_student_counts|get_item:cls.classid }} طالب</div>
                         </div>
                         <button class="cm-btn cm-btn-danger" style="padding:.3rem .65rem;font-size:.78rem;"
                                 data-classid="{{ cls.classid }}" data-classname="{{ cls.classname }}"
@@ -613,7 +614,7 @@ var CSRF_TOKEN = "{{ csrf_token }}";
 function toast(msg,type){
     var t=document.getElementById('toast');
     t.textContent=msg; t.className='show '+(type||'');
-    setTimeout(function(){t.className='';},3500);
+    setTimeout(function(){t.className='';},8000);
 }
 function api(payload,onSuccess){
     fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},body:JSON.stringify(payload)})

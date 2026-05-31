@@ -82,10 +82,60 @@ _sessions: dict[str, dict] = {}
 _lock = threading.Lock()
 
 
+def _get_student_baseline_data(student_id: int) -> dict:
+    """
+    جلب بيانات النموذج السلوكي الشخصي للطالب
+    """
+    if not DJANGO_AVAILABLE:
+        return {}
+    
+    try:
+        from student_app.models import BehavioralBaseline
+        baseline = BehavioralBaseline.objects.filter(
+            student_id=student_id,
+            is_active=True
+        ).first()
+        
+        if not baseline:
+            return {}
+        
+        return {
+            'ear_mean': baseline.ear_mean,
+            'ear_std': baseline.ear_std,
+            'ear_threshold_personal': baseline.ear_threshold_personal,
+            'head_yaw_mean': baseline.head_yaw_mean,
+            'head_yaw_std': baseline.head_yaw_std,
+            'yaw_threshold_personal': baseline.yaw_threshold_personal,
+            'head_pitch_mean': baseline.head_pitch_mean,
+            'head_pitch_std': baseline.head_pitch_std,
+            'pitch_threshold_personal': baseline.pitch_threshold_personal,
+            'head_roll_mean': baseline.head_roll_mean,
+            'head_roll_std': baseline.head_roll_std,
+            'roll_threshold_personal': baseline.roll_threshold_personal,
+            'gaze_horizontal_mean': baseline.gaze_horizontal_mean,
+            'gaze_horizontal_std': baseline.gaze_horizontal_std,
+            'gaze_horizontal_threshold_personal': baseline.gaze_horizontal_threshold_personal,
+            'gaze_vertical_mean': baseline.gaze_vertical_mean,
+            'gaze_vertical_std': baseline.gaze_vertical_std,
+            'gaze_vertical_threshold_personal': baseline.gaze_vertical_threshold_personal,
+        }
+    except Exception as e:
+        logger.warning(f"Error fetching baseline data for student {student_id}: {e}")
+        return {}
+
+
 def _make_session(session_id: str, student_name: str,
-                  camera_index: int = 0) -> dict:
-    tracker     = AttentionTracker(student_name=student_name,
-                                   camera_index=camera_index)
+                  camera_index: int = 0, student_id: int = None) -> dict:
+    # ✅ جلب بيانات المعايرة الخاصة بالطالب
+    baseline_data = {}
+    if student_id:
+        baseline_data = _get_student_baseline_data(student_id)
+    
+    tracker = AttentionTracker(
+        student_name=student_name,
+        camera_index=camera_index,
+        baseline_data=baseline_data if baseline_data else None
+    )
     ws_clients  = []      # قائمة WebSocket المتصلة بهذه الجلسة
     state_buffer = []     # آخر 300 حالة لحساب المتوسط
     frame_client = None   # client الذي يرسل frames
@@ -99,6 +149,7 @@ def _make_session(session_id: str, student_name: str,
         "thread":        None,
         "running":       False,
         "last_frame_time": last_frame_time,  # ✅
+        "has_calibration": bool(baseline_data),  # ✅ للتحقق من توفر المعايرة
     }
 
 
@@ -119,13 +170,15 @@ async def api_start(request: Request):
         {
             "session_id":   "lesson_42_student_7",
             "student_name": "محمد خالد",
-            "camera_index": 0
+            "camera_index": 0,
+            "student_id": 7  # ✅ مطلوب لجلب بيانات المعايرة
         }
     """
     data = await request.json()
     session_id   = data.get("session_id",   "default")
     student_name = data.get("student_name", "الطالب")
     camera_index = int(data.get("camera_index", 0))
+    student_id   = data.get("student_id")  # ✅ استخراج student_id
 
     # قفل واحد من الفحص حتى اكتمال التهيئة يمنع طلبين متزامنين لنفس session_id
     # من تجاوز الفحص واستبدال الجلسة الأولى بجلسة يتيمة.
@@ -138,9 +191,10 @@ async def api_start(request: Request):
                 "ok": True,
                 "session_id": session_id,
                 "ws_url": f"ws://localhost:5050/ws/attention/{session_id}",
+                "has_calibration": existing.get("has_calibration", False),
             }
 
-        session = _make_session(session_id, student_name, camera_index)
+        session = _make_session(session_id, student_name, camera_index, student_id)
         _sessions[session_id] = session
 
         # تهيئة tracker بدون فتح كاميرا الخادم؛ frames تصل من المتصفح عبر WebSocket.
@@ -156,9 +210,10 @@ async def api_start(request: Request):
             raise HTTPException(status_code=500, detail="تعذّر تهيئة تتبع الانتباه")
 
     return {
-        "ok":        True,
-        "session_id": session_id,
-        "ws_url":    f"ws://localhost:5050/ws/attention/{session_id}",
+        "ok":              True,
+        "session_id":      session_id,
+        "ws_url":          f"ws://localhost:5050/ws/attention/{session_id}",
+        "has_calibration": session.get("has_calibration", False),  # ✅ إرجاع حالة المعايرة
     }
 
 

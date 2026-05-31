@@ -113,10 +113,29 @@ def parent_portal(request):
             completed_lessons = len(set(r.lessonid.lessonid for r in reps if r.lessonid))
             completion = round((completed_lessons / total_lessons * 100), 1) if total_lessons > 0 else 0
             completion = min(100, completion)
+            
+            # حساب الحالة بناءً على البيانات الحقيقية
+            status = 'مستقر'
+            status_class = 'stable'
+            if completion >= 80 and avg_g >= 80:
+                status = 'ممتاز'
+                status_class = 'excellent'
+            elif completion >= 60 and avg_g >= 60:
+                status = 'جيد'
+                status_class = 'good'
+            elif completion >= 40 and avg_g >= 40:
+                status = 'مقبول'
+                status_class = 'acceptable'
+            elif completion < 40 or avg_g < 40:
+                status = 'يحتاج تحسين'
+                status_class = 'needs-improvement'
+            
             subject_reports.append({
                 'subject_name': subj_name,
                 'completion':   completion,
                 'grade':        f'{avg_g}%',
+                'status':       status,
+                'status_class': status_class,
             })
 
     # ملاحظات المعلمين (إشعارات parent_grade + parent_attention + teachercomments من التقارير)
@@ -148,34 +167,58 @@ def parent_portal(request):
     teacher_notes.sort(key=lambda x: x['date'], reverse=True)
     teacher_notes = teacher_notes[:5]
 
-    # ── بيانات الرسم البياني للتركيز (بيانات حقيقية) ───────────────
+    # ── بيانات الرسم البياني للتركيز (بيانات حقيقية للأسبوع الحالي من الأحد إلى الخميس) ───────────────
     chart_data = {
         'labels': [],
         'attention_scores': [],
         'test_scores': [],
     }
     if reports:
-        # تجميع البيانات حسب الأسبوع
+        # تجميع البيانات حسب الأسبوع الحالي فقط (من الأحد إلى الخميس)
         from collections import defaultdict
         from datetime import datetime, timedelta
-        weekly_data = defaultdict(lambda: {'attention': [], 'tests': []})
+        from django.utils import timezone
         
-        for r in reports:
+        # تحديد بداية الأسبوع (الأحد) في النظام المدرسي الفلسطيني
+        today = timezone.now().date()
+        # الأحد هو اليوم السادس في Python (0=الاثنين، 6=الأحد)
+        # لذا نحسب بداية الأسبوع كالتالي:
+        days_since_sunday = (today.weekday() + 1) % 7  # الأحد=0، الاثنين=1، ...، السبت=6
+        week_start = today - timedelta(days=days_since_sunday)
+        week_end = week_start + timedelta(days=4)  # الخميس
+        
+        # تصفية البيانات للأسبوع الحالي فقط (من الأحد إلى الخميس)
+        current_week_reports = [r for r in reports if r.reportdate and week_start <= r.reportdate.date() <= week_end]
+        
+        # تجميع البيانات حسب الأيام في الأسبوع الحالي
+        daily_data = defaultdict(lambda: {'attention': [], 'tests': []})
+        
+        for r in current_week_reports:
             if r.reportdate:
-                week_start = r.reportdate - timedelta(days=r.reportdate.weekday())
-                week_key = week_start.strftime('%Y-%m-%d')
+                day_key = r.reportdate.date().strftime('%Y-%m-%d')
                 if r.avgattentionscore is not None:
-                    weekly_data[week_key]['attention'].append(r.avgattentionscore)
+                    daily_data[day_key]['attention'].append(r.avgattentionscore)
                 if r.testscore is not None:
-                    weekly_data[week_key]['tests'].append(r.testscore)
+                    daily_data[day_key]['tests'].append(r.testscore)
         
-        # ترتيب الأسابيع وحساب المتوسطات
-        sorted_weeks = sorted(weekly_data.keys())[:4]  # آخر 4 أسابيع
-        for week in sorted_weeks:
-            week_label = datetime.strptime(week, '%Y-%m-%d').strftime('%d/%m')
-            chart_data['labels'].append(week_label)
-            att_scores = weekly_data[week]['attention']
-            test_scores = weekly_data[week]['tests']
+        # ترتيب الأيام وحساب المتوسطات
+        sorted_days = sorted(daily_data.keys())
+        for day in sorted_days:
+            day_label = datetime.strptime(day, '%Y-%m-%d').strftime('%A')
+            # تحويل اسم اليوم إلى العربية
+            arabic_days = {
+                'Monday': 'الاثنين',
+                'Tuesday': 'الثلاثاء',
+                'Wednesday': 'الأربعاء',
+                'Thursday': 'الخميس',
+                'Friday': 'الجمعة',
+                'Saturday': 'السبت',
+                'Sunday': 'الأحد',
+            }
+            day_label = arabic_days.get(day_label, day_label)
+            chart_data['labels'].append(day_label)
+            att_scores = daily_data[day]['attention']
+            test_scores = daily_data[day]['tests']
             avg_att = round(sum(att_scores) / len(att_scores), 1) if att_scores else 0
             avg_test = round(sum(test_scores) / len(test_scores), 1) if test_scores else 0
             chart_data['attention_scores'].append(avg_att)
@@ -184,10 +227,18 @@ def parent_portal(request):
     # إذا لم يكن هناك بيانات، استخدم بيانات فارغة
     if not chart_data['labels']:
         chart_data = {
-            'labels': ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
-            'attention_scores': [0, 0, 0, 0],
-            'test_scores': [0, 0, 0, 0],
+            'labels': ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'],
+            'attention_scores': [0, 0, 0, 0, 0],
+            'test_scores': [0, 0, 0, 0, 0],
         }
+
+    # ── التحقق من جلسة المعايرة ──────────────────────────────────────
+    has_calibration = False
+    if child:
+        has_calibration = CalibrationSession.objects.filter(
+            student=child.userid,
+            is_completed=True
+        ).exists()
 
     return render(request, 'parent_app/parent_portal.html', {
         'parent':                parent,
@@ -198,9 +249,8 @@ def parent_portal(request):
         'all_notifications':     all_notifications,
         'unread_notifications':  unread_notifications,
         'unread_count':          len(unread_notifications),
-        'teacher_notes':         teacher_notes,
-        'chart_data':            chart_data,
         'chart_data':            json.dumps(chart_data, ensure_ascii=False),
+        'has_calibration':       has_calibration,
     })
 
 
@@ -280,7 +330,19 @@ def calibration_dashboard(request):
     
     # الحصول على النموذج السلوكي الشخصي للطالب
     baseline, created = BehavioralBaseline.objects.get_or_create(
-        student=child.userid
+        student=child.userid,
+        defaults={
+            'level1_probability_threshold': 0.3,
+            'level2_probability_threshold': 0.5,
+            'level3_probability_threshold': 0.7,
+            'eye_gaze_weight': 0.30,
+            'head_pose_weight': 0.25,
+            'blink_rate_weight': 0.20,
+            'checkpoint_fail_weight': 0.15,
+            'interaction_weight': 0.10,
+            'temporal_smoothing_alpha': 0.85,
+            'ear_threshold_k': 2.0,
+        }
     )
     
     # الحصول على جلسات المعايرة

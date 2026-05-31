@@ -266,6 +266,7 @@ def submit_checkpoint_answer(request):
     # ✅ إضافة سجلات للتشخيص
     logger.info(f"Checkpoint answer submission - session_id: {session_id}, checkpoint_id: {checkpoint_id}, selected_answer: {selected_answer}")
     logger.info(f"Full request data keys: {list(data.keys())}")
+    logger.info(f"Current position received: {current_position}, Session duration: {session_duration}, Content type: {content_type}")
 
     if checkpoint_id is None:
         return JsonResponse({'success': False, 'error': 'checkpoint_id required'})
@@ -299,12 +300,14 @@ def submit_checkpoint_answer(request):
             current_position, content_type
         )
         
-        # إذا كانت الإجابة خاطئة، احسب موضع الرجوع
+        # إذا كانت الإجابة خاطئة، احسب موضع الرجوع دائماً (بغض النظر عن support_intervention_triggered)
         rewind_position = None
-        if not answer.is_correct and answer.support_intervention_triggered:
+        if not answer.is_correct:
+            logger.info(f"Incorrect answer detected, calculating rewind position. checkpoint_id={checkpoint_id}, current_position={current_position}, content_type={content_type}, session_duration={session_duration}")
             rewind_position = manager.get_rewind_position(
                 checkpoint_id, current_position, content_type, session_duration
             )
+            logger.info(f"Calculated rewind_position: {rewind_position}")
         
         # لا نُظهر للطالب ما إذا كانت إجابته صحيحة أو خاطئة
         # نُرجع فقط موضع الرجوع إذا لزم الأمر
@@ -312,6 +315,7 @@ def submit_checkpoint_answer(request):
             'success': True,
             'answer_id': answer.answerid,
             'rewind_position': rewind_position,
+            'rewind_meta': getattr(manager, '_last_rewind_meta', None),
             'show_correct_answer': False,  # غير عقابي
         })
         

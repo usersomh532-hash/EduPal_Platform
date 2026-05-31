@@ -4,7 +4,7 @@ accounts/notification_views.py
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from accounts.models import Notification
+from accounts.models import Notification, ScheduleEntry
 
 
 @login_required
@@ -33,6 +33,17 @@ def notifications_list(request):
 def notifications_unread(request):
     """GET — عدد الإشعارات غير المقروءة"""
     count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+    return JsonResponse({'count': count})
+
+
+@login_required
+def schedule_updates_count(request):
+    """GET — عدد تحديثات جدول المهام غير المقروءة"""
+    count = Notification.objects.filter(
+        recipient=request.user,
+        notif_type='schedule_update',
+        is_read=False
+    ).count()
     return JsonResponse({'count': count})
 
 

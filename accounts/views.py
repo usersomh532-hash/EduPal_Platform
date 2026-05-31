@@ -38,50 +38,72 @@ def _safe_next_url(request):
 
 
 def redirect_by_role(user):
-    # المشرف التقني → teacher_dashboard
+    """إعادة التوجيه حسب الدور مع التحقق من اكتمال الملف الشخصي."""
     if user.is_superuser or user.is_staff:
         return redirect('learning:teacher_dashboard')
+
     role = getattr(user, 'userrole', None)
-    # المشرف الإداري → admin_portal
+
     if role == 'SysAdmin':
         return redirect('admin_portal:dashboard')
-    if role == 'Admin':                              
+    if role == 'Admin':
         return redirect('learning:teacher_dashboard')
     if role not in _VALID_ROLES:
         return redirect('accounts:login')
+
     try:
         if role == 'Student':
-            s = Student.objects.only('age').get(userid=user)
-            return redirect('accounts:complete_profile') if s.age < 5 else redirect('student:student_home')
+            s = Student.objects.only('age', 'classid').get(userid=user)
+            if not s.classid or not s.age or s.age < 7:
+                return redirect('accounts:complete_profile')
+            return redirect('student:student_home')
+
         elif role == 'Teacher':
             t = Teacher.objects.only('specialization').get(userid=user)
-            return redirect('accounts:complete_profile') if (not t.specialization or t.specialization == 'General') else redirect('learning:teacher_dashboard')
+            if not t.specialization or t.specialization == 'General':
+                return redirect('accounts:complete_profile')
+            return redirect('learning:teacher_dashboard')
+
         elif role == 'Parent':
             p = Parent.objects.only('childid').get(userid=user)
-            return redirect('accounts:complete_profile') if not p.childid else redirect('parent:parent_portal')
+            if not p.childid:
+                return redirect('accounts:complete_profile')
+            return redirect('parent:parent_portal')
+
     except (Student.DoesNotExist, Teacher.DoesNotExist, Parent.DoesNotExist):
         return redirect('accounts:complete_profile')
+
     return redirect('accounts:login')
 
 
 def login_view(request):
     if request.user.is_authenticated:
         return redirect_by_role(request.user)
+
     if request.method == 'POST':
-        username = _sanitize_text(request.POST.get('username', ''), 50)
+        username = _sanitize_text(request.POST.get('username', ''), 50).lower()
         password = request.POST.get('password', '')
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
             if not user.is_active:
                 messages.error(request, 'هذا الحساب معطّل. تواصل مع الإدارة.')
                 return render(request, 'accounts/login.html')
+
             login(request, user)
             request.session.set_expiry(10800 if request.POST.get('remember_me') else 0)
             request.session.cycle_key()
+
             next_url = _safe_next_url(request)
-            return redirect(next_url) if next_url else redirect_by_role(user)
+            if next_url and 'complete_profile' not in next_url:
+                return redirect(next_url)
+
+            return redirect_by_role(user)
+
         messages.error(request, 'اسم المستخدم أو كلمة المرور غير صحيحة.')
+
     return render(request, 'accounts/login.html')
+
 
 def logout_view(request):
     request.session.cycle_key()
@@ -93,6 +115,7 @@ def logout_view(request):
 def signup_view(request):
     if request.user.is_authenticated:
         return redirect_by_role(request.user)
+
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -101,20 +124,33 @@ def signup_view(request):
                 form.add_error('userrole', 'دور غير مسموح به.')
             else:
                 try:
-                    with transaction.atomic():
-                        user = form.save()
-                        if role == 'Student':   Student.objects.create(userid=user, age=1)
-                        elif role == 'Teacher': Teacher.objects.create(userid=user, specialization='General')
-                        elif role == 'Parent':  Parent.objects.create(userid=user, childid=None)
+                    # ✅ حفظ المستخدم أولاً بشكل مستقل — لا يتأثر بفشل الملف الشخصي
+                    user = form.save()
                     login(request, user)
                     rotate_token(request)
-                    messages.success(request, 'تم إنشاء الحساب! يرجى إكمال بياناتك.')
-                    return redirect('accounts:complete_profile')
                 except Exception as e:
-                    logger.error(f"Signup error: {e}\n{traceback.format_exc()}")
+                    logger.error(f"Signup user creation error: {e}\n{traceback.format_exc()}")
                     form.add_error(None, 'حدث خطأ أثناء إنشاء الحساب.')
+                    return render(request, 'accounts/signup.html', {'form': form})
+
+                # ✅ إنشاء الملف الشخصي منفصلاً — فشله لا يحذف المستخدم
+                try:
+                    if role == 'Student':
+                        Student.objects.get_or_create(userid=user, defaults={'age': 1})
+                    elif role == 'Teacher':
+                        Teacher.objects.get_or_create(userid=user, defaults={'specialization': 'General'})
+                    elif role == 'Parent':
+                        Parent.objects.get_or_create(userid=user, defaults={'childid': None})
+                except Exception as e:
+                    logger.error(f"Profile creation error for user {user.pk}: {e}")
+                    # ← المستخدم موجود ومسجّل دخوله — يكمل بياناته لاحقاً
+
+                messages.success(request, 'تم إنشاء الحساب! يرجى إكمال بياناتك.')
+                return redirect('accounts:complete_profile')
+
     else:
         form = RegistrationForm()
+
     return render(request, 'accounts/signup.html', {'form': form})
 
 
@@ -122,17 +158,24 @@ def signup_view(request):
 def complete_profile(request):
     user = request.user
     role = getattr(user, 'userrole', None)
+
     if user.is_staff or user.is_superuser:
         return redirect('learning:teacher_dashboard')
     if role not in _VALID_ROLES:
         return redirect('accounts:login')
+
     form_map = {
         'Student': (Student, StudentProfileForm),
         'Teacher': (Teacher, TeacherProfileForm),
         'Parent':  (Parent,  ParentProfileForm),
     }
+
+    if role not in form_map:
+        return redirect('accounts:login')
+
     model_class, form_class = form_map[role]
     instance, _ = model_class.objects.get_or_create(userid=user)
+
     if request.method == 'POST':
         form = form_class(request.POST, instance=instance)
         if form.is_valid():
@@ -142,14 +185,16 @@ def complete_profile(request):
                     if role == 'Parent':
                         profile.childid = form.cleaned_data.get('student_identity')
                     profile.save()
-                    if hasattr(form, 'save_m2m'): form.save_m2m() 
+                    if hasattr(form, 'save_m2m'):
+                        form.save_m2m()
                 messages.success(request, 'تم تحديث بياناتك بنجاح!')
-                return redirect({'Teacher': 'learning:teacher_dashboard', 'Student': 'student:student_home', 'Parent': 'parent:parent_portal'}[role])
+                return redirect_by_role(user)
             except Exception as e:
                 logger.error(f"complete_profile error: {e}")
                 messages.error(request, f'خطأ في الحفظ: {str(e)}')
     else:
         form = form_class(instance=instance)
+
     return render(request, 'accounts/complete_profile.html', {'form': form, 'role': role})
 
 

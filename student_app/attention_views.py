@@ -98,6 +98,7 @@ def start_attention(request):
         "session_id":   session_id,
         "student_name": request.user.fullname or request.user.username,
         "camera_index": 0,
+        "student_id":   student.pk,  # ✅ إرسال student_id لجلب بيانات المعايرة
     })
 
     if "error" in result:
@@ -228,14 +229,25 @@ def notify_attention_alert(request):
         return JsonResponse({"error": "بيانات غير صالحة"}, status=400)
 
     alert_type = data.get("alert_type", "general")
-    
-    # إذا كان التنبيه بسبب إغماض العينين، نتجاوز فحص الحد الأدنى للانتباه
+    # مستوى التشتت المرسل من الواجهة (اختياري). عندما يكون موجوداً، نُرسِل إشعارات الأهالي تلقائياً
+    # فقط إذا كان المستوى هو 3. إذا لم يرسل العميل مستوى، فلا نرسل إشعارات الأهالي هنا.
+    level_raw = data.get('level', None)
+    level = None
+    try:
+        if level_raw is not None:
+            level = int(level_raw)
+    except Exception:
+        level = None
+
+    # إذا كان التنبيه بسبب إغماض العينين، نسمح بالإرسال (يتجاوز الفحص الأمني)
     if alert_type != 'eye_closure':
-        # لا إشعار إلا إذا الانتباه أقل من الحد، ومعه تشتت ملحوظ متكرر.
-        if avg_attention >= ATTENTION_ALERT_THRESHOLD:
-            return JsonResponse({"status": "skip", "reason": "above_threshold"})
-        if inattention_count < MIN_SIGNIFICANT_INATTENTION_COUNT and avg_attention >= 35:
-            return JsonResponse({"status": "skip", "reason": "not_significant_enough"})
+        # إذا تم إرسال مستوى واضح من الواجهة، نقبل فقط المستوى 3 لإرسال إشعار للأهالي
+        if level is not None:
+            if level != 3:
+                return JsonResponse({"status": "skip", "reason": "not_level3"})
+        else:
+            # لم يُرسل مستوى — تمنع السياسة الجديدة إرسال إشعارات الأهالي من هذا المسار
+            return JsonResponse({"status": "skip", "reason": "no_level_provided"})
 
     lesson = get_object_or_404(Lessoncontent, pk=lesson_id, status="Published")
 

@@ -55,10 +55,12 @@ class CheckpointManager:
             Checkpoint: نقطة التحقق التالية أو None
         """
         # جلب نقاط التحقق الإجبارية للدرس
+        # لاحظ: نقاط التحقق الإجبارية تظهر فقط إذا تم ضبطها كـ scheduled أو both
         mandatory_checkpoints = Checkpoint.objects.filter(
             lessonid=self.lesson,
             checkpoint_type='mandatory',
-            content_type=content_type
+            content_type=content_type,
+            display_type__in=['scheduled', 'both']
         ).order_by('paragraph_index' if content_type == 'text' else 'video_timestamp')
         
         if content_type == 'text':
@@ -78,51 +80,21 @@ class CheckpointManager:
                                        content_type: str = 'text') -> bool:
         """
         يحدد ما إذا كان يجب عرض نقطة تحقق تكيفية
-        
+
+        ✅ تم تعديل هذه الدالة لتعتمد دائماً على True لأن الفرونت اند يتحكم في ظهور نوافذ المستويات
+        بشكل مستقل بناءً على نسب التشتت المتواصل من مدة الجلسة (3%، 9%، 15%، 30%، 45%)
+
         Args:
             current_position: الموضع الحالي
             content_type: نوع المحتوى
-            
+
         Returns:
-            bool: True إذا كان يجب عرض نقطة تحقق تكيفية
+            bool: True دائماً لتجنب أي تعارض مع المنطق المطلوب
         """
-        # تحقق من حالة التعلم الحالية
-        if not self.analyzer.should_trigger_adaptive_checkpoint():
-            return False
-        
-        # جلب نقاط التحقق التكيفية في السياق الحالي
-        adaptive_checkpoints = Checkpoint.objects.filter(
-            lessonid=self.lesson,
-            checkpoint_type='adaptive',
-            content_type=content_type
-        )
-        
-        if content_type == 'text':
-            # للنص: ابحث عن نقطة في نفس الفقرة أو الفقرة التالية
-            context_checkpoints = adaptive_checkpoints.filter(
-                paragraph_index__gte=int(current_position),
-                paragraph_index__lte=int(current_position) + 1
-            )
-        else:  # video or audio
-            # للفيديو/الصوت: ابحث عن نقطة في نفس السياق الزمني (+/- 30 ثانية)
-            context_checkpoints = adaptive_checkpoints.filter(
-                video_timestamp__gte=current_position - 30,
-                video_timestamp__lte=current_position + 30
-            )
-        
-        # تحقق من أن الطالب لم يجب على هذه النقطة مؤخراً
-        recent_answers = StudentCheckpointAnswer.objects.filter(
-            studentid_id=self.student_id,
-            sessionid_id=self.session_id,
-            answered_at__gte=timezone.now() - timedelta(minutes=2)
-        ).values_list('checkpoint_id', flat=True)
-        
-        available_checkpoints = context_checkpoints.exclude(
-            checkpointid__in=recent_answers
-        )
-        
-        return available_checkpoints.exists()
-    
+        # ✅ الفرونت اند يتحكم في ظهور نوافذ المستويات بشكل مستقل
+        # الباك اند لا يتحكم في ظهور النوافذ، بل فقط في معالجة الإجابات
+        return True
+
     def get_adaptive_checkpoint(self, current_position: float,
                               content_type: str = 'text') -> Optional[Checkpoint]:
         """
@@ -135,10 +107,12 @@ class CheckpointManager:
         Returns:
             Checkpoint: نقطة التحقق التكيفية أو None
         """
+        # استرجع النقاط التكيفية المسموح بعرضها فقط عند التشتت أو كلا الحالتين
         adaptive_checkpoints = Checkpoint.objects.filter(
             lessonid=self.lesson,
             checkpoint_type='adaptive',
-            content_type=content_type
+            content_type=content_type,
+            display_type__in=['distraction', 'both']
         )
         
         if content_type == 'text':
@@ -219,7 +193,8 @@ class CheckpointManager:
         """
         يحسب موضع الرجوع بشكل ديناميكي بناءً على مدة الجلسة
 
-        المعادلة: (3% من مدة الجلسة بحد أدنى 5 ثواني) + (8 × (مدة الجلسة تقسيم 600 ثانية))
+        للفيديو: المعادلة: (3% من مدة الجلسة بحد أدنى 5 ثواني) + (8 × (مدة الجلسة تقسيم 600 ثانية))
+        للصوت (الجلسة النصية): المعادلة: 4.33% من مدة الجلسة
         حد أقصى 55 ثانية
 
         Args:
@@ -231,22 +206,171 @@ class CheckpointManager:
         Returns:
             float: الموضع الجديد بعد الرجوع
         """
-        if content_type == 'video' or content_type == 'audio':
-            # للفيديو/الصوت: رجوع ديناميكي بناءً على مدة الجلسة
+        if content_type == 'audio':
+            # للصوت (الجلسة النصية): رجوع بالمعادلة (3% من مدة الجلسة بحد أدنى 5 ثواني) + (8 × (مدة الجلسة / 600 ثانية))
             if session_duration > 0:
-                base_rewind = max(5, session_duration * 0.03)  # 3% من مدة الجلسة بحد أدنى 5 ثواني
-                additional_rewind = 8 * (session_duration / 600)  # 8 × (مدة الجلسة تقسيم 600 ثانية)
-                rewind_seconds = min(55, base_rewind + additional_rewind)  # حد أقصى 55 ثانية
-                rewind_position = max(0, current_position - rewind_seconds)
-                logger.info(f"Dynamic rewind from {current_position} to {rewind_position} "
-                           f"(session_duration={session_duration}s, base={base_rewind}s, "
-                           f"additional={additional_rewind}s, total={rewind_seconds}s) "
-                           f"for checkpoint {checkpoint_id}")
+                base_rewind = max(5.0, float(session_duration) * 0.03)  # 3% من مدة الجلسة بحد أدنى 5 ثواني
+                additional_rewind = 8.0 * (float(session_duration) / 600.0)  # 8 × (مدة الجلسة / 600 ثانية)
+                total_rewind = base_rewind + additional_rewind  # المعادلة الكاملة
+                total_rewind = min(55.0, total_rewind)  # حد أقصى 55 ثانية
+                # احسب الموضع الجديد بعد تطبيق الرجوع
+                desired_pos = float(current_position) - total_rewind
+                # لا نريد إعادة التشغيل من البداية؛ إذا كان الحساب يؤدي إلى <= 0
+                # نثبت الموضع عند حد صغير موجب (0.5s) بدلاً من البدء من البداية
+                if desired_pos <= 0.0:
+                    rewind_position = 0.5
+                    logger.info(
+                        f"Clamped rewind_position to {rewind_position} (would have been <=0) "
+                        f"for checkpoint {checkpoint_id} (session_duration={session_duration}s, total_rewind={total_rewind}s)"
+                    )
+                    # حفظ بيانات تشخيصية
+                    try:
+                        self._last_rewind_meta = {
+                            'session_duration': float(session_duration),
+                            'total_rewind': float(total_rewind),
+                            'desired_pos': float(desired_pos),
+                            'rewind_position': float(rewind_position),
+                            'clamped': True
+                        }
+                    except Exception:
+                        self._last_rewind_meta = None
+                else:
+                    rewind_position = desired_pos
+                    logger.info(
+                        f"Dynamic rewind from {current_position} to {rewind_position} "
+                        f"(session_duration={session_duration}s, total_rewind={total_rewind}s) "
+                        f"for checkpoint {checkpoint_id}"
+                    )
+                    try:
+                        self._last_rewind_meta = {
+                            'session_duration': float(session_duration),
+                            'total_rewind': float(total_rewind),
+                            'desired_pos': float(desired_pos),
+                            'rewind_position': float(rewind_position),
+                            'clamped': False
+                        }
+                    except Exception:
+                        self._last_rewind_meta = None
             else:
                 # إذا لم تكن مدة الجلسة متاحة، استخدم الرجوع الافتراضي 5 ثواني
-                rewind_position = max(0, current_position - 5.0)
-                logger.info(f"Default rewind from {current_position} to {rewind_position} "
-                           f"(no session_duration) for checkpoint {checkpoint_id}")
+                desired_pos = float(current_position) - 5.0
+                total_rewind = 5.0
+                if desired_pos <= 0.0:
+                    rewind_position = 0.5
+                    logger.info(
+                        f"Clamped default rewind_position to {rewind_position} (would have been <=0) "
+                        f"for checkpoint {checkpoint_id} (no session_duration)"
+                    )
+                    try:
+                        self._last_rewind_meta = {
+                            'session_duration': 0.0,
+                            'total_rewind': float(total_rewind),
+                            'desired_pos': float(desired_pos),
+                            'rewind_position': float(rewind_position),
+                            'clamped': True
+                        }
+                    except Exception:
+                        self._last_rewind_meta = None
+                else:
+                    rewind_position = desired_pos
+                    logger.info(
+                        f"Default rewind from {current_position} to {rewind_position} "
+                        f"(no session_duration) for checkpoint {checkpoint_id}"
+                    )
+                    try:
+                        self._last_rewind_meta = {
+                            'session_duration': 0.0,
+                            'total_rewind': float(total_rewind),
+                            'desired_pos': float(desired_pos),
+                            'rewind_position': float(rewind_position),
+                            'clamped': False
+                        }
+                    except Exception:
+                        self._last_rewind_meta = None
+        elif content_type == 'video':
+            # للفيديو: رجوع ديناميكي بناءً على مدة الجلسة
+            if session_duration > 0:
+                # 3% من مدة الجلسة بحد أدنى 5 ثواني
+                base_rewind = max(5.0, float(session_duration) * 0.03)
+                # إضافة ديناميكية تعتمد على طول الجلسة
+                additional_rewind = 8.0 * (float(session_duration) / 600.0)
+                # اجمع المكونات ثم حدّ الحد الأقصى إلى 55 ثانية كحد أعلى
+                total_rewind = base_rewind + additional_rewind
+                total_rewind = min(55.0, total_rewind)
+                # احسب الموضع الجديد بعد تطبيق الرجوع
+                desired_pos = float(current_position) - total_rewind
+                # لا نريد إعادة التشغيل من البداية؛ إذا كان الحساب يؤدي إلى <= 0
+                # نثبت الموضع عند حد صغير موجب (0.5s) بدلاً من البدء من البداية
+                if desired_pos <= 0.0:
+                    rewind_position = 0.5
+                    logger.info(
+                        f"Clamped rewind_position to {rewind_position} (would have been <=0) "
+                        f"for checkpoint {checkpoint_id} (session_duration={session_duration}s, total_rewind={total_rewind}s)"
+                    )
+                    # حفظ بيانات تشخيصية
+                    try:
+                        self._last_rewind_meta = {
+                            'session_duration': float(session_duration),
+                            'total_rewind': float(total_rewind),
+                            'desired_pos': float(desired_pos),
+                            'rewind_position': float(rewind_position),
+                            'clamped': True
+                        }
+                    except Exception:
+                        self._last_rewind_meta = None
+                else:
+                    rewind_position = desired_pos
+                    logger.info(
+                        f"Dynamic rewind from {current_position} to {rewind_position} "
+                        f"(session_duration={session_duration}s, total_rewind={total_rewind}s) "
+                        f"for checkpoint {checkpoint_id}"
+                    )
+                    try:
+                        self._last_rewind_meta = {
+                            'session_duration': float(session_duration),
+                            'total_rewind': float(total_rewind),
+                            'desired_pos': float(desired_pos),
+                            'rewind_position': float(rewind_position),
+                            'clamped': False
+                        }
+                    except Exception:
+                        self._last_rewind_meta = None
+            else:
+                # إذا لم تكن مدة الجلسة متاحة، استخدم الرجوع الافتراضي 5 ثواني
+                desired_pos = float(current_position) - 5.0
+                total_rewind = 5.0
+                if desired_pos <= 0.0:
+                    rewind_position = 0.5
+                    logger.info(
+                        f"Clamped default rewind_position to {rewind_position} (would have been <=0) "
+                        f"for checkpoint {checkpoint_id} (no session_duration)"
+                    )
+                    try:
+                        self._last_rewind_meta = {
+                            'session_duration': 0.0,
+                            'total_rewind': float(total_rewind),
+                            'desired_pos': float(desired_pos),
+                            'rewind_position': float(rewind_position),
+                            'clamped': True
+                        }
+                    except Exception:
+                        self._last_rewind_meta = None
+                else:
+                    rewind_position = desired_pos
+                    logger.info(
+                        f"Default rewind from {current_position} to {rewind_position} "
+                        f"(no session_duration) for checkpoint {checkpoint_id}"
+                    )
+                    try:
+                        self._last_rewind_meta = {
+                            'session_duration': 0.0,
+                            'total_rewind': float(total_rewind),
+                            'desired_pos': float(desired_pos),
+                            'rewind_position': float(rewind_position),
+                            'clamped': False
+                        }
+                    except Exception:
+                        self._last_rewind_meta = None
         else:  # text
             # للنص: رجوع فقرة واحدة (أو حوالي 5 ثواني من القراءة)
             rewind_position = max(0, int(current_position) - 1)

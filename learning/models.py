@@ -237,6 +237,60 @@ class Subject(models.Model):
 
 
 # ════════════════════════════════════════════════════════════════
+# StudentTeacherAssignment (تعيين الطالب للمعلم يدوياً)
+# ════════════════════════════════════════════════════════════════
+class StudentTeacherAssignment(models.Model):
+    """
+    تعيين الطالب للمعلم يدوياً
+    - يمكن أن يكون الطالب عند معلمين اثنين
+    - ليسا لنفس التخصص
+    - ليسا في صفين مختلفين (للتجنب التناقض)
+    """
+    assignmentid = models.AutoField(db_column='AssignmentID', primary_key=True)
+    studentid = models.ForeignKey(Student, on_delete=models.CASCADE, db_column='StudentID')
+    teacherid = models.ForeignKey(Teacher, on_delete=models.CASCADE, db_column='TeacherID')
+    subjectid = models.ForeignKey(Subject, on_delete=models.SET_NULL, db_column='SubjectID', blank=True, null=True)
+    classid = models.ForeignKey(Class, on_delete=models.SET_NULL, db_column='ClassID', blank=True, null=True)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        managed = True
+        db_table = 'StudentTeacherAssignment'
+        unique_together = [['studentid', 'teacherid', 'subjectid']]  # منع التكرار لنفس الطالب والمعلم والمادة
+
+    def __str__(self):
+        return f"{self.studentid.userid.fullname} - {self.teacherid.userid.fullname}"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        
+        # التحقق من أن الطالب ليس عند معلمين بنفس التخصص
+        if self.subjectid:
+            existing_assignments = StudentTeacherAssignment.objects.filter(
+                studentid=self.studentid,
+                subjectid__teacherid__specialization=self.teacherid.specialization
+            ).exclude(pk=self.pk)
+            
+            if existing_assignments.exists():
+                raise ValidationError(
+                    'الطالب موجود بالفعل عند معلم بنفس التخصص'
+                )
+        
+        # التحقق من أن الطالب ليس في صفين مختلفين
+        if self.classid:
+            existing_assignments = StudentTeacherAssignment.objects.filter(
+                studentid=self.studentid
+            ).exclude(pk=self.pk).exclude(classid=None)
+            
+            for assignment in existing_assignments:
+                if assignment.classid != self.classid:
+                    raise ValidationError(
+                        'الطالب موجود بالفعل في صف مختلف'
+                    )
+
+
+# ════════════════════════════════════════════════════════════════
 # AiAgent
 # ════════════════════════════════════════════════════════════════
 class AiAgent(models.Model):

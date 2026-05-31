@@ -18,7 +18,7 @@ from django.utils import timezone as _tz
 from django.views.decorators.http import require_POST
 
 from .models import (
-    AiAgent, Lessoncontent, Teacher, Student,
+    AiAgent, Lessoncontent, Teacher, Student, Parent,
     Testattempt,Subject, Class, Learningsession,
     Test, Question, User as UserModel, LessonWatchRecord,
     Checkpoint, StudentCheckpointAnswer,
@@ -67,6 +67,21 @@ AGE_GRADE_MAPPING = {
     'الصف الحادي عشر الصناعي': (16, 17),
     'الصف الحادي عشر التجاري': (16, 17),
     'الصف الحادي عشر الزراعي': (16, 17),
+    # ✅ إضافة الأسماء المختصرة
+    'الثاني': (7, 8),
+    'الثالث': (8, 9),
+    'الرابع': (9, 10),
+    'الخامس': (10, 11),
+    'السادس': (11, 12),
+    'السابع': (12, 13),
+    'الثامن': (13, 14),
+    'التاسع': (14, 15),
+    'العاشر': (15, 16),
+    'الحادي عشر العلمي': (16, 17),
+    'الحادي عشر الأدبي': (16, 17),
+    'الحادي عشر الصناعي': (16, 17),
+    'الحادي عشر التجاري': (16, 17),
+    'الحادي عشر الزراعي': (16, 17),
 }
 
 # فترة التسجيل للسنة الدراسية الجديدة (شهر سبتمبر في فلسطين)
@@ -95,15 +110,53 @@ def _current_academic_year() -> str:
 def _is_registration_period() -> bool:
     """
     تتحقق هل التاريخ الحالي ضمن فترة التسجيل للسنة الدراسية الجديدة.
-    فترة التسجيل: شهر سبتمبر (9) فقط في النظام المدرسي الفلسطيني.
+    ✅ تم تعديل هذه الدالة لتعود دائماً True لجعل عمليات إضافة ونقل وإزالة الطلاب متاحة في أي وقت.
     """
-    today = date.today()
-    return today.month == REGISTRATION_MONTH
+    # ✅ العمليات متاحة في أي وقت
+    return True
 
+
+def _get_grade_for_age(age: int) -> str:
+    """
+    تحدد الصف الفعلي للطالب بناءً على عمره حسب النظام المدرسي الفلسطيني.
+    
+    Args:
+        age: عمر الطالب
+    
+    Returns:
+        اسم الصف الفعلي للطالب
+    """
+    if age < 7:
+        return 'الصف الأول'
+    elif age == 7:
+        return 'الصف الثاني'
+    elif age == 8:
+        return 'الصف الثالث'
+    elif age == 9:
+        return 'الصف الرابع'
+    elif age == 10:
+        return 'الصف الخامس'
+    elif age == 11:
+        return 'الصف السادس'
+    elif age == 12:
+        return 'الصف السابع'
+    elif age == 13:
+        return 'الصف الثامن'
+    elif age == 14:
+        return 'الصف التاسع'
+    elif age == 15:
+        return 'الصف العاشر'
+    elif age == 16:
+        return 'الصف الحادي عشر'
+    elif age == 17:
+        return 'الصف الثاني عشر'
+    else:
+        return 'الصف الثاني عشر'
 
 def _is_grade_appropriate_for_age(grade_name: str, age: int) -> tuple[bool, str]:
     """
     تتحقق هل الصف مناسب لعمر الطالب حسب النظام المدرسي الفلسطيني.
+    ✅ تم تعديل هذه الدالة للسماح للطالب أن يكون في صف نفس عمره أو صف أقل من عمره.
 
     Args:
         grade_name: اسم الصف (مثال: 'الصف الخامس')
@@ -117,11 +170,14 @@ def _is_grade_appropriate_for_age(grade_name: str, age: int) -> tuple[bool, str]
 
     min_age, max_age = AGE_GRADE_MAPPING[grade_name]
 
+    # ✅ السماح للطالب أن يكون في صف نفس عمره أو صف أقل من عمره
+    # فقط نتحقق من أن العمر لا يقل عن الحد الأدنى للصف
     if age < min_age:
         return False, f'الصف "{grade_name}" غير مناسب لعمر الطالب ({age} سنة). الحد الأدنى للعمر هو {min_age} سنة.'
 
-    if age > max_age:
-        return False, f'الصف "{grade_name}" غير مناسب لعمر الطالب ({age} سنة). الحد الأقصى للعمر هو {max_age} سنة.'
+    # ✅ إزالة التحقق من الحد الأقصى للعمر للسماح بالصف الأقل من العمر
+    # if age > max_age:
+    #     return False, f'الصف "{grade_name}" غير مناسب لعمر الطالب ({age} سنة). الحد الأقصى للعمر هو {max_age} سنة.'
 
     return True, ''
 
@@ -143,6 +199,10 @@ def _is_grade_progression_valid(current_grade: str, new_grade: str) -> tuple[boo
 
     if new_grade not in AGE_GRADE_MAPPING:
         return False, f'الصف "{new_grade}" غير معروف في النظام المدرسي'
+
+    # ✅ السماح بالبقاء في نفس الصف
+    if current_grade == new_grade:
+        return True, ''
 
     current_min, current_max = AGE_GRADE_MAPPING[current_grade]
     new_min, new_max = AGE_GRADE_MAPPING[new_grade]
@@ -406,16 +466,20 @@ def teacher_dashboard(request):
     dynamic_published = lessons.filter(status=STATUS_PUBLISHED).count()
  
     # student_count: يُضيّق على الصف المختار إن وُجد، وإلا يعرض كل طلاب المعلم
+    # ✅ استخدام StudentTeacherAssignment بدلاً من classid
+    from learning.models import StudentTeacherAssignment
+    
     if class_id:
-        dynamic_students = Student.objects.filter(
+        dynamic_students = StudentTeacherAssignment.objects.filter(
+            teacherid=teacher,
             classid_id=class_id,
-            classid__isnull=False,
-        ).count()
+            is_active=True
+        ).values('studentid').distinct().count()
     else:
-        dynamic_students = Student.objects.filter(
-            classid__in=[c.classid for c in my_classes],
-            classid__isnull=False,
-        ).count()
+        dynamic_students = StudentTeacherAssignment.objects.filter(
+            teacherid=teacher,
+            is_active=True
+        ).values('studentid').distinct().count()
  
     return render(request, 'learning/teacher_dashboard.html', {
         'teacher':          teacher,
@@ -546,14 +610,16 @@ def upload_lesson_video(request):
 
         # حفظ الفيديو الجديد
         lesson.video_file = video_file
+        Checkpoint.objects.filter(lessonid=lesson, content_type='video').delete()
         if video_title:
             lesson.video_title = video_title
         
         # تحديث النص إذا تم إدخاله
         if lesson_text:
             lesson.originaltext = lesson_text
-        
-        lesson.save()
+
+        lesson.content_updated_at = _tz.now()
+        lesson.save(update_fields=['video_file', 'video_title', 'originaltext', 'content_updated_at'])
 
         logger.info(f'[Video Upload] Teacher {request.user.username} uploaded video for lesson {lesson_id}. File: {video_file.name}, Size: {video_file.size} bytes')
 
@@ -630,7 +696,8 @@ def delete_lesson_video(request, lesson_id):
 
         lesson.video_file = None
         lesson.video_title = None
-        lesson.save(update_fields=['video_file', 'video_title'])
+        lesson.content_updated_at = _tz.now()
+        lesson.save(update_fields=['video_file', 'video_title', 'content_updated_at'])
 
         logger.info(f'[Video Delete] Teacher {request.user.username} deleted video for lesson {lesson_id}')
 
@@ -702,9 +769,13 @@ def edit_lesson_video(request, lesson_id):
                     logger.warning(f'Failed to delete old video file: {e}')
 
             lesson.video_file = new_video
+            Checkpoint.objects.filter(lessonid=lesson, content_type='video').delete()
             update_fields.append('video_file')
 
         if update_fields:
+            if any(field in update_fields for field in ('video_title', 'lessontitle', 'originaltext', 'video_file')):
+                lesson.content_updated_at = _tz.now()
+                update_fields.append('content_updated_at')
             lesson.save(update_fields=update_fields)
             messages.success(request, 'تم تحديث الدرس بنجاح')
         else:
@@ -740,12 +811,15 @@ def video_viewers(request, lesson_id):
     # جلب الطلاب الذين شاهدوا الدرس
     viewers = []
     if teacher:
-        viewers = list(
+        viewer_qs = (
             LessonWatchRecord.objects
             .filter(lesson=lesson)
             .select_related('student', 'student__userid')
             .order_by('-watched_at')
         )
+        if lesson.content_updated_at:
+            viewer_qs = viewer_qs.filter(watched_at__gte=lesson.content_updated_at)
+        viewers = list(viewer_qs)
 
     return render(request, 'learning/video_viewers.html', {
         'lesson': lesson,
@@ -1516,7 +1590,7 @@ def api_cognitive_signal(request):
 @login_required
 @require_POST
 def api_send_level3_notification(request):
-    """Endpoint لإرسال إشعارات المستوى 3 للمعلم وولي الأمر"""
+    """Endpoint لإرسال إشعارات المستوى 3 للأهل تلقائياً أو للمعلم عند طلب الطالب."""
     role = getattr(request.user, 'userrole', None)
     if role != ROLE_STUDENT:
         return JsonResponse({'error': 'هذه الخاصية للطلاب فقط'}, status=403)
@@ -1527,19 +1601,67 @@ def api_send_level3_notification(request):
         session_id = data.get('session_id')
         lesson_type = data.get('lesson_type', 'video')
         lesson_title = data.get('lesson_title', 'الدرس')
+        recipient_type = data.get('recipient_type', 'parent')
 
         if not lesson_id or not session_id:
             return JsonResponse({'error': 'يجب تحديد lesson_id و session_id'}, status=400)
 
-        # ✅ هنا يمكن إضافة منطق إرسال الإشعارات الفعلي للمعلم وولي الأمر
-        # حالياً نعيد فقط استجابة ناجحة
-        logger.info(f'Level 3 notification triggered: lesson_id={lesson_id}, session_id={session_id}, type={lesson_type}')
+        student = Student.objects.filter(userid=request.user).select_related('userid').first()
+        lesson = Lessoncontent.objects.filter(pk=lesson_id).select_related('teacherid__userid', 'subjectid').first()
+        if not student or not lesson:
+            return JsonResponse({'error': 'تعذر العثور على الطالب أو الدرس'}, status=404)
+
+        from accounts.models import Notification
+
+        created_count = 0
+        if recipient_type == 'teacher':
+            teacher_user = lesson.teacherid.userid if lesson.teacherid else None
+            if teacher_user:
+                Notification.objects.create(
+                    recipient=teacher_user,
+                    notif_type='lesson_view',
+                    lesson=lesson,
+                    title='طلب تخصيص محتوى للطالب',
+                    body=(
+                        f'طلب الطالب "{student.userid.fullname}" تخصيص محتوى لدرس '
+                        f'"{lesson.lessontitle}" بعد وصول التشتت إلى المستوى الثالث في جلسة {lesson_type}.'
+                    ),
+                )
+                created_count = 1
+        else:
+            parents = Parent.objects.filter(childid=student).select_related('userid')
+            notifications = [
+                Notification(
+                    recipient=parent.userid,
+                    notif_type='parent_attention',
+                    lesson=lesson,
+                    title='تنبيه تشتت من المستوى الثالث',
+                    body=(
+                        f'وصل الطالب "{student.userid.fullname}" إلى مستوى تشتت مرتفع أثناء درس '
+                        f'"{lesson.lessontitle}" في جلسة {lesson_type}. '
+                        'يُنصح بتوفير بيئة أكثر هدوءاً ودعماً قبل متابعة التعلم.'
+                    ),
+                )
+                for parent in parents
+                if parent.userid
+            ]
+            if notifications:
+                Notification.objects.bulk_create(notifications)
+                created_count = len(notifications)
+
+        logger.info(
+            f'Level 3 notification triggered: lesson_id={lesson_id}, '
+            f'session_id={session_id}, type={lesson_type}, recipient={recipient_type}, '
+            f'created={created_count}'
+        )
 
         return JsonResponse({
             'success': True,
-            'message': 'تم استلام إشعار المستوى 3',
+            'message': 'تم إرسال إشعار المستوى 3',
             'lesson_id': lesson_id,
-            'session_id': session_id
+            'session_id': session_id,
+            'recipient_type': recipient_type,
+            'created_count': created_count,
         })
     except Exception as e:
         logger.error(f'api_send_level3_notification error: {e}')
@@ -1561,7 +1683,8 @@ def api_behavioral_baseline(request):
             return JsonResponse({
                 'success': True,
                 'has_baseline': False,
-                'message': 'لا يوجد نموذج معايرة نشط'
+                'message': 'لم يتم تفعيل بيانات المعايرة الخاصة بك. يرجى طلب من ولي الأمر تفعيل جلسة معايرة من خلال حسابه للحصول على تتبع انتباه شخصي ودقيق.',
+                'recommendation': 'تواصل مع ولي الأمر لتفعيل جلسة المعايرة'
             })
 
         # ✅ إرجاع بيانات المعايرة الشخصية باستخدام الحقول الصحيحة
@@ -1616,9 +1739,19 @@ def checkpoint_results(request, lesson_id):
     results = []
 
     for cp in checkpoints:
-        answers = StudentCheckpointAnswer.objects.filter(checkpoint=cp).select_related('studentid__userid')
-        answer_data = []
+        answers = (
+            StudentCheckpointAnswer.objects
+            .filter(checkpoint=cp)
+            .select_related('studentid__userid')
+            .order_by('studentid_id', '-answered_at', '-answerid')
+        )
+        latest_answers_by_student = {}
         for ans in answers:
+            if ans.studentid_id not in latest_answers_by_student:
+                latest_answers_by_student[ans.studentid_id] = ans
+
+        answer_data = []
+        for ans in latest_answers_by_student.values():
             is_correct = (ans.selected_answer == cp.correct_answer)
             answer_data.append({
                 'student_name': ans.studentid.userid.fullname,
@@ -1671,7 +1804,12 @@ def teacher_profile(request):
     total_lessons     = Lessoncontent.objects.filter(teacherid=teacher).count()
     published_lessons = Lessoncontent.objects.filter(teacherid=teacher, status=STATUS_PUBLISHED).count()
     my_classes        = _get_teacher_classes(teacher)
-    student_count     = Student.objects.filter(classid__in=[c.classid for c in my_classes]).count()
+    # ✅ استخدام StudentTeacherAssignment بدلاً من classid
+    from learning.models import StudentTeacherAssignment
+    student_count     = StudentTeacherAssignment.objects.filter(
+        teacherid=teacher,
+        is_active=True
+    ).values('studentid').distinct().count()
 
     if request.method == 'POST':
         bio    = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', request.POST.get('bio', '')).strip()[:300]
@@ -1760,9 +1898,18 @@ def classroom_manage(request):
  
     teacher_class_ids = list(classes.values_list('classid', flat=True))
  
+    # ✅ استخدام StudentTeacherAssignment بدلاً من classid__in
+    from learning.models import StudentTeacherAssignment
+    
+    # الحصول على معرفات الطلاب الذين تم تعيينهم للمعلم
+    assigned_student_ids = StudentTeacherAssignment.objects.filter(
+        teacherid=teacher,
+        is_active=True
+    ).values_list('studentid_id', flat=True)
+    
     students_qs = (
         Student.objects
-        .filter(classid__in=teacher_class_ids)
+        .filter(studentid__in=assigned_student_ids)
         .select_related('userid', 'classid')
         .prefetch_related('parent_set__userid')
         .order_by('classid__classname', 'userid__fullname')
@@ -1779,6 +1926,16 @@ def classroom_manage(request):
     for s in students_list:
         parent = s.parent_set.first()
         s.parent_name = parent.userid.fullname if parent and parent.userid else '—'
+    
+    # ✅ حساب عدد الطلاب في كل صف بناءً على StudentTeacherAssignment
+    class_student_counts = {}
+    for cls in classes:
+        count = StudentTeacherAssignment.objects.filter(
+            teacherid=teacher,
+            classid=cls,
+            is_active=True
+        ).values('studentid').distinct().count()
+        class_student_counts[cls.classid] = count
  
     spec = (getattr(teacher, 'specialization', '') or '').strip()
  
@@ -1820,6 +1977,7 @@ def classroom_manage(request):
         'uploaded_curricula':    uploaded_curricula,
         'current_year':          current_year,
         'all_directorates':      all_directorates,
+        'class_student_counts':  class_student_counts,
     })
  
  
@@ -1911,6 +2069,16 @@ def classroom_api(request):
             return JsonResponse({'error': age_error}, status=400)
 
         # ══════════════════════════════════════════════════════════════
+        # التحقق من أن الصف المحدد هو الصف الفعلي للطالب (إذا لم يكن لديه صف حالي)
+        # ══════════════════════════════════════════════════════════════
+        if not student.classid:
+            actual_grade = _get_grade_for_age(student.age)
+            if cls.classname != actual_grade:
+                return JsonResponse({
+                    'error': f'الصف الفعلي للطالب بناءً على عمره ({student.age} سنة) هو "{actual_grade}". لا يمكن إضافته لصف "{cls.classname}".'
+                }, status=400)
+
+        # ══════════════════════════════════════════════════════════════
         # التحقق من أن الانتقال منطقي (زيادة صف واحد فقط)
         # ══════════════════════════════════════════════════════════════
         current_grade = student.classid.classname if student.classid else None
@@ -1921,6 +2089,16 @@ def classroom_api(request):
 
         student.classid = cls
         student.save(update_fields=['classid'])
+        
+        # ✅ إنشاء StudentTeacherAssignment للربط بين الطالب والمعلم
+        from learning.models import StudentTeacherAssignment
+        StudentTeacherAssignment.objects.get_or_create(
+            studentid=student,
+            teacherid=teacher,
+            classid=cls,
+            defaults={'is_active': True}
+        )
+        
         return JsonResponse({
             'ok': True,
             'student_name': student.userid.fullname,
@@ -1929,11 +2107,19 @@ def classroom_api(request):
  
     elif action == 'remove_student':
         studentid = data.get('studentid')
-        student = Student.objects.filter(
-            studentid=studentid, classid__teacherid=teacher
-        ).first()
-        if not student:
+        # ✅ استخدام StudentTeacherAssignment بدلاً من classid__teacherid
+        from learning.models import StudentTeacherAssignment
+        
+        assignment = StudentTeacherAssignment.objects.filter(
+            studentid__studentid=studentid,
+            teacherid=teacher,
+            is_active=True
+        ).select_related('studentid').first()
+        
+        if not assignment:
             return JsonResponse({'error': 'الطالب غير موجود في صفوفك'}, status=404)
+        
+        student = assignment.studentid
 
         # ══════════════════════════════════════════════════════════════
         # التحقق من فترة التسجيل
@@ -1943,8 +2129,13 @@ def classroom_api(request):
                 'error': 'إزالة الطلاب متاحة فقط خلال فترة التسجيل (شهر سبتمبر)'
             }, status=400)
 
-        student.classid = None
-        student.save(update_fields=['classid'])
+        # ✅ حذف StudentTeacherAssignment فقط دون تغيير classid
+        from learning.models import StudentTeacherAssignment
+        StudentTeacherAssignment.objects.filter(
+            studentid=student,
+            teacherid=teacher
+        ).delete()
+        
         return JsonResponse({'ok': True})
  
     elif action == 'move_student':
@@ -1952,11 +2143,26 @@ def classroom_api(request):
         new_classid = data.get('new_classid')
         if not studentid or not new_classid:
             return JsonResponse({'error': 'بيانات غير مكتملة'}, status=400)
-        student = Student.objects.filter(
-            studentid=studentid, classid__teacherid=teacher
-        ).select_related('userid', 'classid').first()
-        if not student:
-            return JsonResponse({'error': 'الطالب غير موجود في صفوفك'}, status=404)
+        # ✅ التحقق من أن الطالب موجود في صفوف المعلم (إما عبر StudentTeacherAssignment أو classid)
+        from learning.models import StudentTeacherAssignment
+        
+        # التحقق عبر StudentTeacherAssignment أولاً
+        assignment = StudentTeacherAssignment.objects.filter(
+            studentid__studentid=studentid,
+            teacherid=teacher,
+            is_active=True
+        ).select_related('studentid').first()
+        
+        if assignment:
+            student = assignment.studentid
+        else:
+            # إذا لم يوجد StudentTeacherAssignment، نتحقق من classid
+            student = Student.objects.filter(
+                studentid=studentid, classid__teacherid=teacher
+            ).select_related('userid', 'classid').first()
+            if not student:
+                return JsonResponse({'error': 'الطالب غير موجود في صفوفك'}, status=404)
+        
         new_cls = Class.objects.filter(**_yr(classid=new_classid)).filter(_teacher_class_filter(teacher)).first()
         if not new_cls:
             return JsonResponse({'error': 'الصف غير موجود في صفوفك'}, status=404)
@@ -1988,6 +2194,24 @@ def classroom_api(request):
         old_class_name = student.classid.classname if student.classid else '—'
         student.classid = new_cls
         student.save(update_fields=['classid'])
+        
+        # ✅ تحديث StudentTeacherAssignment للطالب
+        from learning.models import StudentTeacherAssignment
+        assignment = StudentTeacherAssignment.objects.filter(
+            studentid=student,
+            teacherid=teacher
+        ).first()
+        if assignment:
+            assignment.classid = new_cls
+            assignment.save(update_fields=['classid'])
+        else:
+            StudentTeacherAssignment.objects.create(
+                studentid=student,
+                teacherid=teacher,
+                classid=new_cls,
+                is_active=True
+            )
+        
         from accounts.models import Notification
         Notification.objects.create(
             recipient  = student.userid,
@@ -2139,6 +2363,16 @@ def classroom_api(request):
 
         student.classid = cls
         student.save(update_fields=['classid'])
+        
+        # ✅ إنشاء StudentTeacherAssignment للربط بين الطالب والمعلم
+        from learning.models import StudentTeacherAssignment
+        StudentTeacherAssignment.objects.get_or_create(
+            studentid=student,
+            teacherid=teacher,
+            classid=cls,
+            defaults={'is_active': True}
+        )
+        
         return JsonResponse({'ok': True, 'student_name': user.fullname})
  
     elif action == 'get_students_by_directorate':
@@ -2231,6 +2465,16 @@ def classroom_api(request):
 
             student.classid = cls
             student.save(update_fields=['classid'])
+            
+            # ✅ إنشاء StudentTeacherAssignment للربط بين الطالب والمعلم
+            from learning.models import StudentTeacherAssignment
+            StudentTeacherAssignment.objects.get_or_create(
+                studentid=student,
+                teacherid=teacher,
+                classid=cls,
+                defaults={'is_active': True}
+            )
+            
             added_count += 1
 
         msg = f'تم إضافة {added_count} طالب إلى {cls.classname}.'
@@ -2682,15 +2926,19 @@ def student_profile_preview(request, student_id):
            البريد، اسم المستخدم، ولي الأمر (اسمه + username + بريده).
     """
     teacher = request.teacher
-    student = (
-        Student.objects
-        .filter(studentid=student_id, classid__teacherid=teacher)
-        .select_related('userid', 'classid')
-        .first()
-    )
- 
-    if not student:
+    # ✅ استخدام StudentTeacherAssignment بدلاً من classid__teacherid
+    from learning.models import StudentTeacherAssignment
+    
+    assignment = StudentTeacherAssignment.objects.filter(
+        studentid__studentid=student_id,
+        teacherid=teacher,
+        is_active=True
+    ).select_related('studentid__userid', 'studentid__classid').first()
+    
+    if not assignment:
         return JsonResponse({'error': 'الطالب غير موجود أو لا ينتمي لصفوفك'}, status=404)
+    
+    student = assignment.studentid
  
     user = student.userid
  

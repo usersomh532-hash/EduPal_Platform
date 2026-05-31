@@ -75,5 +75,34 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL,  document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # ✅ استخدام View مخصص للفيديو مع دعم Range Requests
+    from django.views.static import serve
+    import os
+    import mimetypes
+    from django.http import FileResponse
+    
+    def media_serve_with_range(request, path, document_root):
+        """
+        View مخصص لتقديم ملفات MEDIA مع دعم Range Requests
+        """
+        file_path = os.path.join(document_root, path)
+        
+        if not os.path.exists(file_path):
+            from django.http import Http404
+            raise Http404("الملف غير موجود")
+        
+        mime_type, _ = mimetypes.guess_type(file_path)
+        
+        # استخدام FileResponse الذي يدعم Range Requests تلقائياً
+        response = FileResponse(
+            open(file_path, 'rb'),
+            content_type=mime_type or 'application/octet-stream'
+        )
+        response['Accept-Ranges'] = 'bytes'
+        
+        return response
+    
+    urlpatterns += [
+        path('media/<path:path>', media_serve_with_range, {'document_root': settings.MEDIA_ROOT}),
+        path(settings.STATIC_URL.lstrip('/'), serve, {'document_root': settings.STATIC_ROOT}),
+    ]

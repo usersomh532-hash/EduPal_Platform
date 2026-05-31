@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 # ثوابت
 # ══════════════════════════════════════════════════════════════
 CONTEXT_LIMIT  = 4000
-RESPONSE_LIMIT = 700
+RESPONSE_LIMIT = 2000  # ✅ زيادة الحد من 700 إلى 2000 حرف لتجنب قطع الردود
 MAX_HISTORY    = 6
 
 _GEMINI_REST = (
@@ -212,7 +212,7 @@ def _call_gemini_sdk(api_key: str, model: str, system: str,
 
         config = types.GenerateContentConfig(
             system_instruction=system,
-            max_output_tokens=450,
+            max_output_tokens=1000,  # ✅ زيادة من 450 إلى 1000 لتجنب قطع الردود
             temperature=0.4,
             top_p=0.85,
         )
@@ -259,7 +259,7 @@ def _call_gemini_rest(api_key: str, model: str, system: str,
         'system_instruction': {'parts': [{'text': system}]},
         'contents':           contents,
         'generationConfig':   {
-            'maxOutputTokens': 450,
+            'maxOutputTokens': 1000,  # ✅ زيادة من 450 إلى 1000 لتجنب قطع الردود
             'temperature':     0.4,
             'topP':            0.85,
         },

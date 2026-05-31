@@ -26,7 +26,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.utils import timezone
 
 from learning.models import (
@@ -165,9 +165,11 @@ def _calc_lesson_status(student, lesson, lesson_test):
         is_stale_watch = not _is_valid_watch_local(sess_starttime, lesson)
 
     # التحقق من مشاهدة الفيديو
-    video_watched = LessonWatchRecord.objects.filter(
-        student=student, lesson=lesson
-    ).exists()
+    video_watch_qs = LessonWatchRecord.objects.filter(student=student, lesson=lesson)
+    lesson_updated = getattr(lesson, 'content_updated_at', None)
+    if lesson_updated:
+        video_watch_qs = video_watch_qs.filter(watched_at__gte=lesson_updated)
+    video_watched = video_watch_qs.exists()
 
     if lesson_test:
         test_done = Testattempt.objects.filter(
@@ -859,10 +861,13 @@ def lesson_video(request, lesson_id):
     if student:
         from learning.models import LessonWatchRecord, Learningsession
         try:
-            LessonWatchRecord.objects.get_or_create(
+            watch_record, created = LessonWatchRecord.objects.get_or_create(
                 student=student,
                 lesson=lesson
             )
+            if not created:
+                watch_record.watched_at = timezone.now()
+                watch_record.save(update_fields=['watched_at'])
             logger.info(f'[Lesson Video] Recorded watch for student {request.user.username} on lesson {lesson_id}')
         except Exception as e:
             logger.error(f'[Lesson Video] Failed to record watch: {str(e)}', exc_info=True)
@@ -880,6 +885,9 @@ def lesson_video(request, lesson_id):
             if created:
                 logger.info(f'[Lesson Video] Created new session {session.sessionid} for student {request.user.username} on lesson {lesson_id}')
             else:
+                session.starttime = timezone.now()
+                session.sessionstatus = 'Watched'
+                session.save(update_fields=['starttime', 'sessionstatus'])
                 logger.info(f'[Lesson Video] Using existing session {session.sessionid} for student {request.user.username} on lesson {lesson_id}')
             session_id = session.sessionid
         except Exception as e:
@@ -1123,7 +1131,13 @@ def get_baseline_data(request):
     baseline = BehavioralBaseline.objects.filter(student=request.user, is_active=True).first()
     
     if not baseline:
-        return JsonResponse({'ok': False, 'error': 'No active baseline found'}, status=404)
+        # ✅ إرجاع رسالة واضحة مع توصية بتفعيل المعايرة
+        return JsonResponse({
+            'ok': False,
+            'error': 'No active baseline found',
+            'message': 'لم يتم تفعيل بيانات المعايرة الخاصة بك. يرجى طلب من ولي الأمر تفعيل جلسة معايرة من خلال حسابه للحصول على تتبع انتباه شخصي ودقيق.',
+            'has_calibration': False
+        }, status=404)
     
     # تحويل البيانات إلى قاموس
     baseline_dict = {
@@ -1176,7 +1190,12 @@ def get_baseline_data(request):
         'gaze_vertical_threshold_personal': baseline.gaze_vertical_threshold_personal,
     }
     
-    return JsonResponse({'ok': True, 'baseline_data': baseline_dict})
+    return JsonResponse({
+        'ok': True,
+        'baseline_data': baseline_dict,
+        'has_calibration': True,
+        'calibration_sessions_count': baseline.calibration_sessions_count
+    })
 
 
 @login_required
@@ -1273,3 +1292,35 @@ def adaptive_support_action(request):
         'success': True,
         'redirect_url': redirect_url
     })
+
+
+@login_required
+def video_serve(request, path):
+    """
+    View مخصص لتقديم الفيديو مع دعم Range Requests
+    يحل مشكلة عدم القدرة على Seek في الفيديو
+    """
+    import os
+    import mimetypes
+    from django.http import FileResponse
+    
+    # بناء المسار الكامل للملف
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    
+    # التحقق من وجود الملف
+    if not os.path.exists(file_path):
+        raise Http404("الملف غير موجود")
+    
+    # التحقق من أن الملف فيديو
+    mime_type, _ = mimetypes.guess_type(file_path)
+    if not mime_type or not mime_type.startswith('video/'):
+        raise Http404("الملف ليس فيديو")
+    
+    # استخدام FileResponse الذي يدعم Range Requests تلقائياً
+    response = FileResponse(
+        open(file_path, 'rb'),
+        content_type=mime_type
+    )
+    response['Accept-Ranges'] = 'bytes'
+    
+    return response

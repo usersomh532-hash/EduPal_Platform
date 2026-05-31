@@ -1,3 +1,4 @@
+# accounts/middleware.py
 """
 accounts/middleware.py
 ══════════════════════
@@ -5,6 +6,8 @@ accounts/middleware.py
   ✅ Admin معفى من ProfileCompletion بثلاث طرق:
        is_staff / is_superuser / userrole == 'Admin'
   ✅ LoginRateLimitMiddleware: Django Cache (يعمل مع Gunicorn)
+  ✅ إعفاء مسارات reset/password من Rate Limiting
+  ✅ تسجيل المحاولات الفاشلة فقط (4xx) لا الناجحة
   ✅ باقي الـ middleware بدون تغيير
 """
 import time
@@ -104,7 +107,6 @@ class SecurityHeadersMiddleware:
         "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
         "img-src 'self' data: blob: https:; "
-        # أضفنا blob: هنا لأن معالجة الصوت في المتصفح غالباً ما تحتاجها
         "media-src 'self' blob:; "
         "connect-src 'self' ws://localhost:5050 ws://127.0.0.1:5050 https://cdn.jsdelivr.net; "
         "frame-ancestors 'none';"
@@ -119,12 +121,9 @@ class SecurityHeadersMiddleware:
         response['X-Frame-Options']        = 'DENY'
         response['X-XSS-Protection']       = '1; mode=block'
         response['Referrer-Policy']        = 'strict-origin-when-cross-origin'
-        
-        # التعديل الجوهري هنا: غيرنا () إلى (self) للميكروفون
         response['Permissions-Policy']     = (
             'geolocation=(), microphone=(self), camera=(self), payment=(), usb=()'
         )
-        
         if 'text/html' in response.get('Content-Type', ''):
             response['Content-Security-Policy'] = self._CSP
         return response
@@ -137,10 +136,16 @@ class LoginRateLimitMiddleware:
     """
     يحظر IP بعد 5 محاولات فاشلة خلال 5 دقائق.
     يستخدم Django Cache — يعمل مع Gunicorn متعدد العمليات.
+
+    ملاحظة: مسارات reset/password معفاة تماماً لأن Django
+    يعيد 200 حتى عند الإرسال الناجح فيسبب عدّ خاطئ.
     """
     MAX_ATTEMPTS   = 5
     WINDOW_SECONDS = 300
     CACHE_PREFIX   = 'login_attempts:'
+
+    # ← مسارات معفاة من Rate Limiting كلياً
+    _EXEMPT_PATHS  = ('reset', 'password', 'forgot')
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -153,8 +158,18 @@ class LoginRateLimitMiddleware:
         safe_ip = ip.replace(':', '_').replace('.', '_')
         return f"{self.CACHE_PREFIX}{safe_ip}"
 
+    def _is_exempt(self, request) -> bool:
+        """يتحقق إذا كان المسار معفى من Rate Limiting."""
+        path_lower = request.path.lower()
+        return any(keyword in path_lower for keyword in self._EXEMPT_PATHS)
+
     def __call__(self, request):
+        # تجاهل أي طلب ليس POST على مسار login
         if not (request.method == 'POST' and 'login' in request.path.lower()):
+            return self.get_response(request)
+
+        # ← إعفاء مسارات reset/password نهائياً
+        if self._is_exempt(request):
             return self.get_response(request)
 
         ip        = self._get_ip(request)
@@ -174,8 +189,10 @@ class LoginRateLimitMiddleware:
 
         response = self.get_response(request)
 
-        if response.status_code == 200:
+        # ← تسجيل المحاولة فقط عند الفشل (4xx) لا عند النجاح
+        if response.status_code in (400, 401, 403):
             attempts.append(now)
             cache.set(cache_key, attempts, timeout=self.WINDOW_SECONDS)
+            logger.info(f"[RateLimit] محاولة فاشلة من {ip} — المجموع: {len(attempts)}")
 
         return response

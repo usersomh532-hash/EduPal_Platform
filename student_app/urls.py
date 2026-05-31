@@ -65,4 +65,7 @@ urlpatterns = [
     # ── Adaptive Support Options ─────────────────────────────
     path('adaptive-support/<int:session_id>/', views.adaptive_support_options, name='adaptive_support_options'),
     path('adaptive-support/action/', views.adaptive_support_action, name='adaptive_support_action'),
+
+    # ── Video Serve with Range Requests Support ─────────────
+    path('media/video/<path:path>/', views.video_serve, name='video_serve'),
 ]

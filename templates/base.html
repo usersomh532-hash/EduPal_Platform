@@ -212,6 +212,26 @@
           sessionStorage.clear();
       }
       sessionStorage.setItem(CURRENT_USER_KEY, '{{ user.pk }}');
+      
+      // ✅ علامة لتتبع تسجيل الدخول الجديد
+      var FRESH_LOGIN_KEY = 'edupal_fresh_login_{{ user.pk }}';
+      var freshLoginTime = sessionStorage.getItem(FRESH_LOGIN_KEY);
+      var isFreshLogin = false;
+      
+      // إذا لم تكن العلامة موجودة، فهذا يعني تسجيل دخول جديد
+      if (!freshLoginTime) {
+        sessionStorage.setItem(FRESH_LOGIN_KEY, Date.now());
+        isFreshLogin = true;
+        // ✅ إعادة تعيين وقت الجلسة إلى صفر عند تسجيل الدخول الجديد
+        sessionStorage.removeItem(SESSION_KEY);
+      } else {
+        // تحقق من مرور 5 دقائق منذ تسجيل الدخول
+        var freshLoginElapsed = Date.now() - parseInt(freshLoginTime, 10);
+        if (freshLoginElapsed < 5 * 60 * 1000) {
+          isFreshLogin = true;
+        }
+      }
+
       // سجّل وقت البدء — يُصفَّر فقط عند login جديد
       var stored    = sessionStorage.getItem(SESSION_KEY);
       var startTime = stored ? parseInt(stored, 10) : Date.now();
@@ -228,6 +248,7 @@
           window.location.href = LOGOUT_URL;
           return;
         }
+        // ✅ عرض التحذير قبل 5 دقائق من انتهاء الجلسة
         if (remaining <= WARN_BEFORE_MS && !warnShown){
           warnShown = true;
           showSessionWarning(Math.ceil(remaining / 60000));

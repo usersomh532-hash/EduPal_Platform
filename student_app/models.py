@@ -242,6 +242,32 @@ class BehavioralBaseline(models.Model):
 
     
 
+    # عتبات الاحتمال للمستويات المختلفة (مطلوبة في قاعدة البيانات)
+    level1_probability_threshold = models.FloatField(default=0.3)
+    level2_probability_threshold = models.FloatField(default=0.5)
+    level3_probability_threshold = models.FloatField(default=0.7)
+
+    
+
+    # ── أوزان الميزات ──────────────────────────────────────────
+    eye_gaze_weight         = models.FloatField(default=0.30)
+    head_pose_weight        = models.FloatField(default=0.25)
+    blink_rate_weight       = models.FloatField(default=0.20)
+    checkpoint_fail_weight  = models.FloatField(default=0.15)
+    interaction_weight      = models.FloatField(default=0.10)
+
+    # ── معاملات التنعيم والعتبات ────────────────────────────────
+    temporal_smoothing_alpha = models.FloatField(default=0.85)
+    ear_threshold_k          = models.FloatField(default=2.0)
+
+    # ── معدل الرمش ─────────────────────────────────────────────
+    blink_rate_mean   = models.FloatField(null=True, blank=True)
+    blink_rate_std    = models.FloatField(null=True, blank=True)
+    blink_rate_median = models.FloatField(null=True, blank=True)
+    blink_rate_mad    = models.FloatField(null=True, blank=True)
+
+    
+
     class Meta:
 
         verbose_name = 'النموذج السلوكي الشخصي'

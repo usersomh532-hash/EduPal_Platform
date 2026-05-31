@@ -411,11 +411,15 @@ var _sessionState = {
     activePopupLevel: 0, // 0 = لا نافذة، 1 = مستوى 1، 2 = مستوى 2، 3 = مستوى 3
     lastLevel1TriggerTime: 0, // وقت آخر ظهور للمستوى 1
     lastLevel2TriggerTime: 0, // وقت آخر ظهور للمستوى 2
+    lastLevel1DistractionTime: 0, // آخر وقت تشتت ظهر فيه المستوى 1
+    lastLevel2DistractionTime: 0, // آخر وقت تشتت ظهر فيه المستوى 2
     level3PopupShown: false, // هل تم إظهار نافذة المستوى 3
     level3NotificationSent: false, // هل تم إرسال إشعار المستوى 3
     distractionTimerPaused: false, // ✅ هل تم إيقاف عداد التشتت بسبب نافذة مفتوحة
     lastLevel2Threshold: 0 // ✅ آخر عتبة تم الوصول إليها للمستوى الثاني (15%، 30%، 45%، إلخ)
 };
+// Alias to unify pause-flag name with video template (_alertState.distractionTimerPaused)
+var _alertState = _sessionState;
 var _sessionStartTime = null; // ✅ وقت بدء الجلسة الفعلي (سيتم تعيينه عند بدء الصوت)
 var _lessonStartTime = Date.now(); // وقت تحميل الصفحة (للمعلومات فقط)
 
@@ -433,7 +437,7 @@ var _probabilisticModel = {
     disengagementLoad: 0.0, // حِمل التشتت الاحتمالي المتراكم (probability * time)
     // ✅ عداد الانتباه المستمر (لطلاب ADHD)
     continuousAttentionTime: 0.0, // الوقت المتواصل للانتباه
-    sustainedAttentionThreshold: 2.5 // الحد الأدنى للانتباه المستمر قبل تصفير وقت التشتت (2.5 ثانية)
+    sustainedAttentionThreshold: 3.0 // الحد الأدنى للانتباه المستمر قبل تصفير وقت التشتت (3 ثواني)
 };
 
 var _attentionState = {
@@ -885,6 +889,14 @@ document.addEventListener('keydown', function(e){
 document.addEventListener('DOMContentLoaded', function(){
     var audio = document.getElementById('topAudio');
     if (audio) {
+        // ✅ حفظ مدة التسجيل الصوتي عند تحميل metadata
+        audio.addEventListener('loadedmetadata', function(){
+            if (audio.duration) {
+                _sessionState.audioDuration = audio.duration;
+                console.log('[Checkpoint] Audio duration saved from loadedmetadata:', audio.duration + 's');
+            }
+        });
+
         audio.addEventListener('play', function(){
             _sessionState.audioPausedByUser = false;
             _attentionState.pausedByUser = false;
@@ -1066,14 +1078,15 @@ function updateProbabilisticModel(attentive, score, now, distractionLevel) {
         // ✅ تراكم وقت الانتباه المستمر (لطلاب ADHD)
         _probabilisticModel.continuousAttentionTime += timeSinceLastUpdate;
 
-        // ✅ تصفير وقت التشتت وعدادات المستويات بعد انتباه مستمر لمدة 2.5 ثانية
-        if (_probabilisticModel.continuousAttentionTime >= _probabilisticModel.sustainedAttentionThreshold) {
+        // ✅ تصفير وقت التشتت وعدادات المستويات بعد انتباه مستمر لمدة أكثر من 3 ثواني
+        // الانتباه لمدة 3 ثواني وأقل لا يحسب تركيزاً
+        if (_probabilisticModel.continuousAttentionTime > _probabilisticModel.sustainedAttentionThreshold) {
             _probabilisticModel.totalDistractionTime = 0;
             _probabilisticModel.continuousAttentionTime = 0;
             // ✅ تصفير عدادات المستويات عند التعافي
             _sessionState.lastLevel1TriggerTime = 0;
             _sessionState.lastLevel2TriggerTime = 0;
-            console.log('[Probabilistic] Sustained attention detected (2.5s). Distraction time and level counters reset to 0');
+            console.log('[Probabilistic] Sustained attention detected (>3s). Distraction time and level counters reset to 0');
         }
 
         console.log('[Probabilistic] Attention detected. Probability:', _probabilisticModel.currentProbability.toFixed(3), 'Continuous distraction time:', _probabilisticModel.totalDistractionTime.toFixed(2) + 's', 'Continuous attention time:', _probabilisticModel.continuousAttentionTime.toFixed(2) + 's');
@@ -1199,21 +1212,27 @@ function processAttentionState(s) {
 
 // ✅ دالة لحساب الفاصل الزمني الديناميكي بناءً على مدة التشتت ومدة الجلسة
 function calculateDynamicInterval(distractionTime, sessionDuration, level) {
-    if (!sessionDuration || sessionDuration === 0) return 0;
-    
-    // معادلة الفاصل الزمني: (مدة التشتت الحالية / مدة الجلسة) × 60 ثانية
-    var ratio = distractionTime / sessionDuration;
-    var interval = ratio * 60; // بالثواني
-    
-    // تطبيق الحدود حسب المستوى
+    if (!sessionDuration || sessionDuration === 0) return level === 1 ? 10 : 30;
+
+    // معادلة الفاصل الزمني الأساسي: (مدة التشتت / مدة الجلسة) × 60 ثانية
+    var baseInterval = (distractionTime / sessionDuration) * 60;
+
+    // حساب نافذة المستوى الأول (3% من مدة الجلسة) لاشتقاق حدود معقولة
+    var level1Window = Math.max(5, Math.min(55, sessionDuration * 0.03));
+
+    var minInterval, maxInterval;
     if (level === 1) {
-        // المستوى الأول: حد أدنى 3 ثواني، حد أعلى 15 ثانية
-        return Math.max(3, Math.min(15, interval));
+        minInterval = Math.max(5, Math.floor(level1Window / 2));
+        maxInterval = Math.min(60, Math.ceil(level1Window * 1.5));
     } else if (level === 2) {
-        // المستوى الثاني: حد أدنى 15 ثانية، حد أعلى 60 ثانية
-        return Math.max(15, Math.min(60, interval));
+        minInterval = 15;
+        maxInterval = 60;
+    } else {
+        minInterval = 30;
+        maxInterval = 120;
     }
-    
+
+    var interval = Math.max(minInterval, Math.min(maxInterval, Math.round(baseInterval)));
     return interval;
 }
 
@@ -1364,35 +1383,40 @@ function feedbackForDistractionLevel(level, s, duration) {
     
     console.log('[Popup] Current distraction time:', _probabilisticModel.totalDistractionTime.toFixed(2) + 's', 'Target level:', targetLevel, 'Active level:', getActivePopupLevel());
 
-    // ✅ منطق المستوى الأول: سؤال تكيّفي يتكرر عند 3% مع فاصل زمني ديناميكي
+    // ✅ منطق المستوى الأول: سؤال تكيّفي يظهر عند 3% و 9% (3% + 6% أخرى) من مدة الجلسة
     if (targetLevel >= 1 && currentParagraphIndex >= 0 && level !== 'none') {
         var checkpoint = checkpointsMap[currentParagraphIndex];
         
-        // ✅ التكرار: يظهر كلما تحقق الشرط (3%) مع فاصل زمني ديناميكي (3-15 ثانية)
+        // ✅ تكرار الأسئلة التكيفية عند 3% و 9% فقط من مدة الجلسة (3% + 6%)
+        // حساب عدد مرات الوصول إلى 3% من مدة الجلسة
+        var level1Multiplier = Math.floor(_probabilisticModel.totalDistractionTime / level1Window);
+        var lastLevel1Multiplier = Math.floor(_sessionState.lastLevel1DistractionTime / level1Window);
+        
+        // ✅ إظهار السؤال التكيفي فقط عند 3% (multiplier=1) و 9% (multiplier=3)
+        // لا تظهر عند 6% (multiplier=2) أو 12% (multiplier=4)
         if (checkpoint && checkpoint.checkpoint_type === 'adaptive' && !checkpointAnswered[currentParagraphIndex]) {
-            var shouldShowLevel1 = _probabilisticModel.totalDistractionTime >= level1Window;
-            
-            if (shouldShowLevel1 && targetLevel === 1) {
-                var now = Date.now();
-                var timeSinceLastLevel1 = now - _sessionState.lastLevel1TriggerTime;
-                var dynamicInterval = calculateDynamicInterval(_probabilisticModel.totalDistractionTime, sessionDuration, 1);
-                
-                // إظهار فقط إذا مر الفاصل الزمني الديناميكي
-                if (timeSinceLastLevel1 > (dynamicInterval * 1000) || _sessionState.lastLevel1TriggerTime === 0) {
-                    showPopupByLevel(1, currentParagraphIndex);
-                }
+            if (level1Multiplier > lastLevel1Multiplier && (level1Multiplier === 1 || level1Multiplier === 3)) {
+                console.log('[Popup] Level 1 threshold reached (' + (level1Multiplier * 3) + '% of session). Showing adaptive checkpoint.');
+                showPopupByLevel(1, currentParagraphIndex);
+                _sessionState.lastLevel1DistractionTime = _probabilisticModel.totalDistractionTime;
             }
         }
     }
 
-    // ✅ منطق المستوى الثاني: نافذة توجيهية تظهر كل 15% من مدة الجلسة (15%، 30%، 45%، إلخ)
+    // ✅ منطق المستوى الثاني: نافذة توجيهية تظهر عند 15% و 30% فقط من مدة الجلسة
     if (targetLevel === 2) {
-        var currentThreshold = Math.floor(_probabilisticModel.totalDistractionTime / (sessionDuration * 0.15)) * 0.15;
+        var level2Window = Math.max(5, sessionDuration * 0.15); // المستوى 2: 15% من مدة الجلسة
 
-        if (currentThreshold > _sessionState.lastLevel2Threshold) {
-            console.log('[Popup] Level 2 threshold reached (' + (currentThreshold * 100) + '% of session). Showing AI Assistant popup.');
+        // حساب عدد مرات الوصول إلى 15% من مدة الجلسة
+        var level2Multiplier = Math.floor(_probabilisticModel.totalDistractionTime / level2Window);
+        var lastLevel2Multiplier = Math.floor(_sessionState.lastLevel2DistractionTime / level2Window);
+
+        // ✅ إظهار نافذة المساعد الذكي فقط عند 15% (multiplier=1) و 30% (multiplier=2)
+        // لا تظهر عند 45% (multiplier=3) أو 60% (multiplier=4)
+        if (level2Multiplier > lastLevel2Multiplier && (level2Multiplier === 1 || level2Multiplier === 2)) {
+            console.log('[Popup] Level 2 threshold reached (' + (level2Multiplier * 15) + '% of session). Showing AI Assistant popup.');
             showPopupByLevel(2, currentParagraphIndex);
-            _sessionState.lastLevel2Threshold = currentThreshold;
+            _sessionState.lastLevel2DistractionTime = _probabilisticModel.totalDistractionTime;
         }
     }
 
@@ -1401,9 +1425,9 @@ function feedbackForDistractionLevel(level, s, duration) {
         console.log('[Popup] Level 3 threshold reached (45% of session). Showing Level 3 popup.');
         showPopupByLevel(3, currentParagraphIndex);
         _sessionState.level3PopupShown = true;
-        // ✅ إرسال إشعارات للمعلم وولي الأمر (مرة واحدة فقط في الجلسة)
+        // ✅ إرسال إشعار لولي الأمر فقط تلقائياً (مرة واحدة فقط في الجلسة)
         if (!_sessionState.level3NotificationSent) {
-            sendLevel3Notifications();
+            sendLevel3Notifications('parent');
             _sessionState.level3NotificationSent = true;
         }
     }
@@ -1770,13 +1794,14 @@ function showAlert(msg){
 function rewindAudio5Seconds(){
     var audio = document.getElementById('topAudio');
     if (audio) {
-        // ✅ معادلة الرجوع: (3% من مدة الجلسة بحد أدنى 5 ثواني) + (8 × (مدة الجلسة تقسيم 600 ثانية))
-        var sessionDuration = (Date.now() - _sessionStartTime) / 1000; // بالثواني
+        // ✅ استخدام مدة التسجيل الصوتي الفعلية بدلاً من وقت بدء الجلسة
+        var sessionDuration = audio ? audio.duration || 0 : 0; // مدة التسجيل الصوتي الفعلية بالثواني
+        // ✅ معادلة الرجوع: (3% من مدة الجلسة بحد أدنى 5 ثواني) + (8 × (مدة الجلسة / 600 ثانية))
         var baseRewind = Math.max(5, sessionDuration * 0.03); // 3% من مدة الجلسة بحد أدنى 5 ثواني
-        var additionalRewind = 8 * (sessionDuration / 600); // 8 × (مدة الجلسة تقسيم 600 ثانية)
-        var rewindSeconds = Math.min(55, baseRewind + additionalRewind); // حد أقصى 55 ثانية
-        console.log('[Rewind] Duration:', rewindSeconds.toFixed(2) + 's (base:', baseRewind.toFixed(2) + 's, additional:', additionalRewind.toFixed(2) + 's, session:', sessionDuration.toFixed(2) + 's)');
-        audio.currentTime = Math.max(0, audio.currentTime - rewindSeconds);
+        var additionalRewind = 8 * (sessionDuration / 600); // 8 × (مدة الجلسة / 600 ثانية)
+        var rewindSeconds = baseRewind + additionalRewind; // المعادلة الكاملة
+        console.log('[Rewind] Duration:', rewindSeconds.toFixed(2) + 's (3% + 8×(duration/600) of session:', sessionDuration.toFixed(2) + 's)');
+        audio.currentTime = Math.max(0.5, audio.currentTime - rewindSeconds);
         audio.play();
     }
 }
@@ -1787,8 +1812,8 @@ function playCheckpointAlert() {
 
     // الطريقة الأولى: استخدام Web Speech API
     if ('speechSynthesis' in window) {
-        // ✅ إزالة window.speechSynthesis.cancel() لتجنب التضارب مع AudioManager.stopAll()
-        // AudioManager.stopAll() تقوم بذلك بالفعل
+        // ✅ إلغاء أي قراءة صوتية سابقة لتجنب خطأ interrupted
+        window.speechSynthesis.cancel();
 
         // التأكد من تحميل الأصوات
         var voices = window.speechSynthesis.getVoices();
@@ -2130,6 +2155,8 @@ function resumeAudioAndTracking() {
 function playAIAssistantAlert() {
     // استخدام Web Speech API لتشغيل صوت تنبيه
     if ('speechSynthesis' in window) {
+        // ✅ إلغاء أي قراءة صوتية سابقة لتجنب خطأ interrupted
+        window.speechSynthesis.cancel();
         var utterance = new SpeechSynthesisUtterance('يمكنك استخدام المساعد الذكي لمساعدتك في فهم المفهوم');
         utterance.lang = 'ar-SA';
         utterance.rate = 1.0;
@@ -2201,17 +2228,11 @@ function showLevel3Popup() {
                 يبدو أنك تحتاج إلى تغيير أسلوب التعلم. اختر أحد الخيارين:
             </p>
             <div style="display:flex;flex-direction:column;gap:12px;">
-                <button id="level3VideoBtn" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;' +
-                    'border:none;padding:14px 24px;border-radius:10px;font-size:1rem;font-weight:700;' +
-                    'cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;font-family:"Tajawal",sans-serif;' +
-                    'display:flex;align-items:center;justify-content:center;gap:8px;">
+                <button id="level3VideoBtn" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;padding:14px 24px;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;font-family:'Tajawal',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">
                     <i class="fas fa-video"></i>
-                    الانتقال إلى الفيديو التعليمي
+                    فيديو تعليمي
                 </button>
-                <button id="level3BreakBtn" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;' +
-                    'border:none;padding:14px 24px;border-radius:10px;font-size:1rem;font-weight:700;' +
-                    'cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;font-family:"Tajawal",sans-serif;' +
-                    'display:flex;align-items:center;justify-content:center;gap:8px;">
+                <button id="level3BreakBtn" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;padding:14px 24px;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;font-family:'Tajawal',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">
                     <i class="fas fa-coffee"></i>
                     أخذ استراحة قصيرة
                 </button>
@@ -2221,17 +2242,25 @@ function showLevel3Popup() {
 
         // إضافة مستمعي الأحداث
         document.getElementById('level3VideoBtn').addEventListener('click', function() {
-            window.location.href = '/lesson/video/{{ lesson.pk }}/';
+            console.log('[Level 3] Video button clicked');
             popup.remove();
             _sessionState.activePopupLevel = 0; // ✅ تحديث activePopupLevel
-            // ✅ استئناف الصوت والتتبع (لن يتم تنفيذها بسبب الانتقال للصفحة الأخرى)
+            try {
+                stopTracking();
+                console.log('[Level 3] Tracking stopped');
+            } catch (e) {
+                console.error('[Level 3] stopTracking failed', e);
+            }
+            var videoUrl = '/lesson/video/' + LESSON_ID + '/';
+            console.log('[Level 3] Redirecting to:', videoUrl);
+            window.location.href = videoUrl;
         });
 
         document.getElementById('level3BreakBtn').addEventListener('click', function() {
-            window.location.href = '/student/home/';
             popup.remove();
             _sessionState.activePopupLevel = 0; // ✅ تحديث activePopupLevel
-            // ✅ استئناف الصوت والتتبع (لن يتم تنفيذها بسبب الانتقال للصفحة الأخرى)
+            try { stopTracking(); } catch (e) { console.error('stopTracking failed', e); }
+            window.location.href = "{% url 'student:student_home' %}";
         });
 
         // تأثيرات التحويم
@@ -2258,6 +2287,8 @@ function showLevel3Popup() {
 function playLevel3Alert() {
     // استخدام Web Speech API لتشغيل صوت تنبيه
     if ('speechSynthesis' in window) {
+        // ✅ إلغاء أي قراءة صوتية سابقة لتجنب خطأ interrupted
+        window.speechSynthesis.cancel();
         var utterance = new SpeechSynthesisUtterance('يبدو أنك تحتاج إلى تغيير أسلوب التعلم. اختر أحد الخيارين: الانتقال إلى الفيديو التعليمي أو أخذ استراحة قصيرة');
         utterance.lang = 'ar-SA';
         utterance.rate = 1.0;
@@ -2267,11 +2298,11 @@ function playLevel3Alert() {
 }
 
 // ✅ إرسال إشعارات للمعلم وولي الأمر (المستوى 3 فقط)
-function sendLevel3Notifications() {
-    console.log('[Level 3] Sending notifications to teacher and parent');
+function sendLevel3Notifications(recipientType) {
+    recipientType = recipientType || 'parent';
+    console.log('[Level 3] Sending notification to', recipientType);
 
-    // إرسال إشعار للمعلم وولي الأمر
-    fetch('/api/send_level3_notification/', {
+    return fetch('/api/send_level3_notification/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -2282,15 +2313,18 @@ function sendLevel3Notifications() {
             lesson_id: LESSON_ID,
             session_id: SESSION_ID,
             lesson_type: 'audio', // نوع الجلسة (نصي/صوتي)
-            lesson_title: '{{ lesson.lessontitle|default:"الدرس" }}'
+            lesson_title: '{{ lesson.lessontitle|default:"الدرس" }}',
+            recipient_type: recipientType
         })
     })
     .then(response => response.json())
     .then(data => {
         console.log('[Level 3] Notifications sent successfully:', data);
+        return data;
     })
     .catch(error => {
         console.error('[Level 3] Error sending notifications:', error);
+        throw error;
     });
 }
 
@@ -2315,38 +2349,96 @@ function selectCheckpointAnswer(answer) {
     var isCorrect = (answer === currentCheckpoint.correct_answer);
     console.log('[Checkpoint] Answer is correct:', isCorrect);
 
-    // ✅ عدم تصفير وقت التشتت عند الإجابة الصحيحة (قد تكون حظاً وليس فهماً)
-    // الاعتماد فقط على الانتباه المستمر (2.5 ثانية) لتصفير وقت التشتت
+    // ✅ تصفير وقت التشتت عند الإجابة الصحيحة على السؤال التكيفي
+    // الاعتماد على الانتباه المستمر (3 ثواني) لتصفير وقت التشتت أيضاً
+    if (isCorrect) {
+        _probabilisticModel.totalDistractionTime = 0;
+        _probabilisticModel.continuousAttentionTime = 0;
+        // ✅ تصفير عدادات المستويات عند الإجابة الصحيحة
+        _sessionState.lastLevel1DistractionTime = 0;
+        _sessionState.lastLevel2DistractionTime = 0;
+        console.log('[Checkpoint] Correct answer - distraction time and level counters reset to 0');
+    }
 
     // ✅ تحديث النموذج الاحتمالي بناءً على الإشارة المعرفية
     updateCognitiveSignal(isCorrect, Date.now());
 
-    // If answer is incorrect, rewind audio dynamically based on session duration then resume
-    if (!isCorrect) {
-        console.log('[Checkpoint] Incorrect answer - rewinding dynamically then resuming');
-        var audio = document.getElementById('topAudio');
-        if (audio) {
-            // ✅ معادلة الرجوع: (3% من مدة التسجيل الصوتي بحد أدنى 5 ثواني) + (8 × (مدة التسجيل الصوتي تقسيم 600 ثانية))
-            var audioDuration = audio.duration || 0; // مدة التسجيل الصوتي الفعلية
-            var baseRewind = Math.max(5, audioDuration * 0.03); // 3% من مدة التسجيل الصوتي بحد أدنى 5 ثواني
-            var additionalRewind = 8 * (audioDuration / 600); // 8 × (مدة التسجيل الصوتي تقسيم 600 ثانية)
-            var rewindSeconds = Math.min(55, baseRewind + additionalRewind); // حد أقصى 55 ثانية
-            console.log('[Checkpoint] Rewind duration:', rewindSeconds.toFixed(2) + 's (base:', baseRewind.toFixed(2) + 's, additional:', additionalRewind.toFixed(2) + 's, audio duration:', audioDuration.toFixed(2) + 's)');
-            audio.currentTime = Math.max(0, audio.currentTime - rewindSeconds);
-            // Rewind word highlight as well
-            if (window.WordHighlight && typeof window.WordHighlight.seek === 'function') {
-                window.WordHighlight.seek(audio.currentTime);
+    // Delegate rewind decision to server (authoritative). Save answer and apply server-provided rewind_position.
+    // Fallback: if server fails, compute local rewind with same formula and apply.
+    saveCheckpointAnswer(currentCheckpoint.checkpoint_id, answer, responseTime)
+    .then(function(data) {
+        try {
+            if (!data || !data.success) {
+                console.error('[Checkpoint] Server save failed or returned error', data && data.error);
+                // Fallback behavior: if we can't reach server, perform local rewind for incorrect answers
+                if (!isCorrect) {
+                    var audioFallback = document.getElementById('topAudio');
+                    if (audioFallback) {
+                        var ad = audioFallback.duration || 0;
+                        // ✅ معادلة الرجوع في الجلسة النصية: (3% من مدة الجلسة بحد أدنى 5 ثواني) + (8 × (مدة الجلسة / 600 ثانية))
+                        var baseRwf = Math.max(5, ad * 0.03); // 3% من مدة الجلسة بحد أدنى 5 ثواني
+                        var addRwf = 8 * (ad / 600); // 8 × (مدة الجلسة / 600 ثانية)
+                        var rwf = baseRwf + addRwf; // المعادلة الكاملة
+                        console.log('[Checkpoint] Audio fallback rewind: ' + rwf.toFixed(2) + 's (3% + 8×(duration/600) of ' + ad.toFixed(2) + 's)');
+                        audioFallback.currentTime = Math.max(0.5, audioFallback.currentTime - rwf);
+                        if (window.WordHighlight && typeof window.WordHighlight.seek === 'function') {
+                            window.WordHighlight.seek(audioFallback.currentTime);
+                        }
+                        audioFallback.play();
+                        audioPausedForCheckpoint = false;
+                        closeCheckpointPopup(false);
+                        return;
+                    }
+                }
+                if (isCorrect) { closeCheckpointPopup(true); return; }
             }
-            // Resume audio after rewinding
-            audio.play();
-            audioPausedForCheckpoint = false;
+
+            // If server returned rewind_position (authoritative), apply it
+            if (data && data.rewind_position != null) {
+                console.log('[Checkpoint] Server provided rewind_position for audio:', data.rewind_position);
+                var audioEl = document.getElementById('topAudio');
+                if (audioEl) {
+                    audioEl.currentTime = Number(data.rewind_position);
+                    if (window.WordHighlight && typeof window.WordHighlight.seek === 'function') {
+                        window.WordHighlight.seek(audioEl.currentTime);
+                    }
+                    audioEl.play();
+                    audioPausedForCheckpoint = false;
+                }
+                closeCheckpointPopup(false);
+                return;
+            }
+
+            // No rewind requested by server (correct answer)
+            closeCheckpointPopup(true);
+        } catch (e) {
+            console.error('[Checkpoint] Error handling server response', e);
+            closeCheckpointPopup(true);
         }
-        // Close popup WITHOUT resuming audio (already resumed above)
-        closeCheckpointPopup(false);
-    } else {
-        // Close popup WITH resuming audio (correct answer)
+    })
+    .catch(function(err) {
+        console.error('[Checkpoint] saveCheckpointAnswer promise rejected', err);
+        if (!isCorrect) {
+            var audioF = document.getElementById('topAudio');
+            if (audioF) {
+                var ad2 = audioF.duration || 0;
+                // ✅ معادلة الرجوع في الجلسة النصية: (3% من مدة الجلسة بحد أدنى 5 ثواني) + (8 × (مدة الجلسة / 600 ثانية))
+                var baseRw2 = Math.max(5, ad2 * 0.03); // 3% من مدة الجلسة بحد أدنى 5 ثواني
+                var addRw2 = 8 * (ad2 / 600); // 8 × (مدة الجلسة / 600 ثانية)
+                var rw2 = baseRw2 + addRw2; // المعادلة الكاملة
+                console.log('[Checkpoint] Audio catch rewind: ' + rw2.toFixed(2) + 's (3% + 8×(duration/600) of ' + ad2.toFixed(2) + 's)');
+                audioF.currentTime = Math.max(0.5, audioF.currentTime - rw2);
+                if (window.WordHighlight && typeof window.WordHighlight.seek === 'function') {
+                    window.WordHighlight.seek(audioF.currentTime);
+                }
+                audioF.play();
+                audioPausedForCheckpoint = false;
+                closeCheckpointPopup(false);
+                return;
+            }
+        }
         closeCheckpointPopup(true);
-    }
+    });
 }
 
 function saveCheckpointAnswer(checkpointId, answer, responseTime) {
@@ -2354,29 +2446,52 @@ function saveCheckpointAnswer(checkpointId, answer, responseTime) {
 
     // ✅ الحصول على مدة الجلسة (التسجيل الصوتي) - التأكد من أن المدة متاحة
     var sessionDuration = 0;
+    var currentPosition = 0;
     var audio = document.getElementById('topAudio');
     if (audio) {
+        // ✅ استخدام القيمة المحفوظة من loadedmetadata أولاً
+        if (_sessionState.audioDuration) {
+            sessionDuration = _sessionState.audioDuration;
+            console.log('[Checkpoint] Using saved audio duration from loadedmetadata:', sessionDuration + 's');
+        }
         // انتظر حتى يتم تحميل metadata الصوت
         if (audio.readyState >= 1) { // HAVE_METADATA
-            sessionDuration = audio.duration || 0;
+            sessionDuration = audio.duration || sessionDuration;
+            currentPosition = audio.currentTime || 0;
             console.log('[Checkpoint] Audio duration loaded:', sessionDuration + 's');
+            console.log('[Checkpoint] Audio current position:', currentPosition + 's');
         } else {
             console.warn('[Checkpoint] Audio metadata not loaded yet, duration may be 0');
             // محاولة الحصول على المدة من البيانات الوصفية إذا كانت متاحة
-            sessionDuration = audio.duration || 0;
+            sessionDuration = audio.duration || sessionDuration;
+            currentPosition = audio.currentTime || 0;
         }
     }
     console.log('[Checkpoint] Session duration used:', sessionDuration + 's');
+    console.log('[Checkpoint] Current position used:', currentPosition + 's');
 
     // ✅ إذا كانت المدة 0، حاول الحصول عليها من البيانات الوصفية
     if (sessionDuration === 0 && audio) {
         console.warn('[Checkpoint] Session duration is 0, attempting to get from metadata');
         // محاولة الحصول على المدة من خاصية duration مباشرة
         sessionDuration = audio.duration || 0;
+        currentPosition = audio.currentTime || 0;
         console.log('[Checkpoint] Retry session duration:', sessionDuration + 's');
     }
 
-    fetch("{% url 'learning:submit_checkpoint_answer' %}", {
+    // ✅ إذا كانت المدة لا تزال 0، حاول الحصول عليها من خاصية duration مرة أخرى
+    if (sessionDuration === 0 && audio) {
+        console.warn('[Checkpoint] Session duration still 0, trying to get from duration property');
+        sessionDuration = audio.duration || 0;
+        currentPosition = audio.currentTime || 0;
+        console.log('[Checkpoint] Final attempt session duration:', sessionDuration + 's');
+    }
+
+    var bodyContentType = audio ? 'audio' : 'text';
+
+    console.log('[Checkpoint] Sending to server - current_position:', currentPosition, 'session_duration:', sessionDuration, 'content_type:', bodyContentType);
+
+    return fetch("{% url 'learning:submit_checkpoint_answer' %}", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -2387,15 +2502,19 @@ function saveCheckpointAnswer(checkpointId, answer, responseTime) {
             selected_answer: answer,
             session_id: SESSION_ID,
             response_time: responseTime,
-            session_duration: sessionDuration  // ✅ إرسال مدة الجلسة
+            current_position: currentPosition,  // ✅ إرسال الموضع الحالي للصوت
+            session_duration: sessionDuration,  // ✅ إرسال مدة الجلسة
+            content_type: bodyContentType
         })
     })
     .then(function(r){ return r.json(); })
     .then(function(d){
         console.log('[Checkpoint] Answer saved:', d);
+        return d;
     })
     .catch(function(e){
         console.error('[Checkpoint] Error saving answer:', e);
+        throw e;
     });
 }
 
